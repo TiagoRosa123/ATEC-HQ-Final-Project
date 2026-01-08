@@ -123,4 +123,85 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// --- ROTA 1: PEDIDO DE RECUPERAÇÃO (ESQUECI-ME DA SENHA) ---
+router.post('/esqueci-senha', async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    // 1. Verificar se o utilizador existe
+    const user = await pool.query("SELECT * FROM utilizadores WHERE email = $1", [email]);
+    if (user.rows.length === 0) {
+      return res.status(404).json("Utilizador não encontrado.");
+    }
+
+    // 2. Gerar Token de Reset e Data de Expiração (1 hora)
+    const resetToken = crypto.randomBytes(20).toString('hex');
+    const expireDate = new Date(Date.now() + 3600000); // Hoje + 1 hora
+
+    // 3. Guardar Token na BD
+    await pool.query(
+      "UPDATE utilizadores SET reset_password_token = $1, reset_password_expires = $2 WHERE email = $3",
+      [resetToken, expireDate, email]
+    );
+
+    // 4. Enviar Email
+    const resetUrl = `http://localhost:5000/auth/reset-senha/${resetToken}`; // Link para testar no Backend
+    // Nota: Quando tiver Front-end, o link será algo como localhost:3000/reset/...
+
+    await sendEmail({
+      email: email,
+      subject: 'Recuperação de Password - ATEC',
+      message: `Recebemos um pedido para alterar a tua senha. Vai a: ${resetUrl}`,
+      html: `
+        <h3>Recuperação de Password</h3>
+        <p>Alguém pediu para alterar a senha da conta associada a este email.</p>
+        <p>Clica no botão abaixo para definir uma nova senha (válido por 1 hora):</p>
+        <a href="${resetUrl}" style="background-color: #dc3545; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Redefinir Password</a>
+        <p>Se não foste tu, ignora este email.</p>
+      `
+    });
+
+    res.json({ msg: "Email de recuperação enviado!" });
+
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Erro ao processar o pedido.");
+  }
+});
+
+// --- ROTA 2: DEFINIR NOVA SENHA ---
+router.post('/reset-senha/:token', async (req, res) => {
+  try {
+    const { token } = req.params;
+    const { password } = req.body; // A nova senha
+
+    // 1. Procurar utilizador com este token E que o prazo não tenha expirado
+    // Nota: $2 é a data/hora atual
+    const user = await pool.query(
+      "SELECT * FROM utilizadores WHERE reset_password_token = $1 AND reset_password_expires > $2",
+      [token, new Date()]
+    );
+
+    if (user.rows.length === 0) {
+      return res.status(400).json("Token inválido ou expirado.");
+    }
+
+    // 2. Encriptar a nova password
+    const salt = await bcrypt.genSalt(10);
+    const bcryptPassword = await bcrypt.hash(password, salt);
+
+    // 3. Atualizar a BD e limpar os tokens
+    await pool.query(
+      "UPDATE utilizadores SET password_hash = $1, reset_password_token = NULL, reset_password_expires = NULL WHERE id = $2",
+      [bcryptPassword, user.rows[0].id]
+    );
+
+    res.json({ msg: "Password alterada com sucesso! Já podes fazer login." });
+
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Erro ao alterar password.");
+  }
+});
+
 module.exports = router;
