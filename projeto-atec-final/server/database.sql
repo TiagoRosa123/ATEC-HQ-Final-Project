@@ -49,11 +49,18 @@ CREATE TABLE utilizadores (
     nome VARCHAR(100) NOT NULL,
     email VARCHAR(150) UNIQUE NOT NULL,
     password_hash TEXT,
+    foto_url TEXT,
     google_id TEXT,
     facebook_id TEXT,
     ativado BOOLEAN DEFAULT FALSE,
     token_ativacao TEXT,
-    role VARCHAR(20) DEFAULT 'user'
+    role VARCHAR(20) DEFAULT 'user',
+    --Recuperação de Password
+    reset_password_token TEXT,
+    reset_password_expires TIMESTAMP,
+    -- Autenticação 2FA 
+    two_fa_secret TEXT,
+    two_fa_ativado BOOLEAN DEFAULT FALSE
 );
 
 -- 4. Tabelas dependentes
