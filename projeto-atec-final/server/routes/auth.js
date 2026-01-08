@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const sendEmail = require('../utils/sendEmail');
+const speakeasy = require('speakeasy');
 
 // --- ROTA DE REGISTO ---
 router.post('/registar', async (req, res) => {
@@ -86,10 +87,11 @@ router.get('/ativar/:token', async (req, res) => {
   }
 });
 
-// --- ROTA DE LOGIN ---
+// --- ROTA DE LOGIN COM 2FA ---
 router.post('/login', async (req, res) => {
   try {
-    const { email, password } = req.body;
+    // Agora aceitamos também o token2fa (opcional no início)
+    const { email, password, token2fa } = req.body;
 
     // 1. Verificar se o utilizador existe
     const user = await pool.query("SELECT * FROM utilizadores WHERE email = $1", [email]);
@@ -97,25 +99,53 @@ router.post('/login', async (req, res) => {
       return res.status(401).json("Email ou password incorretos.");
     }
 
-    // 2. Verificar se a conta está ativada
-    if (!user.rows[0].ativado) {
+    const currentUser = user.rows[0];
+
+    // 2. Verificar se a conta está ativada (Email)
+    if (!currentUser.ativado) {
       return res.status(403).json("A tua conta ainda não foi ativada. Verifica o teu email.");
     }
 
     // 3. Comparar passwords
-    const validPassword = await bcrypt.compare(password, user.rows[0].password_hash);
+    const validPassword = await bcrypt.compare(password, currentUser.password_hash);
     if (!validPassword) {
       return res.status(401).json("Email ou password incorretos.");
     }
 
-    // 4. Gerar JWT
+    // --- NOVO: LÓGICA DE 2FA ---
+    
+    // Se o utilizador tem 2FA ativado na BD...
+    if (currentUser.two_fa_ativado) {
+      
+      // ... e NÃO enviou o código no pedido:
+      if (!token2fa) {
+        return res.status(400).json({ 
+          msg: "Código 2FA necessário", 
+          require2fa: true // O Front-end usa isto para saber que deve mostrar o campo do código
+        });
+      }
+
+      // ... e enviou o código, vamos validar:
+      const verified = speakeasy.totp.verify({
+        secret: currentUser.two_fa_secret,
+        encoding: 'base32',
+        token: token2fa
+      });
+
+      if (!verified) {
+        return res.status(401).json("Código 2FA incorreto!");
+      }
+    }
+    // ---------------------------
+
+    // 4. Se passou tudo, gerar JWT
     const token = jwt.sign(
-      { id: user.rows[0].id }, 
+      { id: currentUser.id }, 
       process.env.JWT_SECRET || 'chave_secreta_atec', 
       { expiresIn: '2h' }
     );
 
-    res.json({ token, user: { id: user.rows[0].id, nome: user.rows[0].nome, email: user.rows[0].email } });
+    res.json({ token, user: { id: currentUser.id, nome: currentUser.nome, email: currentUser.email } });
 
   } catch (err) {
     console.error(err.message);
