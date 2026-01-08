@@ -1,4 +1,4 @@
--- 1. LIMPEZA TOTAL (Apaga as tabelas antigas para evitar conflitos)
+-- 1. Apaga as tabelas
 DROP TABLE IF EXISTS horarios CASCADE;
 DROP TABLE IF EXISTS formandos CASCADE;
 DROP TABLE IF EXISTS curso_modulos CASCADE;
@@ -8,25 +8,25 @@ DROP TABLE IF EXISTS modulos CASCADE;
 DROP TABLE IF EXISTS salas CASCADE;
 DROP TABLE IF EXISTS utilizadores CASCADE;
 
--- 2. ATIVAR EXTENSÃO (Necessária para a validação de horários)
+-- 2. Ativa a extensão, necessária para a validação de horários
 CREATE EXTENSION IF NOT EXISTS btree_gist;
 
--- 3. CRIAR TABELAS INDEPENDENTES (Estas têm de ser criadas PRIMEIRO)
--- Tabela de Salas
+-- 3. Tabelas independentes
+-- Tb Salas
 CREATE TABLE salas (
     id SERIAL PRIMARY KEY,
     nome VARCHAR(50) NOT NULL,
     capacidade INT NOT NULL
 );
 
--- Tabela de Módulos
+-- Tb Módulos
 CREATE TABLE modulos (
     id SERIAL PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
     horas_totais INT NOT NULL
 );
 
--- Tabela de Formadores
+-- Tb Formadores
 CREATE TABLE formadores (
     id SERIAL PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
@@ -34,7 +34,7 @@ CREATE TABLE formadores (
     ficheiro_anexo_url TEXT
 );
 
--- Tabela de Cursos (Esta é a que estava a faltar no erro anterior)
+-- Tb Cursos 
 CREATE TABLE cursos (
     id SERIAL PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
@@ -43,7 +43,7 @@ CREATE TABLE cursos (
     data_fim DATE
 );
 
--- Tabela de Utilizadores (Login)
+-- Tb Utilizadores (Login)
 CREATE TABLE utilizadores (
     id SERIAL PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
@@ -56,45 +56,44 @@ CREATE TABLE utilizadores (
     role VARCHAR(20) DEFAULT 'user'
 );
 
--- 4. CRIAR TABELAS DEPENDENTES (Estas só funcionam se as de cima existirem)
-
--- Tabela de Ligação (Curso <-> Módulos <-> Formadores <-> Salas)
+-- 4. Tabelas dependentes
+-- Tb Ligação (Curso <-> Módulos <-> Formadores <-> Salas)
 CREATE TABLE curso_modulos (
     id SERIAL PRIMARY KEY,
-    curso_id INT REFERENCES cursos(id), -- Precisa da tabela 'cursos'
-    modulo_id INT REFERENCES modulos(id), -- Precisa da tabela 'modulos'
-    formador_id INT REFERENCES formadores(id), -- Precisa da tabela 'formadores'
-    sala_id INT REFERENCES salas(id), -- Precisa da tabela 'salas'
+    curso_id INT REFERENCES cursos(id), -- Precisa tb cursos
+    modulo_id INT REFERENCES modulos(id), -- Precisa tb modulos
+    formador_id INT REFERENCES formadores(id), -- Precisa tb formadores
+    sala_id INT REFERENCES salas(id), -- Precisa tb salas
     sequencia INT
 );
 
--- Tabela de Formandos
+-- Tb Formandos
 CREATE TABLE formandos (
     id SERIAL PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
     email VARCHAR(150) UNIQUE NOT NULL,
     foto_url TEXT,
     ficheiro_anexo_url TEXT,
-    curso_id INT REFERENCES cursos(id) -- Precisa da tabela 'cursos'
+    curso_id INT REFERENCES cursos(id) -- Precisa tb cursos
 );
 
--- Tabela de Horários (A mais complexa)
+-- Tb Horários 
 CREATE TABLE horarios (
     id SERIAL PRIMARY KEY,
-    curso_modulo_id INT REFERENCES curso_modulos(id), -- Precisa da tabela 'curso_modulos'
+    curso_modulo_id INT REFERENCES curso_modulos(id), -- Precisa da tb curso_modulos
     sala_id INT REFERENCES salas(id),
     formador_id INT REFERENCES formadores(id),
     data_aula DATE NOT NULL,
     hora_inicio TIME NOT NULL,
     hora_fim TIME NOT NULL,
     
-    -- Validação: Sala não pode ter duas aulas ao mesmo tempo
+    -- Validação: Sala - não pode ter duas aulas ao mesmo tempo
     CONSTRAINT no_room_overlap EXCLUDE USING gist (
         sala_id WITH =, 
         tsrange(data_aula + hora_inicio, data_aula + hora_fim) WITH &&
     ),
     
-    -- Validação: Formador não pode estar em dois sítios ao mesmo tempo
+    -- Validação: Formador - não pode estar em dois sítios ao mesmo tempo
     CONSTRAINT no_teacher_overlap EXCLUDE USING gist (
         formador_id WITH =, 
         tsrange(data_aula + hora_inicio, data_aula + hora_fim) WITH &&
