@@ -12,6 +12,7 @@ app.use(express.json()); // Permite ler JSON no corpo das requisições
 // Rotas de autenticação
 app.use('/auth', require('./routes/auth'));
 app.use('/2fa', require('./routes/2fa'));
+app.use('/admin', require('./routes/admin'));
 
 // ROTA DE TESTE: Verificar se a BD responde
 app.get('/teste-db', async (req, res) => {
