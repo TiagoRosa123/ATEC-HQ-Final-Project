@@ -9,6 +9,9 @@ const app = express();
 app.use(cors());
 app.use(express.json()); // Permite ler JSON no corpo das requisições
 
+// Rotas de autenticação
+app.use('/auth', require('./routes/auth'));
+
 // ROTA DE TESTE: Verificar se a BD responde
 app.get('/teste-db', async (req, res) => {
   try {
