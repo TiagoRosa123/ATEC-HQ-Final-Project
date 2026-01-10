@@ -11,8 +11,8 @@ function App() {
         <Routes>
           {/* Rota inicial -> Login */}
           <Route path="/" element={<Login />} />
-          <Route path="/login" element={<h1>Página de Login</h1>} />
-          <Route path="/register" element={<h1>Página de Registo</h1>} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
           <Route path="/dashboard" element={<h1>Área Privada</h1>} />
         </Routes>
       </div>
