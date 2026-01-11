@@ -1,118 +1,82 @@
 import React, { useState } from 'react';
-import axios from 'axios';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 function Login() {
-  const [inputs, setInputs] = useState({
-    email: "",
-    password: "",
-    token2fa: "" // Novo estado para guardar o código 2FA
-  });
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [token2fa, setToken2fa] = useState(''); // Novo campo para o código
+  const [pedir2fa, setPedir2fa] = useState(false); // Controla se mostramos o campo extra
 
-  // Estado para controlar se mostramos o campo de 2FA ou não
-  const [show2FAInput, setShow2FAInput] = useState(false);
-  
-  const [error, setError] = useState("");
+  const [erro, setErro] = useState('');
   const navigate = useNavigate();
 
-  const { email, password, token2fa } = inputs;
-
-  const onChange = (e) => {
-    setInputs({ ...inputs, [e.target.name]: e.target.value });
-  };
-
-  const onSubmitForm = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(""); // Limpar erros anteriores
+    setErro('');
+
+    const bodyData = { email, password };
+    // Se o servidor já pediu 2FA, enviamos também o código
+    if (token2fa) bodyData.token2fa = token2fa;
 
     try {
-      // Envia email, password (e token2fa se já estiver preenchido)
-      const response = await axios.post("http://localhost:5000/auth/login", {
-        email,
-        password,
-        token2fa: show2FAInput ? token2fa : undefined // Só envia se estivermos no passo 2
+      const response = await fetch('http://localhost:5000/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(bodyData),
       });
 
-      // SUCESSO! Temos token de sessão
-      if (response.data.token) {
-        localStorage.setItem("token", response.data.token);
-        console.log("Login efetuado!");
-        navigate("/dashboard"); 
+      const data = await response.json();
+
+      // CASO ESPECIAL: Password certa, mas falta 2FA
+      if (response.status === 400 && data.require2fa) {
+        setPedir2fa(true);
+        setErro("Código 2FA necessário. Verifica a tua App.");
+        return;
       }
 
-    } catch (err) {
-      // Apanhar a resposta do servidor
-      if (err.response) {
-        const serverData = err.response.data;
-        
-        // VERIFICAÇÃO ESPECIAL: O servidor pediu 2FA?
-        if (err.response.status === 400 && serverData.require2fa) {
-          setShow2FAInput(true); // Mostra o campo de código
-          setError("Por favor, insere o teu código 2FA da App.");
-          return; // Para aqui e espera que o user preencha o código e clique de novo
-        }
-
-        // Se for outro erro qualquer (ex: password errada)
-        setError(serverData.msg || serverData || "Erro ao fazer login");
+      if (response.ok) {
+        // Guardar o token para o utilizador ficar "logado"
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user)); // Opcional: guardar dados do user
+        navigate('/dashboard');
       } else {
-        setError("Erro de ligação ao servidor");
+        setErro(data.message || 'Email ou password incorretos.');
       }
+    } catch (error) {
+      setErro('O servidor não está a responder.');
     }
   };
 
   return (
-    <div className="auth-container" style={{ maxWidth: '400px', margin: '50px auto', padding: '20px', border: '1px solid #ccc', borderRadius: '8px' }}>
-      <h2>{show2FAInput ? "Autenticação 2FA" : "Login"}</h2>
-      
-      {error && <p style={{ color: error.includes("sucesso") ? 'green' : 'red' }}>{error}</p>}
-      
-      <form onSubmit={onSubmitForm}>
-        {/* Se NÃO estiver a pedir 2FA, mostra email e pass normalmente */}
-        {!show2FAInput && (
-          <>
-            <div style={{ marginBottom: '10px' }}>
-              <label>Email:</label>
-              <input 
-                type="email" name="email" value={email} onChange={onChange} required 
-                style={{ width: '100%', padding: '8px' }}
-              />
-            </div>
-            
-            <div style={{ marginBottom: '10px' }}>
-              <label>Password:</label>
-              <input 
-                type="password" name="password" value={password} onChange={onChange} required 
-                style={{ width: '100%', padding: '8px' }}
-              />
-            </div>
-          </>
-        )}
+    <div className="container" style={{ padding: '50px' }}>
+      <h2>Entrar</h2>
+      <form onSubmit={handleSubmit}>
+        <div>
+          <label>Email:</label><br/>
+          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+        </div>
+        
+        <div style={{ marginTop: '10px' }}>
+          <label>Password:</label><br/>
+          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+        </div>
 
-        {/* Se o servidor pediu 2FA, ESCONDE email/pass e MOSTRA só o código */}
-        {show2FAInput && (
-          <div style={{ marginBottom: '10px', backgroundColor: '#e9f7ef', padding: '15px', borderRadius: '5px' }}>
-            <label style={{ fontWeight: 'bold' }}>Código Google Authenticator:</label>
+        {/* SÓ MOSTRA ISTO SE O SERVIDOR PEDIR */}
+        {pedir2fa && (
+          <div style={{ marginTop: '15px', background: '#f0f0f0', padding: '10px' }}>
+            <label style={{ color: 'blue', fontWeight: 'bold' }}>Código Google Authenticator (2FA):</label><br/>
             <input 
               type="text" 
-              name="token2fa" 
               value={token2fa} 
-              onChange={onChange} 
-              placeholder="Ex: 123456"
-              autoFocus
-              required 
-              style={{ width: '100%', padding: '10px', fontSize: '18px', letterSpacing: '2px', textAlign: 'center' }}
+              onChange={(e) => setToken2fa(e.target.value)} 
+              placeholder="000 000"
             />
           </div>
         )}
 
-        <button type="submit" style={{ width: '100%', padding: '10px', background: show2FAInput ? '#28a745' : '#007bff', color: 'white', border: 'none', cursor: 'pointer', marginTop: '10px' }}>
-          {show2FAInput ? "Verificar Código" : "Entrar"}
-        </button>
+        <button type="submit" style={{ marginTop: '20px' }}>Entrar</button>
       </form>
-      
-      <p style={{ marginTop: '15px' }}>
-        Não tens conta? <Link to="/register">Regista-te aqui</Link>
-      </p>
+      {erro && <p style={{ color: 'red', marginTop: '10px' }}>{erro}</p>}
     </div>
   );
 }

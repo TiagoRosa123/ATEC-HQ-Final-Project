@@ -1,87 +1,66 @@
 import React, { useState } from 'react';
-import axios from 'axios';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 function Register() {
-  const [inputs, setInputs] = useState({
-    email: "",
-    password: "",
-    nome: ""
+  // Estado para os dados do formulário
+  const [formData, setFormData] = useState({
+    nome: '',
+    email: '',
+    password: ''
   });
+
+  // ESTA ERA A LINHA QUE FALTAVA:
+  const [mensagem, setMensagem] = useState('');
   
-  const [message, setMessage] = useState(""); // mensagens de sucesso
-  const [error, setError] = useState("");     // mensagens de erro
+  const navigate = useNavigate();
 
-  const { email, password, nome } = inputs;
-
-  const onChange = (e) => {
-    setInputs({ ...inputs, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const onSubmitForm = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-    setMessage("");
-
     try {
-      // Envia dados para o Back-end
-      const response = await axios.post("http://localhost:5000/auth/register", {
-        email,
-        password,
-        nome
+      // Confirma se a porta é 5000 ou 3001 no teu PC
+      const response = await fetch('http://localhost:5000/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
       });
 
-      // Se correu bem:
-      setMessage("Conta criada com sucesso! Podes fazer login agora.");
-      // Limpar o formulário
-      setInputs({ email: "", password: "", nome: "" });
+      const data = await response.json();
 
-    } catch (err) {
-      console.error(err.response.data);
-      setError(err.response.data);
+      if (response.ok) {
+        setMensagem('Conta criada com sucesso! A redirecionar...');
+        setTimeout(() => navigate('/login'), 2000);
+      } else {
+        setMensagem(data.message || 'Erro ao criar conta.');
+      }
+    } catch (error) {
+      setMensagem('Erro de conexão ao servidor.');
     }
   };
 
   return (
-    <div style={{ maxWidth: '400px', margin: '50px auto', padding: '20px', border: '1px solid #ccc', borderRadius: '8px' }}>
+    <div className="container">
       <h2>Criar Conta</h2>
-      
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      {message && <p style={{ color: 'green' }}>{message}</p>}
-
-      <form onSubmit={onSubmitForm}>
-        <div style={{ marginBottom: '10px' }}>
+      <form onSubmit={handleSubmit}>
+        <div>
           <label>Nome:</label>
-          <input 
-            type="text" name="nome" value={nome} onChange={onChange} required 
-            style={{ width: '100%', padding: '8px', marginTop: '5px' }}
-          />
+          <input type="text" name="nome" onChange={handleChange} required />
         </div>
-
-        <div style={{ marginBottom: '10px' }}>
+        <div>
           <label>Email:</label>
-          <input 
-            type="email" name="email" value={email} onChange={onChange} required 
-            style={{ width: '100%', padding: '8px', marginTop: '5px' }}
-          />
+          <input type="email" name="email" onChange={handleChange} required />
         </div>
-
-        <div style={{ marginBottom: '10px' }}>
+        <div>
           <label>Password:</label>
-          <input 
-            type="password" name="password" value={password} onChange={onChange} required 
-            style={{ width: '100%', padding: '8px', marginTop: '5px' }}
-          />
+          <input type="password" name="password" onChange={handleChange} required />
         </div>
-
-        <button type="submit" style={{ width: '100%', padding: '10px', background: '#28a745', color: 'white', border: 'none', cursor: 'pointer' }}>
-          Registar
-        </button>
+        <button type="submit">Registar</button>
       </form>
-      
-      <p style={{ marginTop: '15px' }}>
-        Já tens conta? <Link to="/login">Faz Login aqui</Link>
-      </p>
+      {/* Aqui usamos a mensagem para mostrar erros ou sucesso */}
+      {mensagem && <p>{mensagem}</p>}
     </div>
   );
 }
