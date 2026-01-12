@@ -3,6 +3,9 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Register from './pages/Register';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
+import ForgotPw from './pages/ForgotPw';
+import ResetPw from './pages/ResetPw';
+
 
 function App() {
   return (
@@ -14,6 +17,8 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/forgot-password" element={<ForgotPw />} />
+          <Route path="/reset-password/:token" element={<ResetPw />} />
         </Routes>
       </div>
     </Router>
