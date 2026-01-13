@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard';
 import ForgotPw from './pages/ForgotPw';
 import ResetPw from './pages/ResetPw';
 import ActivatePw from './pages/Activate'
+import AdminUsers from './pages/AdminUsers';
 
 
 function App() {
@@ -13,7 +14,6 @@ function App() {
     <Router>
       <div className="App">
         <Routes>
-          {/* Rota inicial -> Login */}
           <Route path="/" element={<Login />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
@@ -21,6 +21,7 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPw />} />
           <Route path="/reset-password/:token" element={<ResetPw />} />
           <Route path="/activate/:token" element={<ActivatePw />} />
+          <Route path="/admin" element={<AdminUsers />} />
         </Routes>
       </div>
     </Router>
