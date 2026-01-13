@@ -7,7 +7,7 @@ const sendEmail = require('../utils/sendEmail');
 const speakeasy = require('speakeasy');
 
 // --- ROTA DE REGISTO ---
-router.post('/registar', async (req, res) => {
+router.post('/register', async (req, res) => {
   try {
     // 1. Extração de dados do corpo da requisição
     const { nome, email, password } = req.body;
@@ -153,8 +153,8 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// --- ROTA 1: PEDIDO DE RECUPERAÇÃO (ESQUECI-ME DA SENHA) ---
-router.post('/esqueci-senha', async (req, res) => {
+// --- ROTA 1: PEDIDO DE RECUPERAÇÃO Password ---
+router.post('/esqueci-Pw', async (req, res) => {
   try {
     const { email } = req.body;
 
@@ -175,7 +175,7 @@ router.post('/esqueci-senha', async (req, res) => {
     );
 
     // 4. Enviar Email
-    const resetUrl = `http://localhost:5000/auth/reset-senha/${resetToken}`; // Link para testar no Backend
+    const resetUrl = `http://localhost:3000/reset-password/${resetToken}`; // Link para testar no Backend
     // Nota: Quando tiver Front-end, o link será algo como localhost:3000/reset/...
 
     await sendEmail({
@@ -200,7 +200,7 @@ router.post('/esqueci-senha', async (req, res) => {
 });
 
 // --- ROTA 2: DEFINIR NOVA SENHA ---
-router.post('/reset-senha/:token', async (req, res) => {
+router.post('/reset-password/:token', async (req, res) => {
   try {
     const { token } = req.params;
     const { password } = req.body; // A nova senha
@@ -226,7 +226,7 @@ router.post('/reset-senha/:token', async (req, res) => {
       [bcryptPassword, user.rows[0].id]
     );
 
-    res.json({ msg: "Password alterada com sucesso! Já podes fazer login." });
+    res.json({ msg: "Password alterada com sucesso!" });
 
   } catch (err) {
     console.error(err.message);

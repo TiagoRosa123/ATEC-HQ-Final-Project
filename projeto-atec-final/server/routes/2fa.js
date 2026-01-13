@@ -3,7 +3,7 @@ const pool = require('../db');
 const speakeasy = require('speakeasy');
 const qrcode = require('qrcode');
 
-// --- ROTA 1: CONFIGURAR 2FA (Gerar QR Code) ---
+// --- ROTA 1: CONFIGURAR 2FA (QR Code) ---
 // O utilizador tem de enviar o email (ou ID) para sabermos quem é
 router.post('/setup', async (req, res) => {
   try {
