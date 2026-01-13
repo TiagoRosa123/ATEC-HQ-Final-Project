@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const pool = require('../db');
 const authorization = require('../middleware/authorization');
+const bcrypt = require("bcrypt");
 
 // Middleware extra: Verificar se é MESMO admin
 const verifyAdmin = async (req, res, next) => {
@@ -56,6 +57,61 @@ router.put('/promover/:id', authorization, verifyAdmin, async (req, res) => {
     console.error(err.message);
     res.status(500).send("Erro no servidor");
   }
+});
+
+// --- ROTA 3.1: Editar dados (Update) ---
+router.put('/editar/:id', authorization, verifyAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { nome, email, is_admin } = req.body; // Recebemos agora nome e email também
+
+    // Lógica da Role
+    const role = is_admin ? 'admin' : 'user';
+
+    // Query Atualizada: Muda nome, email, role e is_admin
+    await pool.query(
+        "UPDATE utilizadores SET nome = $1, email = $2, role = $3, is_admin = $4 WHERE id = $5", 
+        [nome, email, role, is_admin, id]
+    );
+
+    res.json("Dados do utilizador atualizados com sucesso!");
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Erro ao atualizar utilizador");
+  }
+});
+
+// --- ROTA 4: CRIAR UTILIZADOR MANUALMENTE (Create) ---
+// Falta esta para o CRUD ser completo!
+router.post('/criar', authorization, verifyAdmin, async (req, res) => {
+    try {
+        const { nome, email, password, is_admin } = req.body;
+
+        // 1. Verificar se user já existe
+        const userExist = await pool.query("SELECT * FROM utilizadores WHERE email = $1", [email]);
+        if (userExist.rows.length > 0) {
+            return res.status(401).json("Utilizador já existe!");
+        }
+
+        // 2. Encriptar a password
+        const salt = await bcrypt.genSalt(10);
+        const bcryptPassword = await bcrypt.hash(password, salt);
+
+        // 3. Definir role
+        const role = is_admin ? 'admin' : 'user';
+
+        // 4. Inserir na BD (já ativado)
+        const newUser = await pool.query(
+            "INSERT INTO utilizadores (nome, email, password_hash, role, is_admin, ativado) VALUES ($1, $2, $3, $4, $5, true) RETURNING *",
+            [nome, email, bcryptPassword, role, is_admin || false]
+        );
+
+        res.json(newUser.rows[0]);
+
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send("Erro ao criar utilizador");
+    }
 });
 
 module.exports = router;
