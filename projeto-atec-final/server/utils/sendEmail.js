@@ -1,20 +1,14 @@
-const nodemailer = require('nodemailer');
-// Tenta carregar o .env. Se o ficheiro estiver na raiz do server, isto basta.
+const nodemailer = require('nodemailer'); //"Carteiro"
 require('dotenv').config(); 
 
 const sendEmail = async (options) => {
-
   const transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST,
-    port: Number(process.env.EMAIL_PORT),
+    service: 'gmail', 
     auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS, // Voltamos a usar a variável segura
+      user: process.env.EMAIL_USER,  //busca email
+      pass: process.env.EMAIL_PASS  //busca PW
     },
-    // Mantemos a correção do certificado que funcionou
-    tls: {
-      rejectUnauthorized: false
-    }
+    tls: { rejectUnauthorized: false }
   });
 
   const mailOptions = {
@@ -26,7 +20,7 @@ const sendEmail = async (options) => {
   };
 
   await transporter.sendMail(mailOptions);
-  console.log("Email enviado com sucesso!");
+  console.log("✅ Email enviado para: " + options.email);
 };
 
 module.exports = sendEmail;
