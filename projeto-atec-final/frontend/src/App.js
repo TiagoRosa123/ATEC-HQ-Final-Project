@@ -5,6 +5,7 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import ForgotPw from './pages/ForgotPw';
 import ResetPw from './pages/ResetPw';
+import ActivatePw from './pages/Activate'
 
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/forgot-password" element={<ForgotPw />} />
           <Route path="/reset-password/:token" element={<ResetPw />} />
+          <Route path="/activate/:token" element={<ActivatePw />} />
         </Routes>
       </div>
     </Router>
