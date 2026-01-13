@@ -234,4 +234,57 @@ router.post('/reset-password/:token', async (req, res) => {
   }
 });
 
+// --- ROTA: CONSULTAR TODOS OS UTILIZADORES (READ) ---
+// Isto cumpre o requisito de "Consultar"
+router.get('/all', async (req, res) => {
+  try {
+    const users = await pool.query("SELECT id, nome, email, ativado FROM utilizadores");
+    res.json(users.rows);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Erro ao listar utilizadores");
+  }
+});
+
+// --- ROTA: ELIMINAR UTILIZADOR (DELETE) ---
+// Isto cumpre o requisito de "Eliminar"
+// Nota: Em produção, isto devia ser só para Admins, mas para o projeto serve assim.
+router.delete('/delete/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    await pool.query("DELETE FROM utilizadores WHERE id = $1", [id]);
+    res.json("Utilizador eliminado!");
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Erro ao eliminar utilizador");
+  }
+});
+// --- ROTA DE ATUALIZAR PASSWORD (PUT) ---
+router.put('/update', async (req, res) => {
+  try {
+    const { id, password } = req.body;
+
+    // Se o user não enviou password, não fazemos nada
+    if (!password) {
+      return res.status(400).json("Password necessária");
+    }
+
+    // 1. Encriptar a nova password
+    const salt = await bcrypt.genSalt(10);
+    const bcryptPassword = await bcrypt.hash(password, salt);
+
+    // 2. Atualizar na Base de Dados
+    await pool.query(
+      "UPDATE utilizadores SET password_hash = $1 WHERE id = $2",
+      [bcryptPassword, id]
+    );
+
+    res.json({ msg: "Password atualizada com sucesso!" });
+
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Erro ao atualizar password.");
+  }
+});
+
 module.exports = router;
