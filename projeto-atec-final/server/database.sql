@@ -1,108 +1,180 @@
--- 1. Apaga as tabelas
-DROP TABLE IF EXISTS horarios CASCADE;
-DROP TABLE IF EXISTS formandos CASCADE;
-DROP TABLE IF EXISTS curso_modulos CASCADE;
-DROP TABLE IF EXISTS cursos CASCADE;
-DROP TABLE IF EXISTS formadores CASCADE;
-DROP TABLE IF EXISTS modulos CASCADE;
-DROP TABLE IF EXISTS salas CASCADE;
-DROP TABLE IF EXISTS utilizadores CASCADE;
+-- 1. LIMPEZA TOTAL 
+-- DROP TABLE IF EXISTS horarios CASCADE;
+-- DROP TABLE IF EXISTS formandos CASCADE;
+-- DROP TABLE IF EXISTS curso_modulos CASCADE;
+-- DROP TABLE IF EXISTS cursos CASCADE;
+-- DROP TABLE IF EXISTS formadores CASCADE;
+-- DROP TABLE IF EXISTS modulos CASCADE;
+-- DROP TABLE IF EXISTS salas CASCADE;
+-- DROP TABLE IF EXISTS utilizadores CASCADE;
 
--- 2. Ativa a extensão, necessária para a validação de horários
 CREATE EXTENSION IF NOT EXISTS btree_gist;
 
--- 3. Tabelas independentes
--- Tb Salas
-CREATE TABLE salas (
-    id SERIAL PRIMARY KEY,
-    nome VARCHAR(50) NOT NULL,
-    capacidade INT NOT NULL
-);
-
--- Tb Módulos
-CREATE TABLE modulos (
-    id SERIAL PRIMARY KEY,
-    nome VARCHAR(100) NOT NULL,
-    horas_totais INT NOT NULL
-);
-
--- Tb Formadores
-CREATE TABLE formadores (
-    id SERIAL PRIMARY KEY,
-    nome VARCHAR(100) NOT NULL,
-    foto_url TEXT,
-    ficheiro_anexo_url TEXT
-);
-
--- Tb Cursos 
-CREATE TABLE cursos (
-    id SERIAL PRIMARY KEY,
-    nome VARCHAR(100) NOT NULL,
-    area VARCHAR(50) NOT NULL,
-    data_inicio DATE NOT NULL,
-    data_fim DATE
-);
-
--- Tb Utilizadores (Login)
+-- 1 Utilizadores
 CREATE TABLE utilizadores (
     id SERIAL PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
     email VARCHAR(150) UNIQUE NOT NULL,
     password_hash TEXT,
-    foto_url TEXT,
-    google_id TEXT,
-    facebook_id TEXT,
+    role VARCHAR(20) DEFAULT 'user', -- O campo 'role' pode ser: 'admin', 'formador', 'formando', 'funcionario'
+    is_admin BOOLEAN DEFAULT FALSE, -- Admin (Superuser)
     ativado BOOLEAN DEFAULT FALSE,
-    token_ativacao TEXT,
-    role VARCHAR(20) DEFAULT 'user',
-    --Recuperação de Password
     reset_password_token TEXT,
     reset_password_expires TIMESTAMP,
-    -- Autenticação 2FA 
     two_fa_secret TEXT,
-    two_fa_ativado BOOLEAN DEFAULT FALSE
+    two_fa_ativado BOOLEAN DEFAULT FALSE,
+    foto_url TEXT,
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- 4. Tabelas dependentes
--- Tb Ligação (Curso <-> Módulos <-> Formadores <-> Salas)
-CREATE TABLE curso_modulos (
+-- 2 Áreas
+CREATE TABLE areas (
     id SERIAL PRIMARY KEY,
-    curso_id INT REFERENCES cursos(id), -- Precisa tb cursos
-    modulo_id INT REFERENCES modulos(id), -- Precisa tb modulos
-    formador_id INT REFERENCES formadores(id), -- Precisa tb formadores
-    sala_id INT REFERENCES salas(id), -- Precisa tb salas
-    sequencia INT
+    nome VARCHAR(50) UNIQUE NOT NULL, 
+    descricao TEXT
 );
 
--- Tb Formandos
-CREATE TABLE formandos (
+-- 3 Salas
+CREATE TABLE salas (
+    id SERIAL PRIMARY KEY,
+    area_id INT REFERENCES areas(id), 
+    nome VARCHAR(50) NOT NULL, 
+    capacidade INT NOT NULL,
+    recursos TEXT
+);
+
+-- 4 Cursos
+CREATE TABLE cursos (
+    id SERIAL PRIMARY KEY,
+    area_id INT REFERENCES areas(id),
+    nome VARCHAR(100) NOT NULL,
+    sigla VARCHAR(20),
+    descricao TEXT
+);
+
+-- 5 Módulos
+CREATE TABLE modulos (
     id SERIAL PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
-    email VARCHAR(150) UNIQUE NOT NULL,
-    foto_url TEXT,
-    ficheiro_anexo_url TEXT,
-    curso_id INT REFERENCES cursos(id) -- Precisa tb cursos
+    horas_totais INT NOT NULL,
+    codigo VARCHAR(20)
 );
 
--- Tb Horários 
-CREATE TABLE horarios (
+-- 6 Estrutura do Curso
+CREATE TABLE curso_modulos (
     id SERIAL PRIMARY KEY,
-    curso_modulo_id INT REFERENCES curso_modulos(id), -- Precisa da tb curso_modulos
-    sala_id INT REFERENCES salas(id),
+    curso_id INT REFERENCES cursos(id) ON DELETE CASCADE,
+    modulo_id INT REFERENCES modulos(id) ON DELETE CASCADE,
+    ordem_sequencia INT
+);
+
+-- 7 Formadores
+CREATE TABLE formadores (
+    id SERIAL PRIMARY KEY,
+    utilizador_id INT REFERENCES utilizadores(id) ON DELETE CASCADE,
+    nome VARCHAR(100) NOT NULL,
+    cor_calendario VARCHAR(7)
+);
+
+-- 8 Formandos
+CREATE TABLE formandos (
+    id SERIAL PRIMARY KEY,
+    utilizador_id INT REFERENCES utilizadores(id) ON DELETE CASCADE,
+    nome VARCHAR(100) NOT NULL,
+    numero_mecanografico VARCHAR(20) UNIQUE
+);
+
+-- 9 Funcionários (Secretaria, Direção, etc.)
+CREATE TABLE funcionarios (
+    id SERIAL PRIMARY KEY,
+    utilizador_id INT REFERENCES utilizadores(id) ON DELETE CASCADE,
+    nome VARCHAR(100) NOT NULL,
+    departamento VARCHAR(50), -- Ex: 'Secretaria', 'Financeira', 'Recursos Humanos'
+    cargo VARCHAR(50) -- Ex: 'Administrativo', 'Diretor Pedagógico'
+);
+
+-- 10 Competências dos Formadores
+CREATE TABLE competencias_formador (
+    id SERIAL PRIMARY KEY,
+    formador_id INT REFERENCES formadores(id) ON DELETE CASCADE,
+    modulo_id INT REFERENCES modulos(id) ON DELETE CASCADE,
+    UNIQUE(formador_id, modulo_id)
+);
+
+-- 11 Disponibilidades
+CREATE TABLE disponibilidades (
+    id SERIAL PRIMARY KEY,
+    formador_id INT REFERENCES formadores(id) ON DELETE CASCADE,
+    dia_semana INT NOT NULL, 
+    hora_inicio TIME NOT NULL,
+    hora_fim TIME NOT NULL,
+    observacoes TEXT
+);
+
+-- 12 Turmas
+CREATE TABLE turmas (
+    id SERIAL PRIMARY KEY,
+    codigo VARCHAR(50) UNIQUE NOT NULL,
+    curso_id INT REFERENCES cursos(id),
+    data_inicio DATE NOT NULL,
+    data_fim DATE,
+    coordenador_id INT REFERENCES formadores(id),
+    estado VARCHAR(20) DEFAULT 'planeamento'
+);
+
+-- 13 Inscrições
+CREATE TABLE inscricoes (
+    id SERIAL PRIMARY KEY,
+    turma_id INT REFERENCES turmas(id) ON DELETE CASCADE,
+    formando_id INT REFERENCES formandos(id) ON DELETE CASCADE,
+    data_inscricao DATE DEFAULT CURRENT_DATE,
+    estado VARCHAR(20) DEFAULT 'ativo',
+    UNIQUE(turma_id, formando_id)
+);
+
+-- 14 Cronogramas (Horários)
+CREATE TABLE cronogramas (
+    id SERIAL PRIMARY KEY,
+    turma_id INT REFERENCES turmas(id) ON DELETE CASCADE,
+    modulo_id INT REFERENCES modulos(id),
     formador_id INT REFERENCES formadores(id),
+    sala_id INT REFERENCES salas(id), 
     data_aula DATE NOT NULL,
     hora_inicio TIME NOT NULL,
     hora_fim TIME NOT NULL,
-    
-    -- Validação: Sala - não pode ter duas aulas ao mesmo tempo
-    CONSTRAINT no_room_overlap EXCLUDE USING gist (
-        sala_id WITH =, 
-        tsrange(data_aula + hora_inicio, data_aula + hora_fim) WITH &&
-    ),
-    
-    -- Validação: Formador - não pode estar em dois sítios ao mesmo tempo
-    CONSTRAINT no_teacher_overlap EXCLUDE USING gist (
-        formador_id WITH =, 
-        tsrange(data_aula + hora_inicio, data_aula + hora_fim) WITH &&
+    CONSTRAINT no_room_overlap EXCLUDE USING gist (sala_id WITH =, tsrange(data_aula + hora_inicio, data_aula + hora_fim) WITH &&),
+    CONSTRAINT no_teacher_overlap EXCLUDE USING gist (formador_id WITH =, tsrange(data_aula + hora_inicio, data_aula + hora_fim) WITH &&),
+    CONSTRAINT no_class_overlap EXCLUDE USING gist (turma_id WITH =, tsrange(data_aula + hora_inicio, data_aula + hora_fim) WITH &&)
+);
+
+-- 15 Avaliações
+CREATE TABLE avaliacoes (
+    id SERIAL PRIMARY KEY,
+    turma_id INT REFERENCES turmas(id) ON DELETE CASCADE,
+    modulo_id INT REFERENCES modulos(id) ON DELETE CASCADE, 
+    formando_id INT REFERENCES formandos(id) ON DELETE CASCADE,
+    nota DECIMAL(4,2) NOT NULL, 
+    data_avaliacao DATE DEFAULT CURRENT_DATE,
+    tipo_avaliacao VARCHAR(50), 
+    observacoes TEXT
+);
+
+-- 16. Ficheiros
+
+CREATE TABLE ficheiros (
+    id SERIAL PRIMARY KEY,
+    formador_id INT REFERENCES formadores(id) ON DELETE CASCADE, 
+    formando_id INT REFERENCES formandos(id) ON DELETE CASCADE,
+	funcionario_id INT REFERENCES funcionarios(id) ON DELETE CASCADE,
+	nome_ficheiro VARCHAR(50) NOT NULL,
+    tipo_ficheiro VARCHAR(50) NOT NULL, -- ex.:CV
+	mime_type VARCHAR(100), -- saber qual icone mostra no frontend
+	tamanho_bytes BIGINT, -- ex.: application/pdf
+	data_upload DATE DEFAULT CURRENT_TIMESTAMP,
+	-- Garante que o ficheiro pertence a UMA e só UMA entidade
+    CONSTRAINT ficheiro_um_dono CHECK (
+        (formador_id IS NOT NULL)::int +
+        (formando_id IS NOT NULL)::int +
+        (funcionario_id IS NOT NULL)::int = 1
     )
 );
