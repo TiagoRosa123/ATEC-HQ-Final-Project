@@ -7,6 +7,9 @@ import ForgotPw from './pages/ForgotPw';
 import ResetPw from './pages/ResetPw';
 import ActivatePw from './pages/Activate'
 import AdminUsers from './pages/AdminUsers';
+import Settings from './pages/Settings';
+import PersonalData from './pages/PersonalData';
+import Evaluations from './pages/Evaluations';
 
 
 function App() {
@@ -22,6 +25,9 @@ function App() {
           <Route path="/reset-password/:token" element={<ResetPw />} />
           <Route path="/activate/:token" element={<ActivatePw />} />
           <Route path="/admin" element={<AdminUsers />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/profile" element={<PersonalData />} />
+          <Route path="/evaluations" element={<Evaluations />} />
         </Routes>
       </div>
     </Router>

@@ -1,26 +1,35 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import QRCode from 'qrcode'; // <--- Importante: verifica se tens esta linha
+import Navbar from '../components/Navbar';
+import { Card, Row, Col, Table, Badge, ProgressBar } from 'react-bootstrap';
+import { FaCalendarAlt, FaExclamationTriangle, FaCheckCircle, FaClock } from 'react-icons/fa';
 
 function Dashboard() {
   const navigate = useNavigate();
   const [user, setUser] = useState({ nome: '', email: '', id: '', two_fa_ativado: false });
-  
-  // --- ESTADOS PARA MUDAR PASSWORD ---
-  const [novaPassword, setNovaPassword] = useState('');
-  const [msgPass, setMsgPass] = useState('');
 
-  // --- ESTADOS PARA O 2FA ---
-  const [qrCodeUrl, setQrCodeUrl] = useState('');
-  const [secretAscii, setSecretAscii] = useState('');
-  const [codigo2fa, setCodigo2fa] = useState('');
-  const [modoSetup2FA, setModoSetup2FA] = useState(false);
-  const [msg2FA, setMsg2FA] = useState('');
+  // MOCK DATA - To be replaced by proper API calls later
+  const [schedule, setSchedule] = useState([
+    { dia: 'Segunda', hora: '09:00 - 13:00', disciplina: 'Matemática', sala: 'B201' },
+    { dia: 'Terça', hora: '14:00 - 17:00', disciplina: 'Programação Java', sala: 'Lab 3' },
+  ]);
+
+  const [absences, setAbsences] = useState({
+    total: 12,
+    justified: 10,
+    unjustified: 2,
+    limit: 30, // Example limit
+    subjectBreakdown: [
+      { subject: 'Matemática', count: 4, limit: 10 },
+      { subject: 'Programação Java', count: 2, limit: 15 },
+      { subject: 'Inglês Técnico', count: 6, limit: 10 },
+    ]
+  });
 
   useEffect(() => {
     const token = localStorage.getItem('token');
     const storedUser = localStorage.getItem('user');
-    
+
     if (!token) {
       navigate('/login');
     } else if (storedUser) {
@@ -28,146 +37,72 @@ function Dashboard() {
     }
   }, [navigate]);
 
-  const handleLogout = () => {
-    localStorage.clear();
-    navigate('/login');
-  };
-
-  // --- 1. FUNÇÃO MUDAR PASSWORD ---
-  const handleChangePassword = async (e) => {
-    e.preventDefault();
-    setMsgPass('');
-    if (!novaPassword) return;
-
-    try {
-      const response = await fetch('http://localhost:5000/auth/update', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: user.id, password: novaPassword }),
-      });
-
-      if (response.ok) {
-        setMsgPass("✅ Password alterada!");
-        setNovaPassword('');
-      } else {
-        setMsgPass("❌ Erro ao alterar.");
-      }
-    } catch (error) { console.error(error); }
-  };
-
-  // --- 2. FUNÇÕES 2FA ---
-  const iniciarSetup2FA = async () => {
-    try {
-      // 1. Pedir segredo ao backend
-      const res = await fetch('http://localhost:5000/auth/2fa/setup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: user.email })
-      });
-      const data = await res.json();
-      
-      // 2. Gerar QR Code para mostrar no ecrã
-      setSecretAscii(data.secret);
-      const urlImagem = await QRCode.toDataURL(data.otpauthUrl);
-      setQrCodeUrl(urlImagem);
-      setModoSetup2FA(true);
-      setMsg2FA('');
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const confirmar2FA = async () => {
-    try {
-      // 3. Enviar o código que o user leu para confirmar
-      const res = await fetch('http://localhost:5000/auth/2fa/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: user.email, token: codigo2fa, secret: secretAscii })
-      });
-
-      if (res.ok) {
-        setMsg2FA("✅ 2FA Ativado com sucesso!");
-        setModoSetup2FA(false);
-        const updatedUser = { ...user, two_fa_ativado: true };
-        setUser(updatedUser);
-        localStorage.setItem('user', JSON.stringify(updatedUser));
-      } else {
-        setMsg2FA("❌ Código incorreto.");
-      }
-    } catch (err) { console.error(err); }
-  };
-
   return (
-    <div style={{ padding: '40px', maxWidth: '900px', margin: 'auto', fontFamily: 'sans-serif' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-        <h1>Olá, {user.nome}! 👋</h1>
-        <button onClick={handleLogout} style={{ background: '#dc3545', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '5px', cursor: 'pointer' }}>
-          Sair
-        </button>
-      </div>
-      
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px' }}>
-        
-        {/* BLOCO DA ESQUERDA: PASSWORD */}
-        <div style={{ padding: '20px', border: '1px solid #ddd', borderRadius: '8px' }}>
-          <h3>🔐 Alterar Password</h3>
-          <form onSubmit={handleChangePassword}>
-            <input 
-              type="password" 
-              placeholder="Nova Password" 
-              value={novaPassword} 
-              onChange={(e) => setNovaPassword(e.target.value)} 
-              style={{ width: '100%', padding: '10px', marginBottom: '10px', boxSizing: 'border-box' }}
-            />
-            <button type="submit" style={{ width: '100%', padding: '10px', background: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-              Atualizar
-            </button>
-          </form>
-          {msgPass && <p style={{ marginTop: '10px', fontWeight: 'bold' }}>{msgPass}</p>}
+    <Navbar>
+      <div className="d-flex justify-content-between align-items-end mb-5">
+        <div>
+          <h2 className="fw-bold text-dark-blue">Olá, {user.nome?.split(' ')[0]}</h2>
+          <p className="text-secondary mb-0">Horário e assiduidade.</p>
         </div>
-
-        {/* BLOCO DA DIREITA: 2FA */}
-        <div style={{ padding: '20px', border: '1px solid #ddd', borderRadius: '8px', background: '#f9f9f9' }}>
-          <h3>🛡️ Segurança (2FA)</h3>
-          
-          {user.two_fa_ativado ? (
-            <p style={{ color: 'green', fontWeight: 'bold' }}>✅ O 2FA está ATIVO na tua conta.</p>
-          ) : (
-            <>
-              <p>Protege a tua conta com Autenticação de Dois Fatores.</p>
-              {!modoSetup2FA && (
-                <button onClick={iniciarSetup2FA} style={{ width: '100%', padding: '10px', background: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-                  Ativar 2FA Agora
-                </button>
-              )}
-            </>
-          )}
-
-          {modoSetup2FA && (
-            <div style={{ textAlign: 'center', marginTop: '20px' }}>
-              <p>1. Lê este QR Code com o Google Authenticator:</p>
-              <img src={qrCodeUrl} alt="QR Code" style={{ border: '1px solid #ccc', padding: '5px', background: 'white' }} />
-              
-              <p>2. Insere o código gerado:</p>
-              <input 
-                type="text" 
-                placeholder="000 000" 
-                value={codigo2fa}
-                onChange={(e) => setCodigo2fa(e.target.value)}
-                style={{ padding: '8px', width: '100px', textAlign: 'center', fontSize: '1.2em' }}
-              />
-              <br/><br/>
-              <button onClick={confirmar2FA} style={{ padding: '10px 20px' }}>Confirmar</button>
-              {msg2FA && <p style={{ color: 'red' }}>{msg2FA}</p>}
-            </div>
-          )}
-          
-          {msg2FA && user.two_fa_ativado && <p style={{ marginTop: '10px', color: 'green' }}>{msg2FA}</p>}
+        <div className="d-none d-md-block text-end">
+          <span className="badge bg-light text-secondary border px-3 py-2 fw-normal">
+            <FaCalendarAlt className="me-2" />
+            {new Date().toLocaleDateString('pt-PT', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+          </span>
         </div>
-
       </div>
-    </div>
+
+      <Row className="g-4">
+        {/* --- LEFT COLUMN: TABLE (Horário) --- */}
+        <Col lg={8}>
+          <Card className="card-modern border-0 h-100">
+            <Card.Header className="bg-white border-0 pt-4 pb-0 d-flex justify-content-between align-items-center">
+              <div className="d-flex align-items-center">
+                <FaClock className="text-secondary me-2" />
+                <h6 className="fw-bold mb-0 text-uppercase ls-1 small">Horário Semanal</h6>
+              </div>
+            </Card.Header>
+            <Card.Body>
+              <Table hover responsive className="align-middle mb-0">
+                <thead className="bg-light text-secondary">
+                  <tr>
+                    <th className="border-0 small fw-bold ps-3">DIA</th>
+                    <th className="border-0 small fw-bold">HORÁRIO</th>
+                    <th className="border-0 small fw-bold">DISCIPLINA</th>
+                    <th className="border-0 small fw-bold text-end pe-3">SALA</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {schedule.map((aula, idx) => (
+                    <tr key={idx}>
+                      <td className="ps-3 fw-bold text-dark-blue">{aula.dia}</td>
+                      <td className="text-muted small">{aula.hora}</td>
+                      <td>
+                        <div className="fw-bold">{aula.disciplina}</div>
+                      </td>
+                      <td className="text-end pe-3 text-muted">{aula.sala}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </Card.Body>
+          </Card>
+        </Col>
+
+        {/* --- RIGHT COLUMN: ABSENCES (Faltas) --- */}
+        <Col lg={4}>
+          <Card className="card-modern border-0 mb-4 text-white" style={{ background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)' }}>
+            <Card.Body className="p-4 text-center">
+              <h6 className="text-white-50 text-uppercase small ls-1 mb-3">Total de Faltas</h6>
+              <div className="display-4 fw-bold mb-2">{absences.total}</div>
+              <p className="small text-white-50 mb-0">
+                <span className="text-warning fw-bold">{absences.unjustified}</span> Injustificadas • <span className="text-success fw-bold">{absences.justified}</span> Justificadas
+              </p>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+    </Navbar>
   );
 }
 
