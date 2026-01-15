@@ -30,7 +30,7 @@ router.post("/register", async (req, res) => {
     // 4. Gerar token de ativação
     const activationToken = jwt.sign(
         { user: { id: newUser.rows[0].id } }, 
-        "segredo123", 
+        process.env.JWT_SECRET, 
         { expiresIn: "1d" }
     );
 
@@ -62,7 +62,7 @@ router.post("/activate-account", async (req, res) => {
         const { token } = req.body;
         if (!token) return res.status(400).json("Token inválido.");
 
-        const decoded = jwt.verify(token, "segredo123");
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const userId = decoded.user.id;
 
         await pool.query("UPDATE utilizadores SET ativado = $1 WHERE id = $2", [true, userId]);
@@ -101,7 +101,7 @@ router.post("/login", async (req, res) => {
       if (!verified) return res.status(401).json({ message: "Código 2FA incorreto" });
     }
 
-    const token = jwt.sign({ user: { id: user.rows[0].id } }, "segredo123", { expiresIn: "1h" });
+    const token = jwt.sign({ user: { id: user.rows[0].id } }, process.env.JWT_SECRET, { expiresIn: "1h" });
     res.json({ token, user: user.rows[0] });
 
   } catch (err) {
@@ -126,7 +126,7 @@ router.post('/google', async (req, res) => {
       );
       userId = newUser.rows[0].id;
     }
-    const token = jwt.sign({ user: { id: userId } }, "segredo123", { expiresIn: "1h" });
+    const token = jwt.sign({ user: { id: userId } }, process.env.JWT_SECRET, { expiresIn: "1h" });
     res.json({ token, user: { id: userId, nome, email } });
   } catch (err) { res.status(500).send("Erro no servidor"); }
 });

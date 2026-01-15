@@ -28,7 +28,7 @@ function Evaluations() {
             </div>
 
             <Row className="g-4">
-                <Col lg={4} className="order-lg-2">
+                <Col lg={12}>
                     <Card className="card-modern border-0 text-white mb-4" style={{ background: 'linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%)' }}>
                         <Card.Body className="p-4 text-center">
                             <div className="bg-white/10 rounded-circle d-inline-flex p-3 mb-3">
@@ -41,7 +41,7 @@ function Evaluations() {
                     </Card>
                 </Col>
 
-                <Col lg={8} className="order-lg-1">
+                <Col lg={12}>
                     <Card className="card-modern border-0">
                         <Card.Header className="bg-white border-0 pt-4 pb-0">
                             <h6 className="fw-bold text-uppercase text-secondary ls-1 small mb-0">Histórico de Notas</h6>

@@ -1,20 +1,20 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Card, Row, Col, Table } from 'react-bootstrap';
+import { FaCalendarAlt, FaClock } from 'react-icons/fa';
+
+import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
-import { Card, Row, Col, Table, Badge, ProgressBar } from 'react-bootstrap';
-import { FaCalendarAlt, FaExclamationTriangle, FaCheckCircle, FaClock } from 'react-icons/fa';
 
 function Dashboard() {
-  const navigate = useNavigate();
-  const [user, setUser] = useState({ nome: '', email: '', id: '', two_fa_ativado: false });
+  const { user } = useAuth();
 
   // MOCK DATA - To be replaced by proper API calls later
-  const [schedule, setSchedule] = useState([
+  const [schedule] = useState([
     { dia: 'Segunda', hora: '09:00 - 13:00', disciplina: 'Matemática', sala: 'B201' },
     { dia: 'Terça', hora: '14:00 - 17:00', disciplina: 'Programação Java', sala: 'Lab 3' },
   ]);
 
-  const [absences, setAbsences] = useState({
+  const [absences] = useState({
     total: 12,
     justified: 10,
     unjustified: 2,
@@ -25,17 +25,6 @@ function Dashboard() {
       { subject: 'Inglês Técnico', count: 6, limit: 10 },
     ]
   });
-
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('user');
-
-    if (!token) {
-      navigate('/login');
-    } else if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-  }, [navigate]);
 
   return (
     <Navbar>
@@ -54,7 +43,7 @@ function Dashboard() {
 
       <Row className="g-4">
         {/* --- LEFT COLUMN: TABLE (Horário) --- */}
-        <Col lg={8}>
+        <Col lg={12}>
           <Card className="card-modern border-0 h-100">
             <Card.Header className="bg-white border-0 pt-4 pb-0 d-flex justify-content-between align-items-center">
               <div className="d-flex align-items-center">
@@ -90,7 +79,7 @@ function Dashboard() {
         </Col>
 
         {/* --- RIGHT COLUMN: ABSENCES (Faltas) --- */}
-        <Col lg={4}>
+        <Col lg={12}>
           <Card className="card-modern border-0 mb-4 text-white" style={{ background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)' }}>
             <Card.Body className="p-4 text-center">
               <h6 className="text-white-50 text-uppercase small ls-1 mb-3">Total de Faltas</h6>

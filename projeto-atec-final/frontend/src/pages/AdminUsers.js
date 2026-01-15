@@ -119,7 +119,7 @@ function AdminUsers() {
 
             <Row>
                 {/* --- FORM CARD --- */}
-                <Col lg={4} className="mb-4">
+                <Col lg={12} className="mb-4">
                     <Card className="card-modern h-100 border-0">
                         <Card.Header className="bg-white border-0 pt-4 pb-0">
                             <h6 className="fw-bold text-uppercase text-secondary ls-1">
@@ -191,7 +191,7 @@ function AdminUsers() {
                 </Col>
 
                 {/* --- TABLE CARD --- */}
-                <Col lg={8}>
+                <Col lg={12}>
                     <Card className="card-modern border-0">
                         <Card.Body className="p-0">
                             {loading ? (

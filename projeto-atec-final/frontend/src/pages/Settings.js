@@ -113,7 +113,7 @@ function Settings() {
 
             <Row className="g-4">
                 {/* PASSWORD CHANGE */}
-                <Col lg={6}>
+                <Col lg={12}>
                     <Card className="card-modern h-100 border-0">
                         <Card.Header className="bg-white border-0 pt-4 pb-0">
                             <div className="d-flex align-items-center">
@@ -145,7 +145,7 @@ function Settings() {
                 </Col>
 
                 {/* 2FA SECURITY */}
-                <Col lg={6}>
+                <Col lg={12}>
                     <Card className="card-modern h-100 border-0">
                         <Card.Header className="bg-white border-0 pt-4 pb-0">
                             <div className="d-flex align-items-center">

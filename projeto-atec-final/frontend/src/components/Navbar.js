@@ -1,24 +1,17 @@
 import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { FaHome, FaUserCog, FaSignOutAlt, FaChalkboardTeacher, FaCog, FaUser, FaClipboardList } from 'react-icons/fa';
+import { FaHome, FaUserCog, FaSignOutAlt, FaCog, FaUser, FaClipboardList } from 'react-icons/fa';
 import { Button } from 'react-bootstrap';
+
+import { useAuth } from '../context/AuthContext';
 
 function Navbar({ children }) {
     const navigate = useNavigate();
     const location = useLocation();
-
-    const [user, setUser] = React.useState(null);
-
-    React.useEffect(() => {
-        const storedUser = localStorage.getItem("user");
-        if (storedUser) {
-            setUser(JSON.parse(storedUser));
-        }
-    }, []);
+    const { user, logout } = useAuth();
 
     const handleLogout = () => {
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
+        logout();
         navigate("/login");
     };
 

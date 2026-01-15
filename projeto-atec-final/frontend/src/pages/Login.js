@@ -2,22 +2,23 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from "jwt-decode";
-import { Form, Button, Card, Alert, Spinner } from 'react-bootstrap';
+import { Form, Button, Card, Spinner } from 'react-bootstrap';
 import { FaLock, FaEnvelope, FaFingerprint } from 'react-icons/fa';
+import toast from 'react-hot-toast';
+import { useAuth } from '../context/AuthContext';
 
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [token2fa, setToken2fa] = useState('');
   const [pedir2fa, setPedir2fa] = useState(false);
-  const [erro, setErro] = useState('');
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setErro('');
     setLoading(true);
 
     const bodyData = { email, password };
@@ -36,19 +37,20 @@ function Login() {
 
       if (response.status === 400 && data.require2fa) {
         setPedir2fa(true);
+        toast('Autenticação de 2 fatores necessária.', { icon: '🔐' });
         setLoading(false);
         return;
       }
 
       if (response.ok) {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
+        login(data.token, data.user);
+        toast.success(`Bem-vindo, ${data.user.nome.split(' ')[0]}!`);
         navigate('/dashboard');
       } else {
-        setErro(data.message || 'Email ou password incorretos.');
+        toast.error(data.message || 'Email ou password incorretos.');
       }
     } catch (error) {
-      setErro('O servidor não está a responder.');
+      toast.error('O servidor não está a responder.');
     } finally {
       setLoading(false);
     }
@@ -66,14 +68,14 @@ function Login() {
       const data = await response.json();
 
       if (response.ok) {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
+        login(data.token, data.user);
+        toast.success(`Login Google com sucesso!`);
         navigate('/dashboard');
       } else {
-        setErro('Erro ao entrar com Google.');
+        toast.error('Erro ao entrar com Google.');
       }
     } catch (error) {
-      setErro('Erro de conexão.');
+      toast.error('Erro de conexão ao Google.');
     }
   };
 
@@ -93,8 +95,6 @@ function Login() {
             <h5 className="fw-bold text-dark-blue mb-4 text-center">
               {pedir2fa ? 'Verificação de Segurança' : 'Iniciar Sessão'}
             </h5>
-
-            {erro && <Alert variant="danger" className="py-2 text-center small mb-4">{erro}</Alert>}
 
             {!pedir2fa ? (
               <Form onSubmit={handleSubmit}>
@@ -175,7 +175,7 @@ function Login() {
                 <div className="d-flex justify-content-center mb-4">
                   <GoogleLogin
                     onSuccess={handleGoogleSuccess}
-                    onError={() => setErro('Login com Google Falhou')}
+                    onError={() => toast.error('Login com Google Falhou')}
                     theme="filled_blue"
                     shape="circle"
                   />
