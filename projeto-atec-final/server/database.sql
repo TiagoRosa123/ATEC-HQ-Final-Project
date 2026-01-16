@@ -24,8 +24,8 @@ CREATE TABLE utilizadores (
     nome VARCHAR(100) NOT NULL,
     email VARCHAR(150) UNIQUE NOT NULL,
     password_hash TEXT,
-    role VARCHAR(20) DEFAULT 'user', -- O campo 'role' pode ser: 'admin', 'formador', 'formando', 'funcionario'
-    is_admin BOOLEAN DEFAULT FALSE, -- Admin (Superuser)
+    role VARCHAR(20) DEFAULT 'user', -- pode ser: 'admin', 'formador', 'formando', 'funcionario'
+    is_admin BOOLEAN DEFAULT FALSE,
     ativado BOOLEAN DEFAULT FALSE,
     reset_password_token TEXT,
     reset_password_expires TIMESTAMP,

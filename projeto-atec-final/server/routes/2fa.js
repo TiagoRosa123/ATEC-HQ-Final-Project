@@ -3,37 +3,35 @@ const pool = require('../db');
 const speakeasy = require('speakeasy');
 const qrcode = require('qrcode');
 
-// --- ROTA 1: CONFIGURAR 2FA (QR Code) ---
-// O utilizador tem de enviar o email (ou ID) para sabermos quem é
+// ROTA 1: Config. 2FA (QR Code)
+// utilizador envia email para sabermos quem é
 router.post('/setup', async (req, res) => {
   try {
     const { email } = req.body;
 
-    // 1. Verificar utilizador
+    //Verifica utilizador
     const user = await pool.query("SELECT * FROM utilizadores WHERE email = $1", [email]);
     if (user.rows.length === 0) return res.status(404).json("Utilizador não encontrado");
 
-    // 2. Gerar o segredo único para este utilizador
+    // Gera o segredo único para este utilizador
     const secret = speakeasy.generateSecret({
-      name: `ATEC Projeto (${email})` // O nome que aparece na App do Google
+      name: `ATEC Projeto (${email})`
     });
 
-    // 3. Guardar o segredo na BD (mas ainda NÃO ativar)
-    // Guardamos o secret.base32 que é a versão texto da chave
+    // Guarda o segredo na BD (ssem ativar)
     await pool.query(
       "UPDATE utilizadores SET two_fa_secret = $1 WHERE email = $2",
       [secret.base32, email]
     );
 
-    // 4. Gerar o QR Code para enviar ao Front-end
+    // Gera QR Code para enviar ao Front-end
     qrcode.toDataURL(secret.otpauth_url, (err, data_url) => {
       if (err) return res.status(500).json("Erro ao gerar QR Code");
-      
-      // Enviamos a imagem (data_url) e o segredo em texto (caso a camera não funcione)
-      res.json({ 
+
+      res.json({
         msg: "Scanear este QR Code com o Google Authenticator",
-        qrCode: data_url, 
-        secret: secret.base32 
+        qrCode: data_url,
+        secret: secret.base32
       });
     });
 
@@ -43,19 +41,19 @@ router.post('/setup', async (req, res) => {
   }
 });
 
-// --- ROTA 2: VERIFICAR E ATIVAR ---
-// O utilizador insere o código de 6 dígitos que aparece no telemóvel para confirmar
+// ROTA 2: Verifica e ativa 2FA
+// inserir código de 6 dígitos do Google Authenticator
 router.post('/verify', async (req, res) => {
   try {
-    const { email, token } = req.body; // token é o código de 6 dígitos
+    const { email, token } = req.body; // token = código de 6 dígitos
 
-    // 1. Buscar o segredo do utilizador na BD
+    // Busca o segredo do utilizador na BD
     const user = await pool.query("SELECT * FROM utilizadores WHERE email = $1", [email]);
     if (user.rows.length === 0) return res.status(404).json("User não encontrado");
 
     const secret = user.rows[0].two_fa_secret;
 
-    // 2. Validar o token com o Speakeasy
+    // Valida o token com o Speakeasy
     const verified = speakeasy.totp.verify({
       secret: secret,
       encoding: 'base32',
@@ -63,7 +61,7 @@ router.post('/verify', async (req, res) => {
     });
 
     if (verified) {
-      // 3. Se o código estiver certo, ativamos o 2FA permanentemente
+      // Se o código estiver certo, ativar o 2FA 
       await pool.query("UPDATE utilizadores SET two_fa_ativado = true WHERE email = $1", [email]);
       res.json({ msg: "2FA Ativado com sucesso! A tua conta está mais segura." });
     } else {

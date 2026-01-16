@@ -1,9 +1,9 @@
 const nodemailer = require('nodemailer'); //"Carteiro"
-require('dotenv').config(); 
+require('dotenv').config();
 
 const sendEmail = async (options) => {
   const transporter = nodemailer.createTransport({
-    service: 'gmail', 
+    service: 'gmail',
     auth: {
       user: process.env.EMAIL_USER,  //busca email
       pass: process.env.EMAIL_PASS  //busca PW
@@ -12,7 +12,7 @@ const sendEmail = async (options) => {
   });
 
   const mailOptions = {
-    from: '"Secretaria ATEC" <noreply@atec.pt>',
+    from: '"Secretaria ATEC.HQ" <noreply@atec-hq.pt>',
     to: options.email,
     subject: options.subject,
     text: options.message,
@@ -20,7 +20,7 @@ const sendEmail = async (options) => {
   };
 
   await transporter.sendMail(mailOptions);
-  console.log("✅ Email enviado para: " + options.email);
+  console.log("Email enviado para: " + options.email);
 };
 
 module.exports = sendEmail;
