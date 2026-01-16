@@ -19,13 +19,13 @@ function Activate() {
                 const data = await response.json();
 
                 if (response.ok) {
-                    setMensagem("✅ " + data);
+                    setMensagem(data);
                     // 2 seg e manda para o login
                     setTimeout(() => {
                         navigate('/login');
                     }, 2000);
                 } else {
-                    setMensagem("❌ " + data);
+                    setMensagem(data);
                     setErro(true);
                 }
             } catch (err) {
