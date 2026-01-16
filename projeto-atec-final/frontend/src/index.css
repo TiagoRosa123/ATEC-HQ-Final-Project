@@ -1,25 +1,18 @@
-/* --- PROFESSIONAL DARK THEME --- */
+
 :root {
-  /* Core Palette - Darker & Serious */
+
   --primary-dark: #0f172a;
-  /* Very Dark Slate (Sidebar/Header) */
   --primary-blue: #1e3a8a;
-  /* Deep Blue (Buttons/Highlights) */
   --primary-active: #1d4ed8;
 
   --accent-orange: #f97316;
-  /* Vibrant Orange (CTA/Accents) */
   --accent-orange-hover: #ea580c;
 
   --bg-page: #f3f4f6;
-  /* Light Gray (Content Background for contrast) */
   --bg-card: #ffffff;
-  /* White Cards */
 
   --text-main: #111827;
-  /* Nearly Black */
   --text-menu: #94a3b8;
-  /* Slate Gray (Menu Links) */
   --text-menu-active: #ffffff;
 
   /* Shadows */
@@ -30,7 +23,6 @@
 body {
   margin: 0;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  /* Modern Font */
   background-color: var(--bg-page);
   color: var(--text-main);
   -webkit-font-smoothing: antialiased;
@@ -41,9 +33,7 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, monospace;
 }
 
-/* --- OVERRIDES & UTILITIES --- */
-
-/* Sidebar Layout */
+/* Sidebar */
 .app-container {
   display: flex;
   min-height: 100vh;
@@ -87,7 +77,6 @@ code {
 .nav-link-custom.active {
   color: var(--accent-orange) !important;
   background-color: rgba(249, 115, 22, 0.1);
-  /* Low opacity orange tint */
   border-left: 3px solid var(--accent-orange);
 }
 
@@ -133,7 +122,6 @@ code {
   color: white;
 }
 
-/* Typography Helpers */
 .text-accent {
   color: var(--accent-orange) !important;
 }
