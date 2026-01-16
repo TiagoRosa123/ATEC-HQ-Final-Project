@@ -87,8 +87,7 @@ CREATE TABLE formadores (
 CREATE TABLE formandos (
     id SERIAL PRIMARY KEY,
     utilizador_id INT REFERENCES utilizadores(id) ON DELETE CASCADE,
-    nome VARCHAR(100) NOT NULL,
-    numero_mecanografico VARCHAR(20) UNIQUE
+    nome VARCHAR(100) NOT NULL
 );
 
 -- 9 Funcionários (Secretaria, Direção, etc.)
