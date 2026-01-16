@@ -20,10 +20,10 @@ function Activate() {
 
                 if (response.ok) {
                     setMensagem("✅ " + data);
-                    // Espera 3 segundos e manda para o login
+                    // 2 seg e manda para o login
                     setTimeout(() => {
                         navigate('/login');
-                    }, 3000);
+                    }, 2000);
                 } else {
                     setMensagem("❌ " + data);
                     setErro(true);

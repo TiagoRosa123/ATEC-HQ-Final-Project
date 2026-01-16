@@ -33,7 +33,7 @@ function Settings() {
         }
     }, [navigate]);
 
-    // --- PASSWORD CHANGE ---
+    // alterar PW 
     const handleChangePassword = async (e) => {
         e.preventDefault();
         setMsgPass('');
@@ -57,7 +57,7 @@ function Settings() {
         } catch (error) { console.error(error); }
     };
 
-    // --- 2FA SETUP ---
+    // 2FA 
     const iniciarSetup2FA = async () => {
         try {
             const res = await fetch('http://localhost:5000/auth/2fa/setup', {
@@ -112,7 +112,7 @@ function Settings() {
             </div>
 
             <Row className="g-4">
-                {/* PASSWORD CHANGE */}
+                {/* Alterar Password */}
                 <Col lg={12}>
                     <Card className="card-modern h-100 border-0">
                         <Card.Header className="bg-white border-0 pt-4 pb-0">
@@ -122,7 +122,7 @@ function Settings() {
                             </div>
                         </Card.Header>
                         <Card.Body>
-                            <p className="text-muted small mb-4">Escolhe uma password forte para proteger a tua conta.</p>
+                            <p className="text-muted small mb-4">Escolha uma password forte para proteger a sua conta.</p>
                             <form onSubmit={handleChangePassword}>
                                 <div className="form-floating mb-3">
                                     <input
@@ -136,7 +136,7 @@ function Settings() {
                                     <label htmlFor="floatingPassword">Nova Password</label>
                                 </div>
                                 <Button type="submit" className="btn-primary-custom w-100">
-                                    Atualizar Credenciais
+                                    Atualizar Password
                                 </Button>
                             </form>
                             {msgPass && <Alert variant={msgTypePass} className="mt-3 border-0 small fw-bold text-center">{msgPass}</Alert>}
@@ -154,7 +154,7 @@ function Settings() {
                             </div>
                         </Card.Header>
                         <Card.Body>
-                            <p className="text-muted small mb-4">Adiciona uma camada extra de segurança.</p>
+                            <p className="text-muted small mb-4">Adicione uma camada extra de segurança.</p>
 
                             {user.two_fa_ativado ? (
                                 <div className="p-4 bg-light rounded text-center border dashed-border">

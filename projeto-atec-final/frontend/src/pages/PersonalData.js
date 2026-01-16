@@ -77,7 +77,7 @@ function PersonalData() {
                                         <div className="text-dark-blue">
                                             {user.is_admin
                                                 ? "Acesso total à gestão de utilizadores, cursos e configurações do sistema."
-                                                : "Acesso à área de estudante, cursos inscritos e materiais didáticos."
+                                                : "Acesso à área de estudante, curso inscrito e materiais didáticos."
                                             }
                                         </div>
                                     </div>

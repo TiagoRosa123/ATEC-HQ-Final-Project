@@ -58,7 +58,7 @@ function ForgotPw() {
                 <div className="position-relative">
                   <Form.Control
                     type="email"
-                    placeholder="O seu email"
+                    placeholder="Email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
@@ -83,7 +83,7 @@ function ForgotPw() {
         </Card>
 
         <div className="text-center mt-4">
-          <span className="text-muted small opacity-50">© 2026 ATEC Academia de Formação</span>
+          <span className="text-muted small opacity-50">© 2026 ATEC.HQ Academia de Formação</span>
         </div>
       </div>
     </div>

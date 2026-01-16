@@ -7,16 +7,13 @@ function AdminUsers() {
     const [users, setUsers] = useState([]);
     const [erro, setErro] = useState("");
     const [loading, setLoading] = useState(false);
-
-    // Form State
     const [formData, setFormData] = useState({ nome: '', email: '', password: '', is_admin: false });
     const [editandoId, setEditandoId] = useState(null);
 
-    // 1. LOAD (READ)
+    //Read
     const loadUsers = async () => {
         setLoading(true);
         try {
-            // User had modified this manually to be simpler, let's respect that fetch logic but keep it safe
             const response = await fetch("http://localhost:5000/admin/todos", {
                 method: "GET",
                 headers: { token: localStorage.getItem("token") }
@@ -37,9 +34,9 @@ function AdminUsers() {
 
     useEffect(() => { loadUsers(); }, []);
 
-    // 2. DELETE
+    //Delete
     const handleDelete = async (id) => {
-        if (!window.confirm("Tens a certeza que queres apagar este utilizador?")) return;
+        if (!window.confirm("Tem a certeza que pretende apagar este utilizador?")) return;
         try {
             const response = await fetch(`http://localhost:5000/admin/apagar/${id}`, {
                 method: "DELETE",
@@ -53,7 +50,7 @@ function AdminUsers() {
         } catch (e) { console.error(e); }
     };
 
-    // 3. PREPARE EDIT
+    //Edit
     const handleEditClick = (user) => {
         setEditandoId(user.id);
         setFormData({
@@ -65,14 +62,14 @@ function AdminUsers() {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    // 4. CANCEL
+    //Cancel
     const handleCancel = () => {
         setEditandoId(null);
         setFormData({ nome: '', email: '', password: '', is_admin: false });
         setErro("");
     };
 
-    // 5. SUBMIT
+    //Submit
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -112,13 +109,11 @@ function AdminUsers() {
                     <h2 className="fw-bold text-dark-blue mb-1">Utilizadores</h2>
                     <p className="text-secondary small mb-0">Gestão de acessos e permissões.</p>
                 </div>
-                {/* Could add a global "Add User" button here if table detached from form */}
             </div>
 
             {erro && <Alert variant="danger" onClose={() => setErro("")} dismissible className="shadow-sm border-0">{erro}</Alert>}
 
             <Row>
-                {/* --- FORM CARD --- */}
                 <Col lg={12} className="mb-4">
                     <Card className="card-modern h-100 border-0">
                         <Card.Header className="bg-white border-0 pt-4 pb-0">
@@ -142,7 +137,7 @@ function AdminUsers() {
                                 <Form.Group className="mb-3">
                                     <Form.Control
                                         type="email"
-                                        placeholder="Email Corporativo"
+                                        placeholder="Email"
                                         value={formData.email}
                                         onChange={e => setFormData({ ...formData, email: e.target.value })}
                                         required
@@ -190,7 +185,6 @@ function AdminUsers() {
                     </Card>
                 </Col>
 
-                {/* --- TABLE CARD --- */}
                 <Col lg={12}>
                     <Card className="card-modern border-0">
                         <Card.Body className="p-0">

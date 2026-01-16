@@ -10,7 +10,7 @@ import { useAuth } from '../context/AuthContext';
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [token2fa, setToken2fa] = useState('');
+  const [token2fa, setToken2fa] = useState(''); // Cod. do Google Authenticator
   const [pedir2fa, setPedir2fa] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -35,30 +35,34 @@ function Login() {
 
       const data = await response.json();
 
+      // Login OK mas precisa de 2FA
       if (response.status === 400 && data.require2fa) {
-        setPedir2fa(true);
+        setPedir2fa(true); // Muda a interface para pedir cod.
         toast('Autenticação de 2 fatores necessária.', { icon: '🔐' });
         setLoading(false);
         return;
       }
 
+      // Login c/ sucesso
       if (response.ok) {
-        login(data.token, data.user);
+        login(data.token, data.user); // Guarda a sessão
         toast.success(`Bem-vindo, ${data.user.nome.split(' ')[0]}!`);
         navigate('/dashboard');
       } else {
         toast.error(data.message || 'Email ou password incorretos.');
       }
     } catch (error) {
-      toast.error('O servidor não está a responder.');
+      toast.error('O servidor não responde.');
     } finally {
       setLoading(false);
     }
   };
 
+  //quando o login com Google corre bem
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
       const decoded = jwtDecode(credentialResponse.credential);
+      // Envia o backend processar/criar conta
       const response = await fetch('http://localhost:5000/auth/google', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -102,7 +106,7 @@ function Login() {
                   <div className="position-relative">
                     <Form.Control
                       type="email"
-                      placeholder="Email Corporativo"
+                      placeholder="Email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
@@ -126,13 +130,13 @@ function Login() {
                   </div>
                   <div className="text-end mt-2">
                     <Link to="/forgot-password" style={{ fontSize: '0.8rem', color: 'var(--text-menu)' }}>
-                      Recuperar palavra-passe?
+                      Recuperar palavra-passe ?
                     </Link>
                   </div>
                 </Form.Group>
 
                 <Button type="submit" className="btn-primary-custom w-100 py-2 mb-3" disabled={loading}>
-                  {loading ? <Spinner animation="border" size="sm" /> : "Entrar na Plataforma"}
+                  {loading ? <Spinner animation="border" size="sm" /> : "Entrar"}
                 </Button>
               </Form>
             ) : (
@@ -142,7 +146,7 @@ function Login() {
                     <FaFingerprint size={24} className="text-primary" />
                   </div>
                   <p className="small text-muted mb-0">
-                    Insere o código de 6 dígitos da tua aplicação de autenticação.
+                    Por favor insira o código de 6 dígitos do Google Authenticator.
                   </p>
                 </div>
 
@@ -168,7 +172,7 @@ function Login() {
                 <div className="position-relative my-4">
                   <hr className="text-secondary opacity-25" />
                   <span className="position-absolute top-50 start-50 translate-middle bg-white px-3 text-muted small">
-                    ou continuar com
+                    ou
                   </span>
                 </div>
 
@@ -182,9 +186,9 @@ function Login() {
                 </div>
 
                 <div className="text-center border-top pt-3">
-                  <span className="small text-secondary">Ainda não tens conta? </span>
+                  <span className="small text-secondary">Ainda não tem conta ? </span>
                   <Link to="/register" className="small fw-bold text-decoration-none" style={{ color: 'var(--primary-blue)' }}>
-                    Criar Registo
+                    Criar conta
                   </Link>
                 </div>
               </>
@@ -193,7 +197,7 @@ function Login() {
         </Card>
 
         <div className="text-center mt-4">
-          <span className="text-muted small opacity-50">© 2026 ATEC Academia de Formação</span>
+          <span className="text-muted small opacity-50">© 2026 ATE.HQ Academia de Formação</span>
         </div>
       </div>
     </div>

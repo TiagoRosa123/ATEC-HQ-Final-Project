@@ -8,7 +8,7 @@ import { useAuth } from '../context/AuthContext';
 function Navbar({ children }) {
     const navigate = useNavigate();
     const location = useLocation();
-    const { user, logout } = useAuth();
+    const { user, logout } = useAuth(); // Precisa do user para saber se é Admin ou não
 
     const handleLogout = () => {
         logout();
@@ -20,17 +20,16 @@ function Navbar({ children }) {
     return (
         <div className="app-container">
 
-            {/* --- SIDEBAR --- */}
+            {/*Sidebar*/}
             <div className="sidebar" style={{ width: '280px', flexShrink: 0 }}>
 
-                {/* BRANDING */}
                 <div className="p-4 d-flex align-items-center mb-2">
                     <div className="fs-4 fw-bold text-white tracking-wide">
                         ATEC<span style={{ color: 'var(--accent-orange)' }}>HQ</span>
                     </div>
                 </div>
 
-                {/* MENU */}
+                {/* Menu*/}
                 <nav className="flex-column mb-auto">
                     <Link to="/dashboard" className={`nav-link-custom ${isActive('/dashboard')}`}>
                         <FaHome className="me-3" size={18} />
@@ -62,7 +61,7 @@ function Navbar({ children }) {
                     </Link>
                 </nav>
 
-                {/* FOOTER / LOGOUT */}
+                {/* Sair*/}
                 <div className="p-4 border-top border-secondary">
                     <Button
                         variant="link"
@@ -75,9 +74,8 @@ function Navbar({ children }) {
                 </div>
             </div>
 
-            {/* --- CONTENT AREA --- */}
+            {/*Conteudo*/}
             <div className="main-content">
-                {/* Top Header/Breadcrumb could go here if needed, keeping it simple for now */}
                 <div className="container-fluid p-0">
                     {children}
                 </div>

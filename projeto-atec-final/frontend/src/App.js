@@ -21,17 +21,18 @@ function App() {
     <AuthProvider>
       <Router>
         <div className="App">
+          {/*notificações pop-up no canto direito */}
           <Toaster position="top-right" />
+
           <Routes>
-            {/* Public Routes */}
+            {/* Rot. Publicas */}
             <Route path="/" element={<Navigate to="/login" />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPw />} />
             <Route path="/reset-password/:token" element={<ResetPw />} />
             <Route path="/activate/:token" element={<ActivatePw />} />
-
-            {/* Private Routes */}
+            {/* Rot. Privadas */}
             <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
             <Route path="/admin" element={<PrivateRoute><AdminUsers /></PrivateRoute>} />
             <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />

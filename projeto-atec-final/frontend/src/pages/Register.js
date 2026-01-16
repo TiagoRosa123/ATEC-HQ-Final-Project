@@ -10,7 +10,8 @@ import { useAuth } from '../context/AuthContext';
 function Register() {
   const navigate = useNavigate();
   const { login } = useAuth();
-  
+
+  //guarda os dados do formulário
   const [formData, setFormData] = useState({
     nome: '',
     email: '',
@@ -19,7 +20,7 @@ function Register() {
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
-    setFormData({...formData, [e.target.name]: e.target.value});
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
@@ -27,16 +28,17 @@ function Register() {
     setLoading(true);
 
     try {
+      // Envia os dados para o endpoint de registo
       const response = await fetch('http://localhost:5000/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       });
-      
+
       const data = await response.json();
 
       if (response.ok) {
-        toast.success("Registo efetuado! Verifica o teu email para ativar a conta.");
+        toast.success("Registo efetuado! Verifique o seu email para ativar a conta.");
         navigate('/login');
       } else {
         toast.error(typeof data === 'string' ? data : data.message || 'Erro ao registar');
@@ -55,9 +57,9 @@ function Register() {
       const response = await fetch('http://localhost:5000/auth/google', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          email: decoded.email, 
-          nome: decoded.name 
+        body: JSON.stringify({
+          email: decoded.email,
+          nome: decoded.name
         })
       });
 
@@ -79,12 +81,12 @@ function Register() {
   return (
     <div className="d-flex align-items-center justify-content-center min-vh-100" style={{ backgroundColor: '#f3f4f6' }}>
       <div style={{ width: '100%', maxWidth: '400px' }}>
-        
+
         <div className="text-center mb-4">
           <div className="fs-3 fw-bold text-dark-blue tracking-wide">
             ATEC<span className="text-accent">HQ</span>
           </div>
-          <p className="text-secondary small mt-2">Junta-te à nossa plataforma</p>
+          <p className="text-secondary small mt-2">Junta-se à nossa plataforma</p>
         </div>
 
         <Card className="card-modern border-0 shadow-lg">
@@ -96,12 +98,12 @@ function Register() {
             <Form onSubmit={handleSubmit}>
               <Form.Group className="mb-3">
                 <div className="position-relative">
-                  <Form.Control 
-                    type="text" 
-                    name="nome" 
-                    placeholder="Nome Completo" 
-                    onChange={handleChange} 
-                    required 
+                  <Form.Control
+                    type="text"
+                    name="nome"
+                    placeholder="Nome Completo"
+                    onChange={handleChange}
+                    required
                     className="bg-light border-0 py-2 ps-5"
                   />
                   <FaUser className="position-absolute top-50 start-0 translate-middle-y ms-3 text-muted" />
@@ -110,12 +112,12 @@ function Register() {
 
               <Form.Group className="mb-3">
                 <div className="position-relative">
-                  <Form.Control 
-                    type="email" 
-                    name="email" 
-                    placeholder="Email Corporativo" 
-                    onChange={handleChange} 
-                    required 
+                  <Form.Control
+                    type="email"
+                    name="email"
+                    placeholder="Email"
+                    onChange={handleChange}
+                    required
                     className="bg-light border-0 py-2 ps-5"
                   />
                   <FaEnvelope className="position-absolute top-50 start-0 translate-middle-y ms-3 text-muted" />
@@ -124,12 +126,12 @@ function Register() {
 
               <Form.Group className="mb-4">
                 <div className="position-relative">
-                  <Form.Control 
-                    type="password" 
-                    name="password" 
-                    placeholder="Palavra-passe" 
-                    onChange={handleChange} 
-                    required 
+                  <Form.Control
+                    type="password"
+                    name="password"
+                    placeholder="Palavra-passe"
+                    onChange={handleChange}
+                    required
                     className="bg-light border-0 py-2 ps-5"
                   />
                   <FaLock className="position-absolute top-50 start-0 translate-middle-y ms-3 text-muted" />
@@ -168,7 +170,7 @@ function Register() {
         </Card>
 
         <div className="text-center mt-4">
-          <span className="text-muted small opacity-50">© 2026 ATEC Academia de Formação</span>
+          <span className="text-muted small opacity-50">© 2026 ATEC.HQ Academia de Formação</span>
         </div>
       </div>
     </div>

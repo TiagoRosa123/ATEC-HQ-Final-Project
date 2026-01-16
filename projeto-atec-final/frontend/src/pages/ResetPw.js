@@ -7,14 +7,14 @@ import toast from 'react-hot-toast';
 function ResetPw() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  
-  const { token } = useParams(); 
+
+  const { token } = useParams();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
+
     try {
       const response = await fetch(`http://localhost:5000/auth/reset-password/${token}`, {
         method: 'POST',
@@ -77,7 +77,7 @@ function ResetPw() {
         </Card>
 
         <div className="text-center mt-4">
-          <span className="text-muted small opacity-50">© 2026 ATEC Academia de Formação</span>
+          <span className="text-muted small opacity-50">© 2026 ATEC.HQ Academia de Formação</span>
         </div>
       </div>
     </div>

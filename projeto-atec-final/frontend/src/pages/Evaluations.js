@@ -4,13 +4,10 @@ import { Card, Table, Badge, Row, Col } from 'react-bootstrap';
 import { FaClipboardList, FaChartLine } from 'react-icons/fa';
 
 function Evaluations() {
-    // Mock Data
+    // Mock dados
     const evaluations = [
         { disciplina: 'Matemática', modulo: 'M1 - Álgebra', nota: 16, data: '2025-10-15' },
-        { disciplina: 'Programação Java', modulo: 'J1 - Introdução', nota: 18, data: '2025-11-20' },
-        { disciplina: 'Programação Java', modulo: 'J2 - OOP', nota: 17, data: '2026-01-10' },
-        { disciplina: 'Inglês Técnico', modulo: 'ENG-1', nota: 14, data: '2025-12-05' },
-        { disciplina: 'Base de Dados', modulo: 'SQL Fundamentals', nota: 19, data: '2025-11-30' },
+        { disciplina: 'Programação Java', modulo: 'J1 - Introdução', nota: 18, data: '2025-11-20' }
     ];
 
     const average = evaluations.reduce((acc, curr) => acc + curr.nota, 0) / evaluations.length;

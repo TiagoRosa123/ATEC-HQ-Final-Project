@@ -78,7 +78,7 @@ function Dashboard() {
           </Card>
         </Col>
 
-        {/* --- RIGHT COLUMN: ABSENCES (Faltas) --- */}
+        {/*Faltas*/}
         <Col lg={12}>
           <Card className="card-modern border-0 mb-4 text-white" style={{ background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)' }}>
             <Card.Body className="p-4 text-center">
