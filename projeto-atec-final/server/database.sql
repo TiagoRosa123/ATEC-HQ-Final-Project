@@ -1,8 +1,9 @@
 -- 1. LIMPEZA TOTAL 
 DROP TABLE IF EXISTS ficheiros CASCADE;
 DROP TABLE IF EXISTS avaliacoes CASCADE;
-DROP TABLE IF EXISTS cronogramas CASCADE;
+DROP TABLE IF EXISTS horarios CASCADE;
 DROP TABLE IF EXISTS inscricoes CASCADE;
+DROP TABLE IF EXISTS turmas_modulos CASCADE; -- Faltava esta na tua lista anterior
 DROP TABLE IF EXISTS turmas CASCADE;
 DROP TABLE IF EXISTS disponibilidades CASCADE;
 DROP TABLE IF EXISTS competencias_formador CASCADE;
@@ -21,10 +22,10 @@ CREATE EXTENSION IF NOT EXISTS btree_gist;
 -- 1 Utilizadores
 CREATE TABLE utilizadores (
     id SERIAL PRIMARY KEY,
-    nome VARCHAR(100) NOT NULL,
-    email VARCHAR(150) UNIQUE NOT NULL,
+    nome VARCHAR(40) NOT NULL,
+    email VARCHAR(30) UNIQUE NOT NULL,
     password_hash TEXT,
-    role VARCHAR(20) DEFAULT 'user', -- pode ser: 'admin', 'formador', 'formando', 'funcionario'
+    role VARCHAR(20) DEFAULT 'user', -- ex: 'admin', 'formador', 'formando', 'funcionario'
     is_admin BOOLEAN DEFAULT FALSE,
     ativado BOOLEAN DEFAULT FALSE,
     reset_password_token TEXT,
@@ -45,7 +46,7 @@ CREATE TABLE areas (
 CREATE TABLE salas (
     id SERIAL PRIMARY KEY,
     area_id INT REFERENCES areas(id), 
-    nome VARCHAR(50) NOT NULL, 
+    nome VARCHAR(40) NOT NULL, 
     capacidade INT NOT NULL,
     recursos TEXT
 );
@@ -54,17 +55,17 @@ CREATE TABLE salas (
 CREATE TABLE cursos (
     id SERIAL PRIMARY KEY,
     area_id INT REFERENCES areas(id),
-    nome VARCHAR(100) NOT NULL,
-    sigla VARCHAR(20),
+    nome VARCHAR(50) NOT NULL,
+    sigla VARCHAR(10),
     descricao TEXT
 );
 
 -- 5 Módulos
 CREATE TABLE modulos (
     id SERIAL PRIMARY KEY,
-    nome VARCHAR(100) NOT NULL,
+    nome VARCHAR(30) NOT NULL,
     horas_totais INT NOT NULL,
-    codigo VARCHAR(20)
+    codigo VARCHAR(10)
 );
 
 -- 6 Estrutura do Curso
@@ -79,24 +80,38 @@ CREATE TABLE curso_modulos (
 CREATE TABLE formadores (
     id SERIAL PRIMARY KEY,
     utilizador_id INT REFERENCES utilizadores(id) ON DELETE CASCADE,
-    nome VARCHAR(100) NOT NULL,
-    cor_calendario VARCHAR(7)
+    nome VARCHAR(40) NOT NULL,
+    cor_calendario VARCHAR(7) -- cor p/ formador para melhor visualização Frontend
 );
 
 -- 8 Formandos
 CREATE TABLE formandos (
     id SERIAL PRIMARY KEY,
     utilizador_id INT REFERENCES utilizadores(id) ON DELETE CASCADE,
-    nome VARCHAR(100) NOT NULL
+    nome VARCHAR(40) NOT NULL
 );
 
--- 9 Funcionários (Secretaria, Direção, etc.)
+-- 9 Funcionários
+CREATE TYPE departamento_enum AS ENUM (
+    'Secretaria', 
+    'Administracao', 
+    'Recursos Humanos', 
+    'Financas'
+);
+
+CREATE TYPE cargo_enum AS ENUM (
+    'Diretor', 
+    'Assistente', 
+    'Tecnico', 
+    'Coordenador'
+);
+
 CREATE TABLE funcionarios (
     id SERIAL PRIMARY KEY,
     utilizador_id INT REFERENCES utilizadores(id) ON DELETE CASCADE,
-    nome VARCHAR(100) NOT NULL,
-    departamento VARCHAR(50), -- Ex: 'Secretaria', 'Financeira', 'Recursos Humanos'
-    cargo VARCHAR(50) -- Ex: 'Administrativo', 'Diretor Pedagógico'
+    nome VARCHAR(40) NOT NULL,
+    departamento departamento_enum NOT NULL,
+    cargo cargo_enum NOT NULL
 );
 
 -- 10 Competências dos Formadores
@@ -111,35 +126,43 @@ CREATE TABLE competencias_formador (
 CREATE TABLE disponibilidades (
     id SERIAL PRIMARY KEY,
     formador_id INT REFERENCES formadores(id) ON DELETE CASCADE,
-    dia_semana INT NOT NULL, 
-    hora_inicio TIME NOT NULL,
-    hora_fim TIME NOT NULL,
+    data_inicio TIMESTAMP WITH TIME ZONE NOT NULL, -- data + hora 
+    data_fim TIMESTAMP WITH TIME ZONE NOT NULL,
     observacoes TEXT
 );
 
 -- 12 Turmas
 CREATE TABLE turmas (
     id SERIAL PRIMARY KEY,
-    codigo VARCHAR(50) UNIQUE NOT NULL,
+    codigo VARCHAR(20) UNIQUE NOT NULL,
     curso_id INT REFERENCES cursos(id),
     data_inicio DATE NOT NULL,
     data_fim DATE,
     coordenador_id INT REFERENCES formadores(id),
-    estado VARCHAR(20) DEFAULT 'planeamento'
+    estado VARCHAR(10) DEFAULT 'planeamento'
 );
 
--- 13 Inscrições
+-- 13 Turmas modulos
+CREATE TABLE turmas_modulos (
+    id SERIAL PRIMARY KEY,
+	formador_id INT REFERENCES formadores(id) ON DELETE CASCADE, 
+    modulo_id INT REFERENCES modulos(id) ON DELETE CASCADE,
+    turmas_id INT REFERENCES turmas(id) ON DELETE CASCADE,
+    UNIQUE(turma_id, modulo_id)
+);
+
+-- 14 Inscrições
 CREATE TABLE inscricoes (
     id SERIAL PRIMARY KEY,
     turma_id INT REFERENCES turmas(id) ON DELETE CASCADE,
     formando_id INT REFERENCES formandos(id) ON DELETE CASCADE,
     data_inscricao DATE DEFAULT CURRENT_DATE,
-    estado VARCHAR(20) DEFAULT 'ativo',
+    estado VARCHAR(10) DEFAULT 'ativo',
     UNIQUE(turma_id, formando_id)
 );
 
--- 14 Cronogramas (Horários)
-CREATE TABLE cronogramas (
+-- 15 Horários
+CREATE TABLE horarios (
     id SERIAL PRIMARY KEY,
     turma_id INT REFERENCES turmas(id) ON DELETE CASCADE,
     modulo_id INT REFERENCES modulos(id),
@@ -153,19 +176,35 @@ CREATE TABLE cronogramas (
     CONSTRAINT no_class_overlap EXCLUDE USING gist (turma_id WITH =, tsrange(data_aula + hora_inicio, data_aula + hora_fim) WITH &&)
 );
 
--- 15 Avaliações
+-- 16 Avaliações
+CREATE TYPE tipo_avaliacao_enum AS ENUM (
+    'Teste', 
+    'Projeto Final', 
+    'Apresentação Oral', 
+    'Recuperacao',
+    'Estagio'
+);
+
 CREATE TABLE avaliacoes (
     id SERIAL PRIMARY KEY,
     turma_id INT REFERENCES turmas(id) ON DELETE CASCADE,
     modulo_id INT REFERENCES modulos(id) ON DELETE CASCADE, 
     formando_id INT REFERENCES formandos(id) ON DELETE CASCADE,
     nota DECIMAL(4,2) NOT NULL, 
-    data_avaliacao DATE DEFAULT CURRENT_DATE,
-    tipo_avaliacao VARCHAR(50), 
+    data_avaliacao DATE NOT NULL,
+    tipo_avaliacao tipo_avaliacao_enum NOT NULL, -- enum
     observacoes TEXT
 );
 
--- 16. Ficheiros
+-- 17 Ficheiros
+CREATE TYPE tipo_ficheiro_enum AS ENUM (
+    'Curriculum Vitae', 
+    'Registo Criminal', 
+    'Bolsa de Formação', 
+    'Certificado de Habilitações',
+    'Comprovativo de IBAN',
+    'Outros'
+);
 
 CREATE TABLE ficheiros (
     id SERIAL PRIMARY KEY,
@@ -173,7 +212,7 @@ CREATE TABLE ficheiros (
     formando_id INT REFERENCES formandos(id) ON DELETE CASCADE,
 	funcionario_id INT REFERENCES funcionarios(id) ON DELETE CASCADE,
 	nome_ficheiro VARCHAR(50) NOT NULL,
-    tipo_ficheiro VARCHAR(50) NOT NULL, -- ex.:CV
+    tipo_ficheiro tipo_ficheiro_enum NOT NULL, --enum
 	mime_type VARCHAR(100), -- saber qual icone mostra no frontend
 	tamanho_bytes BIGINT, -- ex.: application/pdf
 	data_upload DATE DEFAULT CURRENT_TIMESTAMP,
