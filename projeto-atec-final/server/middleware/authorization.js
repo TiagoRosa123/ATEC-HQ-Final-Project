@@ -10,16 +10,8 @@ module.exports = async (req, res, next) => {
       return res.status(403).json("Não autorizado (Sem token)");
     }
 
-    const payload = jwt.verify(jwtToken, "segredo123");
+    const payload = jwt.verify(jwtToken, process.env.JWT_SECRET);
     req.user = payload.user;
-
-    // Se a rota for de Admin, verifica na BD
-    if (req.isAdminRoute) {
-        const user = await pool.query("SELECT is_admin FROM utilizadores WHERE id = $1", [req.user.id]);
-        if (user.rows.length === 0 || !user.rows[0].is_admin) {
-            return res.status(403).json("Acesso Negado: Apenas para Administradores.");
-        }
-    }
 
     next(); // Deixa passar
   } catch (err) {

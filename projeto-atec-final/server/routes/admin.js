@@ -99,7 +99,7 @@ router.post('/criar', authorization, verifyAdmin, async (req, res) => {
 
     // Insere na BD
     const newUser = await pool.query(
-      "INSERT INTO utilizadores (nome, email, password_hash, role, is_admin, ativado) VALUES ($1, $2, $3, $4, $5, true) RETURNING *",
+      "INSERT INTO utilizadores (nome, email, password_hash, role, is_admin, ativado) VALUES ($1, $2, $3, $4, $5, true) RETURNING id, nome, email, role, is_admin, ativado",
       [nome, email, bcryptPassword, role, is_admin || false]
     );
 

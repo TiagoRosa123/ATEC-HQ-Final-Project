@@ -102,7 +102,11 @@ router.post("/login", async (req, res) => {
     }
 
     const token = jwt.sign({ user: { id: user.rows[0].id } }, process.env.JWT_SECRET, { expiresIn: "1h" });
-    res.json({ token, user: user.rows[0] });
+
+    // Remover dados sensíveis antes de enviar para o frontend
+    const { password_hash, two_fa_secret, reset_password_token, ...userSafe } = user.rows[0];
+
+    res.json({ token, user: userSafe });
 
   } catch (err) {
     console.error(err.message);
