@@ -6,6 +6,7 @@ import { Form, Button, Card, Spinner } from 'react-bootstrap';
 import { FaLock, FaEnvelope, FaFingerprint } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
+import api from '../services/api';
 
 function Login() {
   const [email, setEmail] = useState('');
@@ -22,37 +23,37 @@ function Login() {
     setLoading(true);
 
     const bodyData = { email, password };
+
     if (pedir2fa && token2fa) {
       bodyData.token2fa = token2fa;
     }
 
     try {
-      const response = await fetch('http://localhost:5000/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(bodyData),
-      });
+      // --- ALTERAÇÃO AQUI: Usar api.post ---
+      const response = await api.post('/auth/login', bodyData);
+      
+      // Se chegou aqui, é sucesso (Axios lança erro se for 4xx/5xx)
+      const data = response.data;
 
-      const data = await response.json();
+      login(data.token, data.user); // Guarda a sessão no contexto
+      toast.success(`Bem-vindo, ${data.user.nome.split(' ')[0]}!`);
+      navigate('/dashboard');
 
-      // Login OK mas precisa de 2FA
-      if (response.status === 400 && data.require2fa) {
-        setPedir2fa(true); // Muda a interface para pedir cod.
-        toast('Autenticação de 2 fatores necessária.', { icon: '🔐' });
-        setLoading(false);
-        return;
-      }
-
-      // Login c/ sucesso
-      if (response.ok) {
-        login(data.token, data.user); // Guarda a sessão
-        toast.success(`Bem-vindo, ${data.user.nome.split(' ')[0]}!`);
-        navigate('/dashboard');
-      } else {
-        toast.error(data.message || 'Email ou password incorretos.');
-      }
     } catch (error) {
-      toast.error('O servidor não responde.');
+      // O Axios guarda a resposta do erro em error.response
+      const status = error.response?.status;
+      const data = error.response?.data;
+
+      // 1. Verifica se o backend pede 2FA (Erro 400 + flag require2fa)
+      if (status === 400 && data?.require2fa) {
+        setPedir2fa(true);
+        toast('Autenticação de 2 fatores necessária.', { icon: '🔐' });
+      } 
+      // 2. Outros erros (senha errada, user não encontrado, etc)
+      else {
+        const msg = typeof data === 'string' ? data : data?.msg || 'Email ou password incorretos.';
+        toast.error(msg);
+      }
     } finally {
       setLoading(false);
     }
@@ -63,10 +64,10 @@ function Login() {
     try {
       const decoded = jwtDecode(credentialResponse.credential);
       // Envia o backend processar/criar conta
-      const response = await fetch('http://localhost:5000/auth/google', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: decoded.email, nome: decoded.name })
+     const response = await api.post('/auth/google', { 
+        email: decoded.email, 
+        nome: decoded.name,
+        googleId: decoded.sub 
       });
 
       const data = await response.json();

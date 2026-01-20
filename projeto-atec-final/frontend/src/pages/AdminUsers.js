@@ -2,31 +2,30 @@ import React, { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
 import { Table, Button, Form, Card, Row, Col, Alert, Badge, Spinner } from 'react-bootstrap';
 import { FaEdit, FaTrash, FaUserPlus, FaSave } from 'react-icons/fa';
+import toast from 'react-hot-toast';
+import api from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 function AdminUsers() {
     const [users, setUsers] = useState([]);
     const [erro, setErro] = useState("");
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({ nome: '', email: '', password: '', is_admin: false });
+    const [searchTerm, setSearchTerm] = useState("");
     const [editandoId, setEditandoId] = useState(null);
+
+    // Para impedir que o admin se apague a si próprio
+    const { user: currentUser } = useAuth();
 
     //Read
     const loadUsers = async () => {
         setLoading(true);
         try {
-            const response = await fetch("http://localhost:5000/admin/todos", {
-                method: "GET",
-                headers: { token: localStorage.getItem("token") }
-            });
-            const data = await response.json();
-
-            if (response.ok) {
-                setUsers(data);
-            } else {
-                setErro(data.error || "Erro ao carregar dados");
-            }
-        } catch (err) {
-            setErro("Erro de conexão com o servidor.");
+            // O token vai automaticamente graças ao api.js
+            const response = await api.get('/admin/todos');
+            setUsers(response.data);
+        } catch (error) {
+            toast.error('Erro ao carregar utilizadores.');
         } finally {
             setLoading(false);
         }
@@ -38,69 +37,80 @@ function AdminUsers() {
     const handleDelete = async (id) => {
         if (!window.confirm("Tem a certeza que pretende apagar este utilizador?")) return;
         try {
-            const response = await fetch(`http://localhost:5000/admin/apagar/${id}`, {
-                method: "DELETE",
-                headers: { token: localStorage.getItem("token") }
-            });
-            if (response.ok) {
-                loadUsers();
-            } else {
-                alert("Erro ao apagar");
-            }
-        } catch (e) { console.error(e); }
+            await api.delete(`/admin/apagar/${id}`);
+            toast.success('Utilizador eliminado!');
+            // Atualiza a lista localmente para não ter de ir ao servidor outra vez
+            setUsers(users.filter(u => u.id !== id));
+        } catch (error) {
+            toast.error(error.response?.data || 'Erro ao apagar.');
+        }
     };
 
-    //Edit
+    // --- UPDATE: Promover a Admin ---
+    const handlePromote = async (id, nome) => {
+        // Nota: Como o backend atual só tem "promover", não temos "despromover" ainda.
+        // Vamos usar a rota /promover/:id que criámos no backend
+        if (!window.confirm(`Tornar "${nome}" Administrador?`)) return;
+
+        try {
+            await api.put(`/admin/promover/${id}`);
+            toast.success(`${nome} agora é Administrador!`);
+            loadUsers(); // Recarrega para atualizar os ícones
+        } catch (error) {
+            toast.error('Erro ao promover utilizador.');
+        }
+    };
+
+    // --- CREATE / UPDATE: Criar ou Editar ---
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            if (editandoId) {
+                // EDITAR
+                await api.put(`/admin/editar/${editandoId}`, {
+                    nome: formData.nome,
+                    email: formData.email,
+                    is_admin: formData.is_admin
+                });
+                toast.success('Utilizador atualizado com sucesso!');
+            } else {
+                // CRIAR
+                await api.post('/admin/criar', formData);
+                toast.success('Utilizador criado com sucesso!');
+            }
+
+            // Limpar form e recarregar
+            setFormData({ nome: '', email: '', password: '', is_admin: false });
+            setEditandoId(null);
+            loadUsers();
+
+        } catch (error) {
+            toast.error(error.response?.data || 'Erro ao guardar dados.');
+        }
+    };
+
     const handleEditClick = (user) => {
         setEditandoId(user.id);
         setFormData({
             nome: user.nome,
             email: user.email,
-            password: '',
+            password: '', // Não preenchemos a password por segurança
             is_admin: user.is_admin
         });
+        // Scroll para o topo para ver o formulário
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    //Cancel
     const handleCancel = () => {
         setEditandoId(null);
         setFormData({ nome: '', email: '', password: '', is_admin: false });
-        setErro("");
     };
 
-    //Submit
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-
-        const url = editandoId
-            ? `http://localhost:5000/admin/editar/${editandoId}`
-            : "http://localhost:5000/admin/criar";
-
-        const method = editandoId ? "PUT" : "POST";
-
-        try {
-            const response = await fetch(url, {
-                method: method,
-                headers: {
-                    "Content-Type": "application/json",
-                    token: localStorage.getItem("token")
-                },
-                body: JSON.stringify(formData)
-            });
-
-            if (response.ok) {
-                handleCancel();
-                loadUsers();
-            } else {
-                const data = await response.json();
-                setErro(data.error || "Erro ao salvar.");
-            }
-        } catch (error) {
-            console.error(error);
-            setErro("Erro de conexão.");
-        }
-    }
+    // Filtragem (Pesquisa)
+    const filteredUsers = users.filter(user =>
+        user.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     return (
         <Navbar>

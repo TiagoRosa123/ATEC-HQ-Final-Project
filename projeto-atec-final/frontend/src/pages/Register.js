@@ -6,6 +6,7 @@ import { Form, Button, Card, Spinner } from 'react-bootstrap';
 import { FaUser, FaEnvelope, FaLock } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
+import api from '../services/api';
 
 function Register() {
   const navigate = useNavigate();
@@ -28,24 +29,21 @@ function Register() {
     setLoading(true);
 
     try {
-      // Envia os dados para o endpoint de registo
-      const response = await fetch('http://localhost:5000/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      });
+      // uso de api.js
+      await api.post('/auth/register', formData);
 
-      const data = await response.json();
-
-      if (response.ok) {
-        toast.success("Registo efetuado! Verifique o seu email para ativar a conta.");
+      toast.success("Registo efetuado! Verifique o seu email para ativar a conta.");
+      
+      // Pequeno delay para o utilizador ler a mensagem antes de mudar de página
+      setTimeout(() => {
         navigate('/login');
-      } else {
-        toast.error(typeof data === 'string' ? data : data.message || 'Erro ao registar');
-      }
+      }, 2000);
+
     } catch (err) {
       console.error(err);
-      toast.error('Erro ao conectar ao servidor');
+      // O Axios guarda a mensagem de erro do backend em err.response.data
+      const errorMsg = err.response?.data || 'Erro ao registar';
+      toast.error(typeof errorMsg === 'string' ? errorMsg : errorMsg.msg || 'Erro ao registar');
     } finally {
       setLoading(false);
     }
@@ -60,6 +58,7 @@ function Register() {
         body: JSON.stringify({
           email: decoded.email,
           nome: decoded.name
+          //googleId: decoded.sub
         })
       });
 
