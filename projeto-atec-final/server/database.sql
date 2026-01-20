@@ -23,7 +23,7 @@ CREATE EXTENSION IF NOT EXISTS btree_gist;
 CREATE TABLE utilizadores (
     id SERIAL PRIMARY KEY,
     nome VARCHAR(40) NOT NULL,
-    email VARCHAR(30) UNIQUE NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
     password_hash TEXT,
     role VARCHAR(20) DEFAULT 'user', -- ex: 'admin', 'formador', 'formando', 'funcionario'
     is_admin BOOLEAN DEFAULT FALSE,
