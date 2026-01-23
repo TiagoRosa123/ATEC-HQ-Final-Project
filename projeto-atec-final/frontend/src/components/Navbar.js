@@ -9,7 +9,7 @@ function Navbar({ children }) {
     const location = useLocation();
     const { user, logout } = useAuth(); // Precisa do user para saber se é Admin ou não
 
-    const [isAdminOpen, setIsAdminOpen] = useState(true); // Começa aberto para veres
+    const [isAdminOpen, setIsAdminOpen] = useState(true); // Começa aberto para ver
 
     const handleLogout = () => {
         logout();
@@ -62,6 +62,9 @@ function Navbar({ children }) {
                                     <Link to="/admin/areas" className={`nav-link-custom py-2 ${location.pathname === '/admin/areas' ? 'active' : ''}`} style={{ fontSize: '0.9rem' }}>
                                         Áreas
                                     </Link>
+                                    <Link to="/admin/modules" className={`nav-link-custom py-2 ${location.pathname === '/admin/modules' ? 'active' : ''}`} style={{ fontSize: '0.9rem' }}>
+                                        Módulos
+                                    </Link> 
                                 </div>
                             )}
                         </>
