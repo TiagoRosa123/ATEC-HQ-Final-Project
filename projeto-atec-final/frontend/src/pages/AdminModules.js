@@ -10,7 +10,7 @@ function AdminModules() {
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({ nome: '', horas_totais: '', codigo: '' });
     const [editandoId, setEditandoId] = useState(null);
-    const [modulos, setModulos] = useState([]);
+    const [modulos, setModule] = useState([]);
 
     const loadModule = async () => {
         try {
