@@ -83,7 +83,7 @@ router.put('/editar/:id', authorization, verifyAdmin, async (req, res) => {
 // ROTA 4: Cria user - Create
 router.post('/criar', authorization, verifyAdmin, async (req, res) => {
   try {
-    const { nome, email, password, is_admin } = req.body;
+    const { nome, email, password, role } = req.body; //role vem do frontend
 
     // Verifica se user existe
     const userExist = await pool.query("SELECT * FROM utilizadores WHERE email = $1", [email]);
@@ -95,13 +95,23 @@ router.post('/criar', authorization, verifyAdmin, async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const bcryptPassword = await bcrypt.hash(password, salt);
 
-    const role = is_admin ? 'admin' : 'user';
+    // Se for 'admin', então is_admin= true
+    const is_admin = (role === 'admin');
 
     // Insere na BD
     const newUser = await pool.query(
-      "INSERT INTO utilizadores (nome, email, password_hash, role, is_admin, ativado) VALUES ($1, $2, $3, $4, $5, true) RETURNING id, nome, email, role, is_admin, ativado",
-      [nome, email, bcryptPassword, role, is_admin || false]
+      "INSERT INTO utilizadores (nome, email, password_hash, role, is_admin, ativado) VALUES ($1, $2, $3, $4, $5, true) RETURNING *",
+      [nome, email, bcryptPassword, role, is_admin]
     );
+
+    const newUserId = newUser.rows[0].id;
+
+    if(role === 'formando'){
+        await pool.query("INSERT INTO formandos (utilizador_id, nome) VALUES ($1, $2)", [newUserId, nome]);
+    }
+    else if (role === 'formador') {
+        await pool.query("INSERT INTO formadores (utilizador_id, nome) VALUES ($1, $2)", [newUserId, nome]);
+    }
 
     res.json(newUser.rows[0]);
 
