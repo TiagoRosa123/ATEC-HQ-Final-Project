@@ -12,6 +12,8 @@ app.use(express.json());
 app.use('/auth', require('./routes/auth'));
 app.use('/2fa', require('./routes/2fa'));
 app.use('/admin', require('./routes/admin'));
+app.use('/courses', require('./routes/courses'));
+app.use('/areas', require('./routes/areas'));
 
 // ROTA TESTE: Ver se a BD responde
 app.get('/teste-db', async (req, res) => {
