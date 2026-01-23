@@ -10,7 +10,7 @@ function AdminUsers() {
     const [users, setUsers] = useState([]);
     const [erro, setErro] = useState("");
     const [loading, setLoading] = useState(false);
-    const [formData, setFormData] = useState({ nome: '', email: '', password: '', is_admin: false });
+    const [formData, setFormData] = useState({ nome: '', email: '', password: '', role: 'user', is_admin: false });
     const [searchTerm, setSearchTerm] = useState("");
     const [editandoId, setEditandoId] = useState(null);
 
@@ -61,7 +61,7 @@ function AdminUsers() {
         }
     };
 
-    // --- CREATE / UPDATE: Criar ou Editar ---
+    //CREATE / UPDATE
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
@@ -106,7 +106,7 @@ function AdminUsers() {
         setFormData({ nome: '', email: '', password: '', is_admin: false });
     };
 
-    // Filtragem (Pesquisa)
+    // Filtragem - Pesquisa
     const filteredUsers = users.filter(user =>
         user.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
         user.email.toLowerCase().includes(searchTerm.toLowerCase())
@@ -169,14 +169,24 @@ function AdminUsers() {
                                 )}
 
                                 <Form.Group className="mb-4">
-                                    <Form.Check
-                                        type="switch"
-                                        id="admin-switch"
-                                        label="Atribuir permissões de Administrador"
-                                        checked={formData.is_admin}
-                                        onChange={e => setFormData({ ...formData, is_admin: e.target.checked })}
-                                        className="small text-secondary"
-                                    />
+                                    <Form.Label className="small text-secondary fw-bold">Cargo / Perfil</Form.Label>
+                                    <Form.Select
+                                        value={formData.role}
+                                        onChange={e => {
+                                            const newRole = e.target.value;
+                                            setFormData({ 
+                                                ...formData, 
+                                                role: newRole,
+                                                is_admin: (newRole === 'admin') // Define is_admin automaticamente
+                                            });
+                                        }}
+                                        className="bg-light border-0 py-2"
+                                    >
+                                        <option value="user">Utilizador</option>
+                                        <option value="formando">Formando</option>
+                                        <option value="formador">Formador</option>
+                                        <option value="admin">Administrador</option>
+                                    </Form.Select>
                                 </Form.Group>
 
                                 <div className="d-grid gap-2">
@@ -217,11 +227,14 @@ function AdminUsers() {
                                                     <div className="text-muted small">{user.email}</div>
                                                 </td>
                                                 <td>
-                                                    {user.is_admin
-                                                        ? <Badge bg="primary" className="px-3 py-2 fw-normal">ADMIN</Badge>
-                                                        : <Badge bg="light" text="dark" className="px-3 py-2 fw-normal border">USER</Badge>
-                                                    }
-                                                </td>
+                                                {user.is_admin ? (
+                                                    <Badge bg="primary" className="px-3 py-2 fw-normal">ADMIN</Badge>
+                                                ) : (
+                                                    user.role === 'formando' ? <Badge bg="success" className="px-3 py-2 fw-normal">ALUNO</Badge> :
+                                                    user.role === 'formador' ? <Badge bg="warning" text="dark" className="px-3 py-2 fw-normal">PROFESSOR</Badge> :
+                                                    <Badge bg="light" text="dark" className="px-3 py-2 fw-normal border">USER</Badge>
+                                                )}
+                                            </td>
                                                 <td className="text-end pe-4">
                                                     <Button variant="link" className="text-muted p-0 me-3" onClick={() => handleEditClick(user)}>
                                                         <FaEdit />

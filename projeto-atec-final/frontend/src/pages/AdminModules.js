@@ -12,7 +12,15 @@ function AdminModules() {
     const [editandoId, setEditandoId] = useState(null);
     const [modulos, setModulos] = useState([]);
 
-
+    const loadModule = async () => {
+        try {
+            const res = await api.get('/modules');
+            setModule(res.data);
+        } catch (error) {
+            toast.error('Erro ao carregar módulos');
+        }
+    }
+    useEffect(() => { loadModule(); }, []);
 
 
     //GET Modulos
