@@ -55,4 +55,46 @@ router.delete('/delete/:id', authorization, async (req, res) => {
 });
 
 
+//associaçao c/ modulos
+//get
+router.get('/:id/modules', authorization, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const modules = await pool.query("SELECT * FROM modulos JOIN curso_modulos ON modulos.id = curso_modulos.modulo_id WHERE curso_modulos.curso_id = $1", [id]);
+        res.json(modules.rows);
+    }
+    catch (err) {
+        console.error(err.message);
+        res.status(500).send("Erro no servidor")
+    }
+});
+
+//post
+router.post('/:id/modules', authorization, async (req, res) => {
+    try{
+        const { id } = req.params;
+        const { modulo_id } = req.body;
+        const newModule = await pool.query("INSERT INTO curso_modulos (curso_id, modulo_id) VALUES ($1, $2) RETURNING *", [id, modulo_id]);
+        res.json(newModule.rows[0]);
+    }
+    catch (err) {
+        console.error(err.message);
+        res.status(500).send("Erro no servidor")
+    }
+});
+
+//delete
+router.delete('/:id/modules/:modulo_id', authorization, async (req, res) => {
+    try{
+        const { id } = req.params;
+        const { modulo_id } = req.params;
+        const deleteModule = await pool.query("DELETE FROM curso_modulos WHERE curso_id = $1 AND modulo_id = $2 RETURNING *", [id, modulo_id]);
+        res.json(deleteModule.rows[0]);
+    }
+    catch (err) {
+        console.error(err.message);
+        res.status(500).send("Erro no servidor")
+    }   
+});
+
 module.exports = router;

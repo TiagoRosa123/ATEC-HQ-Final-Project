@@ -16,14 +16,20 @@ router.get('/', authorization, async (req, res) => {
 
 //post
 router.post('/create', authorization, async (req, res) => {
+
     try {
         const { nome, descricao } = req.body;
+        //VERIFICAÇÃO de area duplicada
+        const check = await pool.query("SELECT * FROM areas WHERE LOWER(nome) = LOWER($1)", [nome]);
+        if (check.rows.length > 0) {
+            return res.status(400).json("Essa Área já existe!");
+        }
+        // Se não existir, criar
         const newArea = await pool.query("INSERT INTO areas (nome, descricao) VALUES ($1, $2) RETURNING *", [nome, descricao]);
         res.json(newArea.rows[0]);
-    }
-    catch (err) {
+    } catch (err) {
         console.error(err.message);
-        res.status(500).send("Erro no servidor")
+        res.status(500).send("Erro no servidor");
     }
 });
 
