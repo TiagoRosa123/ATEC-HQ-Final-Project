@@ -14,7 +14,8 @@ import AdminUsers from './pages/AdminUsers';
 import Settings from './pages/Settings';
 import PersonalData from './pages/PersonalData';
 import Evaluations from './pages/Evaluations';
-
+import AdminCourses from './pages/AdminCourses';
+import AdminAreas from './pages/AdminAreas';
 
 function App() {
   return (
@@ -38,6 +39,8 @@ function App() {
             <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
             <Route path="/profile" element={<PrivateRoute><PersonalData /></PrivateRoute>} />
             <Route path="/evaluations" element={<PrivateRoute><Evaluations /></PrivateRoute>} />
+            <Route path="/admin/courses" element={<PrivateRoute><AdminCourses /></PrivateRoute>} />
+            <Route path="/admin/areas" element={<PrivateRoute><AdminAreas /></PrivateRoute>} />
           </Routes>
         </div>
       </Router>
