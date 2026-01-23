@@ -17,6 +17,7 @@ import Evaluations from './pages/Evaluations';
 import AdminCourses from './pages/AdminCourses';
 import AdminAreas from './pages/AdminAreas';
 import AdminModules from './pages/AdminModules';
+import AdminClasses from './pages/AdminClasses';
 
 function App() {
   return (
@@ -43,6 +44,7 @@ function App() {
             <Route path="/admin/courses" element={<PrivateRoute><AdminCourses /></PrivateRoute>} />
             <Route path="/admin/areas" element={<PrivateRoute><AdminAreas /></PrivateRoute>} />
             <Route path="/admin/modules" element={<PrivateRoute><AdminModules /></PrivateRoute>} />
+            <Route path="/admin/classes" element={<PrivateRoute><AdminClasses /></PrivateRoute>} />
           </Routes>
         </div>
       </Router>

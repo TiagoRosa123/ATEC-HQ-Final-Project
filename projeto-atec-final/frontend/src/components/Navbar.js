@@ -65,6 +65,10 @@ function Navbar({ children }) {
                                     <Link to="/admin/modules" className={`nav-link-custom py-2 ${location.pathname === '/admin/modules' ? 'active' : ''}`} style={{ fontSize: '0.9rem' }}>
                                         Módulos
                                     </Link> 
+                                    <Link to="/admin/classes" className={`nav-link-custom py-2 ${location.pathname === '/admin/classes' ? 'active' : ''}`} style={{ fontSize: '0.9rem' }}>
+                                        Turmas
+                                    </Link>
+
                                 </div>
                             )}
                         </>
