@@ -174,8 +174,8 @@ function AdminUsers() {
                                         value={formData.role}
                                         onChange={e => {
                                             const newRole = e.target.value;
-                                            setFormData({ 
-                                                ...formData, 
+                                            setFormData({
+                                                ...formData,
                                                 role: newRole,
                                                 is_admin: (newRole === 'admin') // Define is_admin automaticamente
                                             });
@@ -227,14 +227,14 @@ function AdminUsers() {
                                                     <div className="text-muted small">{user.email}</div>
                                                 </td>
                                                 <td>
-                                                {user.is_admin ? (
-                                                    <Badge bg="primary" className="px-3 py-2 fw-normal">ADMIN</Badge>
-                                                ) : (
-                                                    user.role === 'formando' ? <Badge bg="success" className="px-3 py-2 fw-normal">ALUNO</Badge> :
-                                                    user.role === 'formador' ? <Badge bg="warning" text="dark" className="px-3 py-2 fw-normal">PROFESSOR</Badge> :
-                                                    <Badge bg="light" text="dark" className="px-3 py-2 fw-normal border">USER</Badge>
-                                                )}
-                                            </td>
+                                                    {user.is_admin ? (
+                                                        <Badge bg="primary" className="px-3 py-2 fw-normal">ADMIN</Badge>
+                                                    ) : (
+                                                        user.role === 'formando' ? <Badge bg="success" className="px-3 py-2 fw-normal">FORMANDO</Badge> :
+                                                            user.role === 'formador' ? <Badge bg="warning" text="dark" className="px-3 py-2 fw-normal">FORMADOR</Badge> :
+                                                                <Badge bg="light" text="dark" className="px-3 py-2 fw-normal border">USER</Badge>
+                                                    )}
+                                                </td>
                                                 <td className="text-end pe-4">
                                                     <Button variant="link" className="text-muted p-0 me-3" onClick={() => handleEditClick(user)}>
                                                         <FaEdit />
