@@ -20,12 +20,19 @@ DROP TABLE IF EXISTS utilizadores CASCADE;
 CREATE EXTENSION IF NOT EXISTS btree_gist;
 
 -- 1 Utilizadores
+CREATE TYPE utilizador_enum AS ENUM (
+    'admin', 
+    'formador', 
+    'formando', 
+    'user' --ex. sem pertencer a uma turma 
+);
+
 CREATE TABLE utilizadores (
     id SERIAL PRIMARY KEY,
     nome VARCHAR(40) NOT NULL,
-    email VARCHAR(255) UNIQUE NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
     password_hash TEXT,
-    role VARCHAR(20) DEFAULT 'user', -- ex: 'admin', 'formador', 'formando', 'funcionario'
+    role utilizador_enum NOT NULL,
     is_admin BOOLEAN DEFAULT FALSE,
     ativado BOOLEAN DEFAULT FALSE,
     reset_password_token TEXT,

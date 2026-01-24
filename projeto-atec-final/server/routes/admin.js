@@ -20,7 +20,7 @@ const verifyAdmin = async (req, res, next) => {
 // ROTA 1: lista todos users - Read
 router.get('/todos', authorization, verifyAdmin, async (req, res) => {
   try {
-    const users = await pool.query("SELECT id, nome, email, ativado, is_admin FROM utilizadores");
+    const users = await pool.query("SELECT id, nome, email, ativado, is_admin, role FROM utilizadores");
     res.json(users.rows);
   } catch (err) {
     console.error(err.message);
@@ -106,11 +106,11 @@ router.post('/criar', authorization, verifyAdmin, async (req, res) => {
 
     const newUserId = newUser.rows[0].id;
 
-    if(role === 'formando'){
-        await pool.query("INSERT INTO formandos (utilizador_id, nome) VALUES ($1, $2)", [newUserId, nome]);
+    if (role === 'formando') {
+      await pool.query("INSERT INTO formandos (utilizador_id, nome) VALUES ($1, $2)", [newUserId, nome]);
     }
     else if (role === 'formador') {
-        await pool.query("INSERT INTO formadores (utilizador_id, nome) VALUES ($1, $2)", [newUserId, nome]);
+      await pool.query("INSERT INTO formadores (utilizador_id, nome) VALUES ($1, $2)", [newUserId, nome]);
     }
 
     res.json(newUser.rows[0]);
