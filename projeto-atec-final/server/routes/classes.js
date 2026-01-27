@@ -54,4 +54,46 @@ router.delete('/delete/:id', authorization, async (req, res) => {
     }
 });
 
+
+//inscricoes (depende da turma)
+//get
+router.get('/:id/students', authorization, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const students = await pool.query("SELECT form.id as formando_id, util.nome, util.email FROM inscricoes JOIN formandos form ON inscricoes.formando_id = form.id JOIN utilizadores util ON form.utilizador_id = util.id WHERE inscricoes.turma_id = $1", [id]);
+        res.json(students.rows);
+    }
+    catch (err) {
+        console.error(err.message);
+        res.status(500).send("Erro no servidor");
+    }
+});
+
+//post
+router.post('/:id/students', authorization, async (req, res) => {
+
+    try {
+        const { id } = req.params;
+        const { formando_id } = req.body;
+        const newStudent = await pool.query("INSERT INTO inscricoes (turma_id, formando_id) VALUES ($1, $2) RETURNING *", [id, formando_id]);
+        res.json(newStudent.rows[0]);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send("Erro no servidor");
+    }
+});
+
+//delete
+router.delete('/:id/students/:formando_id', authorization, async (req, res) => {
+    try {
+        const { id, formando_id } = req.params;
+        const deleteStudent = await pool.query("DELETE FROM inscricoes WHERE turma_id = $1 AND formando_id = $2 RETURNING *", [id, formando_id]);
+        res.json(deleteStudent.rows[0]);
+    }
+    catch (err) {
+        console.error(err.message);
+        res.status(500).send("Erro no servidor")
+    }
+});
+
 module.exports = router;

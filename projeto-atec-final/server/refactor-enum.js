@@ -9,7 +9,6 @@ async function migrateEnum() {
         console.log("Type 'user_role_enum' verificado/criado.");
 
         // 2. Converter a coluna (com cast explícito)
-        // Nota: Se tiveres valores na BD que não estejam na lista acima, isto vai falhar!
         await pool.query(`
             ALTER TABLE utilizadores 
             ALTER COLUMN role DROP DEFAULT,
