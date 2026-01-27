@@ -66,7 +66,7 @@ function AdminCourses() {
                 toast.success('Curso criado!');
             }
             setFormData({ nome: '', sigla: '', descricao: '', area_id: '' });
-            setEId(null);
+            setEditId(null);
             loadCourses();
         } catch (error) {
             toast.error('Erro ao guardar.');
@@ -156,7 +156,7 @@ function AdminCourses() {
                             onChange={e => setFormData({ ...formData, descricao: e.target.value })}
                         />
                         <Button type="submit" variant="primary">
-                            {eId ? <FaSave /> : <FaPlus />}
+                            {editId ? <FaSave /> : <FaPlus />}
                         </Button>
                     </Form>
                 </Card.Body>
@@ -181,7 +181,7 @@ function AdminCourses() {
                                     <td>
                                         {/* Btn Editar */}
                                         <Button variant="link" onClick={() => {
-                                            setEId(course.id);
+                                            setEditId(course.id);
                                             setFormData({ nome: course.nome, sigla: course.sigla, descricao: course.descricao });
                                         }}>
                                             <FaEdit />
