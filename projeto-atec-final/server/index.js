@@ -16,6 +16,8 @@ app.use('/courses', require('./routes/courses'));
 app.use('/areas', require('./routes/areas'));
 app.use('/modules', require('./routes/modules'));
 app.use('/classes', require('./routes/classes'));
+app.use('/rooms', require('./routes/rooms'));
+
 
 // ROTA TESTE: Ver se a BD responde
 app.get('/teste-db', async (req, res) => {

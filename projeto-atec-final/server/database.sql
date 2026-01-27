@@ -1,38 +1,47 @@
 -- 1. LIMPEZA TOTAL 
-DROP TABLE IF EXISTS ficheiros CASCADE;
-DROP TABLE IF EXISTS avaliacoes CASCADE;
-DROP TABLE IF EXISTS horarios CASCADE;
-DROP TABLE IF EXISTS inscricoes CASCADE;
-DROP TABLE IF EXISTS turmas_modulos CASCADE; -- Faltava esta na tua lista anterior
-DROP TABLE IF EXISTS turmas CASCADE;
-DROP TABLE IF EXISTS disponibilidades CASCADE;
-DROP TABLE IF EXISTS competencias_formador CASCADE;
-DROP TABLE IF EXISTS funcionarios CASCADE;
-DROP TABLE IF EXISTS formandos CASCADE;
-DROP TABLE IF EXISTS formadores CASCADE;
-DROP TABLE IF EXISTS curso_modulos CASCADE;
-DROP TABLE IF EXISTS modulos CASCADE;
-DROP TABLE IF EXISTS cursos CASCADE;
-DROP TABLE IF EXISTS salas CASCADE;
-DROP TABLE IF EXISTS areas CASCADE;
-DROP TABLE IF EXISTS utilizadores CASCADE;
+-- DROP TABLE IF EXISTS ficheiros CASCADE;
+-- DROP TABLE IF EXISTS avaliacoes CASCADE;
+-- DROP TABLE IF EXISTS horarios CASCADE;
+-- DROP TABLE IF EXISTS inscricoes CASCADE;
+-- DROP TABLE IF EXISTS turmas_modulos CASCADE; 
+-- DROP TABLE IF EXISTS turmas CASCADE;
+-- DROP TABLE IF EXISTS disponibilidades CASCADE;
+-- DROP TABLE IF EXISTS competencias_formador CASCADE;
+-- DROP TABLE IF EXISTS funcionarios CASCADE;
+-- DROP TABLE IF EXISTS formandos CASCADE;
+-- DROP TABLE IF EXISTS formadores CASCADE;
+-- DROP TABLE IF EXISTS curso_modulos CASCADE;
+-- DROP TABLE IF EXISTS modulos CASCADE;
+-- DROP TABLE IF EXISTS cursos CASCADE;
+-- DROP TABLE IF EXISTS salas CASCADE;
+-- DROP TABLE IF EXISTS areas CASCADE;
+-- DROP TABLE IF EXISTS utilizadores CASCADE;
+
+-- DROP TYPE IF EXISTS user_role_enum CASCADE;
+-- DROP TYPE IF EXISTS departamento_enum CASCADE;
+-- DROP TYPE IF EXISTS cargo_enum CASCADE;
+-- DROP TYPE IF EXISTS tipo_avaliacao_enum CASCADE;
+-- DROP TYPE IF EXISTS tipo_ficheiro_enum CASCADE;
+-- DROP TYPE IF EXISTS estado_turma_enum CASCADE;
+-- DROP TYPE IF EXISTS estado_inscricao_enum CASCADE;
 
 CREATE EXTENSION IF NOT EXISTS btree_gist;
 
 -- 1 Utilizadores
-CREATE TYPE utilizador_enum AS ENUM (
+CREATE TYPE role_enum AS ENUM (
     'admin', 
     'formador', 
     'formando', 
-    'user' --ex. sem pertencer a uma turma 
+    'user',
+	'funcionario'
 );
 
 CREATE TABLE utilizadores (
     id SERIAL PRIMARY KEY,
     nome VARCHAR(40) NOT NULL,
-    email VARCHAR(100) UNIQUE NOT NULL,
+    email VARCHAR(150) UNIQUE NOT NULL,
     password_hash TEXT,
-    role utilizador_enum NOT NULL,
+    role role_enum DEFAULT 'user',
     is_admin BOOLEAN DEFAULT FALSE,
     ativado BOOLEAN DEFAULT FALSE,
     reset_password_token TEXT,
@@ -80,7 +89,7 @@ CREATE TABLE curso_modulos (
     id SERIAL PRIMARY KEY,
     curso_id INT REFERENCES cursos(id) ON DELETE CASCADE,
     modulo_id INT REFERENCES modulos(id) ON DELETE CASCADE,
-    ordem_sequencia INT
+    ordem_sequencia INT -- P/ ordenar visivelmente
 );
 
 -- 7 Formadores
@@ -139,6 +148,13 @@ CREATE TABLE disponibilidades (
 );
 
 -- 12 Turmas
+CREATE TYPE estado_turma_enum AS ENUM (
+    'planeamento', 
+    'ativa',       
+    'concluida',   
+    'cancelada' 
+);
+
 CREATE TABLE turmas (
     id SERIAL PRIMARY KEY,
     codigo VARCHAR(20) UNIQUE NOT NULL,
@@ -146,7 +162,7 @@ CREATE TABLE turmas (
     data_inicio DATE NOT NULL,
     data_fim DATE,
     coordenador_id INT REFERENCES formadores(id),
-    estado VARCHAR(10) DEFAULT 'planeamento'
+    estado estado_turma_enum
 );
 
 -- 13 Turmas modulos
@@ -155,16 +171,23 @@ CREATE TABLE turmas_modulos (
 	formador_id INT REFERENCES formadores(id) ON DELETE CASCADE, 
     modulo_id INT REFERENCES modulos(id) ON DELETE CASCADE,
     turmas_id INT REFERENCES turmas(id) ON DELETE CASCADE,
-    UNIQUE(turma_id, modulo_id)
+    UNIQUE(turmas_id, modulo_id)
 );
 
 -- 14 Inscrições
+CREATE TYPE estado_inscricao_enum AS ENUM (
+    'ativa',    
+    'cancelada', 
+    'pendente',   
+    'concluido'  
+);
+
 CREATE TABLE inscricoes (
     id SERIAL PRIMARY KEY,
     turma_id INT REFERENCES turmas(id) ON DELETE CASCADE,
     formando_id INT REFERENCES formandos(id) ON DELETE CASCADE,
     data_inscricao DATE DEFAULT CURRENT_DATE,
-    estado VARCHAR(10) DEFAULT 'ativo',
+    estado estado_inscricao_enum, 
     UNIQUE(turma_id, formando_id)
 );
 

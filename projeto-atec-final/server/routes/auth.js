@@ -131,7 +131,11 @@ router.post('/google', async (req, res) => {
       userId = newUser.rows[0].id;
     }
     const token = jwt.sign({ user: { id: userId } }, process.env.JWT_SECRET, { expiresIn: "1h" });
-    res.json({ token, user: { id: userId, nome, email } });
+
+    // Buscar dados atualizados do user (incluindo is_admin e role)
+    const fullUser = await pool.query("SELECT id, nome, email, is_admin, role, ativado, two_fa_ativado, criado_em FROM utilizadores WHERE id = $1", [userId]);
+
+    res.json({ token, user: fullUser.rows[0] });
   } catch (err) { res.status(500).send("Erro no servidor"); }
 });
 
