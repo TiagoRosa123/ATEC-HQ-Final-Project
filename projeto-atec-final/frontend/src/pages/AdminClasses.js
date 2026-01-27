@@ -17,7 +17,7 @@ function AdminClasses() {
     });
     const [editId, setEditId] = useState(null); // Para editar uma turma
     const [showStudentsModal, setShowStudentsModal] = useState(false); // Para mostrar os alunos de uma turma
-    const [selectedClass, setSelectedClass] = useState(null); 
+    const [selectedClass, setSelectedClass] = useState(null);
     const [studentsList, setStudentsList] = useState([]); // Para listar os alunos
     const [newStudentId, setNewStudentId] = useState(""); // Para adicionar um aluno
 
@@ -81,7 +81,7 @@ function AdminClasses() {
                 await api.post('/classes/create', formData);
                 toast.success('Turma criada!');
             }
-            setFormData({ codigo: '', curso_id: '', data_inicio: '', data_fim: '', estado: 'planeamento' });
+            setFormData({ codigo: '', curso_id: '', data_inicio: '', data_fim: '', estado: 'pendente' });
             setEditId(null);
             loadData();
         } catch (error) { toast.error('Erro ao guardar.'); }
@@ -114,7 +114,7 @@ function AdminClasses() {
                     <Form onSubmit={handleSubmit} className="row g-3">
                         <div className="col-md-2">
                             <Form.Control
-                                placeholder="Código (ex: TPSI.1024)"
+                                placeholder="Código"
                                 value={formData.codigo}
                                 onChange={e => setFormData({ ...formData, codigo: e.target.value })}
                                 required
@@ -150,9 +150,10 @@ function AdminClasses() {
                                 value={formData.estado}
                                 onChange={e => setFormData({ ...formData, estado: e.target.value })}
                             >
-                                <option value="planeamento">Planeamento</option>
-                                <option value="ativo">Ativo</option>
-                                <option value="concluido">Concluído</option>
+                                <option value="pendente">Pendente</option>
+                                <option value="ativa">Ativa</option>
+                                <option value="concluida">Concluída</option>
+                                <option value="cancelada">Cancelada</option>
                             </Form.Select>
                         </div>
                         <div className="col-md-1">
@@ -183,8 +184,12 @@ function AdminClasses() {
                                     <td>{getCourseName(cls.curso_id)}</td>
                                     <td>{new Date(cls.data_inicio).toLocaleDateString()}</td>
                                     <td>
-                                        <Badge bg={cls.estado === 'ativo' ? 'success' : cls.estado === 'concluido' ? 'secondary' : 'warning'}>
-                                            {cls.estado}
+                                        <Badge bg={
+                                            cls.estado === 'ativa' ? 'success' :
+                                                cls.estado === 'concluida' ? 'secondary' :
+                                                    cls.estado === 'cancelada' ? 'danger' : 'warning'
+                                        }>
+                                            {cls.estado.toUpperCase()}
                                         </Badge>
                                     </td>
                                     <td>
@@ -218,7 +223,7 @@ function AdminClasses() {
                 <Modal.Body>
                     <Form onSubmit={handleAddStudent} className="d-flex gap-2 mb-4 p-3 bg-light rounded">
                         <Form.Control
-                            placeholder="ID do Formando (ex: 5)"
+                            placeholder="ID Formando"
                             value={newStudentId}
                             onChange={e => setNewStudentId(e.target.value)}
                             required

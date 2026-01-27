@@ -59,14 +59,17 @@ function Navbar({ children }) {
                                     <Link to="/admin/courses" className={`nav-link-custom py-2 ${location.pathname === '/admin/courses' ? 'active' : ''}`} style={{ fontSize: '0.9rem' }}>
                                         Cursos
                                     </Link>
+                                    <Link to="/admin/modules" className={`nav-link-custom py-2 ${location.pathname === '/admin/modules' ? 'active' : ''}`} style={{ fontSize: '0.9rem' }}>
+                                        Módulos
+                                    </Link>
                                     <Link to="/admin/areas" className={`nav-link-custom py-2 ${location.pathname === '/admin/areas' ? 'active' : ''}`} style={{ fontSize: '0.9rem' }}>
                                         Áreas
                                     </Link>
-                                    <Link to="/admin/modules" className={`nav-link-custom py-2 ${location.pathname === '/admin/modules' ? 'active' : ''}`} style={{ fontSize: '0.9rem' }}>
-                                        Módulos
-                                    </Link> 
                                     <Link to="/admin/classes" className={`nav-link-custom py-2 ${location.pathname === '/admin/classes' ? 'active' : ''}`} style={{ fontSize: '0.9rem' }}>
                                         Turmas
+                                    </Link>
+                                    <Link to="/admin/rooms" className={`nav-link-custom py-2 ${location.pathname === '/admin/rooms' ? 'active' : ''}`} style={{ fontSize: '0.9rem' }}>
+                                        Salas
                                     </Link>
 
                                 </div>

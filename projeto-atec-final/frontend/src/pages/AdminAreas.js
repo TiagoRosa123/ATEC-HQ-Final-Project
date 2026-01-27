@@ -89,7 +89,7 @@ function AdminAreas() {
                     <Table hover>
                         <thead>
                             <tr>
-                                <th>Nome</th>
+                                <th>Área</th>
                                 <th>Descrição</th>
                                 <th>Ações</th>
                             </tr>

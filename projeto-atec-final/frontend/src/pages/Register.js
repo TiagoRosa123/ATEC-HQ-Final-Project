@@ -33,7 +33,7 @@ function Register() {
       await api.post('/auth/register', formData);
 
       toast.success("Registo efetuado! Verifique o seu email para ativar a conta.");
-      
+
       // Pequeno delay para o utilizador ler a mensagem antes de mudar de página
       setTimeout(() => {
         navigate('/login');
@@ -52,28 +52,24 @@ function Register() {
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
       const decoded = jwtDecode(credentialResponse.credential);
-      const response = await fetch('http://localhost:5000/auth/google', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: decoded.email,
-          nome: decoded.name
-          //googleId: decoded.sub
-        })
+
+      // Substituído fetch por api.post
+      const response = await api.post('/auth/google', {
+        email: decoded.email,
+        nome: decoded.name,
+        googleId: decoded.sub || null
       });
 
-      const data = await response.json();
+      const data = response.data;
 
-      if (response.ok) {
-        login(data.token, data.user);
-        toast.success('Registo com Google efetuado!');
-        navigate('/dashboard');
-      } else {
-        toast.error('Erro ao registar com Google.');
-      }
+      login(data.token, data.user);
+      toast.success('Registo com Google efetuado!');
+      navigate('/dashboard');
+
     } catch (error) {
       console.error(error);
-      toast.error('Erro de conexão com Google.');
+      const msg = error.response?.data?.message || 'Erro ao registar com Google.';
+      toast.error(msg);
     }
   };
 

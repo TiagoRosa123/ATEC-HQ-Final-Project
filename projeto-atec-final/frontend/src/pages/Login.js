@@ -31,7 +31,7 @@ function Login() {
     try {
       // --- ALTERAÇÃO AQUI: Usar api.post ---
       const response = await api.post('/auth/login', bodyData);
-      
+
       // Se chegou aqui, é sucesso (Axios lança erro se for 4xx/5xx)
       const data = response.data;
 
@@ -48,7 +48,7 @@ function Login() {
       if (status === 400 && data?.require2fa) {
         setPedir2fa(true);
         toast('Autenticação de 2 fatores necessária.', { icon: '🔐' });
-      } 
+      }
       // 2. Outros erros (senha errada, user não encontrado, etc)
       else {
         const msg = typeof data === 'string' ? data : data?.msg || 'Email ou password incorretos.';
@@ -60,27 +60,28 @@ function Login() {
   };
 
   //quando o login com Google corre bem
+  // Quando o login com Google corre bem
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
       const decoded = jwtDecode(credentialResponse.credential);
-      // Envia o backend processar/criar conta
-     const response = await api.post('/auth/google', { 
-        email: decoded.email, 
+
+      const response = await api.post('/auth/google', {
+        email: decoded.email,
         nome: decoded.name,
-        googleId: decoded.sub 
+        googleId: decoded.sub || null
       });
 
-      const data = await response.json();
+      // Com axios (api.js), a resposta já é JSON em response.data
+      const data = response.data;
 
-      if (response.ok) {
-        login(data.token, data.user);
-        toast.success(`Login Google com sucesso!`);
-        navigate('/dashboard');
-      } else {
-        toast.error('Erro ao entrar com Google.');
-      }
+      login(data.token, data.user);
+      toast.success(`Login Google com sucesso!`);
+      navigate('/dashboard');
+
     } catch (error) {
-      toast.error('Erro de conexão ao Google.');
+      console.error(error);
+      const msg = error.response?.data?.message || 'Erro de conexão ao Google.';
+      toast.error(msg);
     }
   };
 
