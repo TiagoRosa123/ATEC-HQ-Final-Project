@@ -5,7 +5,7 @@ import { FaEnvelope } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 
 function ForgotPw() {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(''); 
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {

@@ -17,7 +17,7 @@ function AdminUsers() {
     // Para impedir que o admin se apague a si próprio
     const { user: currentUser } = useAuth();
 
-    //Read
+    //GET - Listar Utilizadores
     const loadUsers = async () => {
         setLoading(true);
         try {
@@ -46,10 +46,8 @@ function AdminUsers() {
         }
     };
 
-    // --- UPDATE: Promover a Admin ---
+    //PUT - Promover a Admin
     const handlePromote = async (id, nome) => {
-        // Nota: Como o backend atual só tem "promover", não temos "despromover" ainda.
-        // Vamos usar a rota /promover/:id que criámos no backend
         if (!window.confirm(`Tornar "${nome}" Administrador?`)) return;
 
         try {
@@ -61,7 +59,7 @@ function AdminUsers() {
         }
     };
 
-    //CREATE / UPDATE
+    //POST - Criar/Editar Utilizador
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
@@ -89,6 +87,7 @@ function AdminUsers() {
         }
     };
 
+    //PUT - Editar Utilizador
     const handleEditClick = (user) => {
         setEditandoId(user.id);
         setFormData({

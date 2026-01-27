@@ -8,17 +8,18 @@ import api from '../services/api';
 function AdminCourses() {
     const [courses, setCourses] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [formData, setFormData] = useState({ nome: '', sigla: '', descricao: '', area_id: '' });
-    const [editandoId, setEditandoId] = useState(null);
+    const [formData, setFormData] = useState({ nome: '', sigla: '', descricao: '', area_id: '' }); //guarda o que o user esta a escrever
+    const [editId, setEditId] = useState(null); //guarda o ID do curso que esta a ser editado
 
-    const [areas, setAreas] = useState([]);
+    const [areas, setAreas] = useState([]); //guarda as areas
 
-    const [showModulesModal, setShowModulesModal] = useState(false);
-    const [courseModules, setCoursesModules] = useState([]);
-    const [allModules, setAllModules] = useState([]);
-    const [selectedModuleId, setSelectedModuleId] = useState('');
+    const [showModulesModal, setShowModulesModal] = useState(false); 
+    const [courseModules, setCoursesModules] = useState([]); //guarda os módulos do curso
+    const [allModules, setAllModules] = useState([]); //guarda todos os módulos
+    const [selectedModuleId, setSelectedModuleId] = useState(''); //guarda o ID do módulo selecionado
     const [selectedCourseId, setSelectedCourseId] = useState(null); // Para saber qual curso está aberto
 
+    //GET - Areas
     const loadAreas = async () => {
         try {
             const res = await api.get('/areas');
@@ -29,6 +30,7 @@ function AdminCourses() {
     }
     useEffect(() => { loadAreas(); }, []);
 
+    //GET - Módulos
     const loadAllModules = async () => {
         try {
             const res = await api.get('/modules');
@@ -37,7 +39,7 @@ function AdminCourses() {
     };
     useEffect(() => { loadAllModules(); }, []);
 
-    // 1. CARREGAR CURSOS (GET)
+    //GET - Cursos
     const loadCourses = async () => {
         setLoading(true);
         try {
@@ -52,26 +54,26 @@ function AdminCourses() {
 
     useEffect(() => { loadCourses(); }, []);
 
-    // 2. CRIAR OU EDITAR (POST / PUT)
+    //POST / PUT - Cursos
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            if (editandoId) {
-                await api.put(`/courses/update/${editandoId}`, formData);
+            if (editId) {
+                await api.put(`/courses/update/${editId}`, formData);
                 toast.success('Curso atualizado!');
             } else {
                 await api.post('/courses/create', formData);
                 toast.success('Curso criado!');
             }
             setFormData({ nome: '', sigla: '', descricao: '', area_id: '' });
-            setEditandoId(null);
+            setEId(null);
             loadCourses();
         } catch (error) {
             toast.error('Erro ao guardar.');
         }
     };
 
-    // 3. APAGAR (DELETE)
+    //DELETE - Cursos
     const handleDelete = async (id) => {
         if (!window.confirm("Apagar este curso?")) return;
         try {
@@ -83,6 +85,7 @@ function AdminCourses() {
         }
     };
 
+    //GET - Módulos do curso
     const handleOpenModules = async (id) => {
         try {
             setSelectedCourseId(id); //Guardamos o ID do curso
@@ -94,6 +97,7 @@ function AdminCourses() {
         }
     };
 
+    //POST - Módulos do curso
     const handleAddModule = async () => {
         if (!selectedModuleId) return;
         try {
@@ -103,6 +107,8 @@ function AdminCourses() {
             setSelectedModuleId('');
         } catch (error) { toast.error('Erro ao adicionar (pode já estar associado).'); }
     };
+
+    //DELETE - Módulos do curso
     const handleRemoveModule = async (modulo_id) => {
         if (!window.confirm("Remover este módulo do curso?")) return;
         try {
@@ -127,7 +133,7 @@ function AdminCourses() {
                             required
                         />
                         <Form.Control
-                            placeholder="Sigla (ex: TPSI)"
+                            placeholder="Sigla"
                             value={formData.sigla}
                             onChange={e => setFormData({ ...formData, sigla: e.target.value })}
                             required
@@ -150,7 +156,7 @@ function AdminCourses() {
                             onChange={e => setFormData({ ...formData, descricao: e.target.value })}
                         />
                         <Button type="submit" variant="primary">
-                            {editandoId ? <FaSave /> : <FaPlus />}
+                            {eId ? <FaSave /> : <FaPlus />}
                         </Button>
                     </Form>
                 </Card.Body>
@@ -175,7 +181,7 @@ function AdminCourses() {
                                     <td>
                                         {/* Btn Editar */}
                                         <Button variant="link" onClick={() => {
-                                            setEditandoId(course.id);
+                                            setEId(course.id);
                                             setFormData({ nome: course.nome, sigla: course.sigla, descricao: course.descricao });
                                         }}>
                                             <FaEdit />
@@ -220,7 +226,7 @@ function AdminCourses() {
                             <FaPlus />
                         </Button>
                     </div>
-                    {/* PARTE DE BAIXO: Lista */}
+                    {/* Lista de módulos do curso */}
                     {courseModules.length === 0 ? (
                         <p className="text-muted text-center py-3">Este curso ainda não tem módulos.</p>
                     ) : (

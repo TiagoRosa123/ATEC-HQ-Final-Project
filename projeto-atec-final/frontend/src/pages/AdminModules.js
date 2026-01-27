@@ -12,6 +12,7 @@ function AdminModules() {
     const [editandoId, setEditandoId] = useState(null);
     const [modulos, setModule] = useState([]);
 
+    //GET - Listar Modulos
     const loadModule = async () => {
         try {
             const res = await api.get('/modules');

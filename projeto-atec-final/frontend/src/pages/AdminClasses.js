@@ -1,21 +1,62 @@
 import React, { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
-import { Table, Button, Form, Card, Badge } from 'react-bootstrap';
-import { FaEdit, FaTrash, FaPlus, FaSave } from 'react-icons/fa';
+import { Table, Button, Form, Card, Badge, Modal, ListGroup } from 'react-bootstrap';
+import { FaEdit, FaTrash, FaPlus, FaSave, FaUsers } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import api from '../services/api';
 
 function AdminClasses() {
     const [classes, setClasses] = useState([]);
-    const [courses, setCourses] = useState([]);
-    const [formData, setFormData] = useState({ 
-        codigo: '', 
-        curso_id: '', 
-        data_inicio: '', 
-        data_fim: '', 
-        estado: 'planeamento' 
+    const [courses, setCourses] = useState([]); // Para cursos 
+    const [formData, setFormData] = useState({ // Para dados da turma
+        codigo: '',
+        curso_id: '',
+        data_inicio: '',
+        data_fim: '',
+        estado: 'planeamento'
     });
-    const [editandoId, setEditandoId] = useState(null);
+    const [editId, setEditId] = useState(null); // Para editar uma turma
+    const [showStudentsModal, setShowStudentsModal] = useState(false); // Para mostrar os alunos de uma turma
+    const [selectedClass, setSelectedClass] = useState(null); 
+    const [studentsList, setStudentsList] = useState([]); // Para listar os alunos
+    const [newStudentId, setNewStudentId] = useState(""); // Para adicionar um aluno
+
+    // LOGICA DE ALUNOS
+    const handleOpenStudents = async (cls) => {
+        setSelectedClass(cls);
+        setShowStudentsModal(true);
+        loadStudents(cls.id);
+    };
+
+    //GET - Listar alunos
+    const loadStudents = async (turmaId) => {
+        try {
+            const res = await api.get(`/classes/${turmaId}/students`);
+            setStudentsList(res.data);
+        } catch (error) { toast.error("Erro ao carregar alunos."); }
+    };
+
+    // POST - Add aluno
+    const handleAddStudent = async (e) => {
+        e.preventDefault();
+        try {
+            await api.post(`/classes/${selectedClass.id}/students`, { formando_id: newStudentId });
+            toast.success("Aluno inscrito!");
+            setNewStudentId("");
+            loadStudents(selectedClass.id);
+        } catch (error) { toast.error("Erro ao inscrever (Aluno já existe?)"); }
+    };
+
+    // DELETE - Remover aluno
+    const handleRemoveStudent = async (formandoId) => {
+        if (!window.confirm("Remover aluno da turma?")) return;
+        try {
+            await api.delete(`/classes/${selectedClass.id}/students/${formandoId}`);
+            toast.success("Aluno removido.");
+            loadStudents(selectedClass.id);
+        } catch (error) { toast.error("Erro ao remover."); }
+    };
+
     // Carregar Turmas e Cursos (para poder escolher o curso)
     const loadData = async () => {
         try {
@@ -28,21 +69,25 @@ function AdminClasses() {
         } catch (error) { toast.error('Erro ao carregar dados'); }
     };
     useEffect(() => { loadData(); }, []);
+
+    // POST - Add turma
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            if (editandoId) {
-                await api.put(`/classes/update/${editandoId}`, formData);
+            if (editId) {
+                await api.put(`/classes/update/${editId}`, formData);
                 toast.success('Turma atualizada!');
             } else {
                 await api.post('/classes/create', formData);
                 toast.success('Turma criada!');
             }
             setFormData({ codigo: '', curso_id: '', data_inicio: '', data_fim: '', estado: 'planeamento' });
-            setEditandoId(null);
+            setEditId(null);
             loadData();
         } catch (error) { toast.error('Erro ao guardar.'); }
     };
+
+    // DELETE - Remover turma
     const handleDelete = async (id) => {
         if (!window.confirm("Apagar turma?")) return;
         try {
@@ -51,7 +96,7 @@ function AdminClasses() {
             loadData();
         } catch (error) { toast.error('Erro ao apagar.'); }
     };
-    // Helper para formatar a data que vem da BD para o input type="date"
+    //Ajuda para formatar a data que vem da BD para o input type="date"
     const formatDateForInput = (dateString) => {
         if (!dateString) return '';
         return dateString.split('T')[0];
@@ -68,17 +113,17 @@ function AdminClasses() {
                 <Card.Body>
                     <Form onSubmit={handleSubmit} className="row g-3">
                         <div className="col-md-2">
-                            <Form.Control 
-                                placeholder="Código (ex: TPSI.1024)" 
+                            <Form.Control
+                                placeholder="Código (ex: TPSI.1024)"
                                 value={formData.codigo}
-                                onChange={e => setFormData({...formData, codigo: e.target.value})}
-                                required 
+                                onChange={e => setFormData({ ...formData, codigo: e.target.value })}
+                                required
                             />
                         </div>
                         <div className="col-md-3">
-                            <Form.Select 
+                            <Form.Select
                                 value={formData.curso_id}
-                                onChange={e => setFormData({...formData, curso_id: e.target.value})}
+                                onChange={e => setFormData({ ...formData, curso_id: e.target.value })}
                                 required
                             >
                                 <option value="">Selecionar Curso...</option>
@@ -90,20 +135,20 @@ function AdminClasses() {
                         <div className="col-md-2">
                             <Form.Control type="date"
                                 value={formatDateForInput(formData.data_inicio)}
-                                onChange={e => setFormData({...formData, data_inicio: e.target.value})}
-                                required 
+                                onChange={e => setFormData({ ...formData, data_inicio: e.target.value })}
+                                required
                             />
                         </div>
                         <div className="col-md-2">
                             <Form.Control type="date"
                                 value={formatDateForInput(formData.data_fim)}
-                                onChange={e => setFormData({...formData, data_fim: e.target.value})}
+                                onChange={e => setFormData({ ...formData, data_fim: e.target.value })}
                             />
                         </div>
                         <div className="col-md-2">
-                            <Form.Select 
+                            <Form.Select
                                 value={formData.estado}
-                                onChange={e => setFormData({...formData, estado: e.target.value})}
+                                onChange={e => setFormData({ ...formData, estado: e.target.value })}
                             >
                                 <option value="planeamento">Planeamento</option>
                                 <option value="ativo">Ativo</option>
@@ -112,7 +157,7 @@ function AdminClasses() {
                         </div>
                         <div className="col-md-1">
                             <Button type="submit" variant="primary" className="w-100">
-                                {editandoId ? <FaSave /> : <FaPlus />}
+                                {editId ? <FaSave /> : <FaPlus />}
                             </Button>
                         </div>
                     </Form>
@@ -127,6 +172,7 @@ function AdminClasses() {
                                 <th>Curso</th>
                                 <th>Data Início</th>
                                 <th>Estado</th>
+                                <th>Alunos</th>
                                 <th>Ações</th>
                             </tr>
                         </thead>
@@ -142,8 +188,13 @@ function AdminClasses() {
                                         </Badge>
                                     </td>
                                     <td>
+                                        <Button variant="outline-info" size="sm" onClick={() => handleOpenStudents(cls)}>
+                                            <FaUsers className="me-2" />Gerir
+                                        </Button>
+                                    </td>
+                                    <td>
                                         <Button variant="link" onClick={() => {
-                                            setEditandoId(cls.id);
+                                            setEditId(cls.id);
                                             setFormData(cls);
                                         }}>
                                             <FaEdit />
@@ -158,6 +209,40 @@ function AdminClasses() {
                     </Table>
                 </Card.Body>
             </Card>
+
+            {/* MODAL DE ALUNOS */}
+            <Modal show={showStudentsModal} onHide={() => setShowStudentsModal(false)} size="lg">
+                <Modal.Header closeButton>
+                    <Modal.Title>Alunos da Turma: {selectedClass?.codigo}</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Form onSubmit={handleAddStudent} className="d-flex gap-2 mb-4 p-3 bg-light rounded">
+                        <Form.Control
+                            placeholder="ID do Formando (ex: 5)"
+                            value={newStudentId}
+                            onChange={e => setNewStudentId(e.target.value)}
+                            required
+                        />
+                        <Button type="submit" variant="success"><FaPlus /> Inscrever</Button>
+                    </Form>
+
+                    <h6 className="text-secondary fw-bold mb-3">Inscritos ({studentsList.length})</h6>
+                    <ListGroup>
+                        {studentsList.map(stud => (
+                            <ListGroup.Item key={stud.formando_id} className="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div className="fw-bold">{stud.nome}</div>
+                                    <div className="small text-muted">{stud.email}</div>
+                                </div>
+                                <Button variant="outline-danger" size="sm" onClick={() => handleRemoveStudent(stud.formando_id)}>
+                                    <FaTrash />
+                                </Button>
+                            </ListGroup.Item>
+                        ))}
+                        {studentsList.length === 0 && <p className="text-muted text-center pt-3">Ainda sem alunos inscritos.</p>}
+                    </ListGroup>
+                </Modal.Body>
+            </Modal>
         </Navbar>
     );
 }

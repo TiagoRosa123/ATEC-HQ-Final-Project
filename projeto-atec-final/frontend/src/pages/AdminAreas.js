@@ -6,12 +6,12 @@ import toast from 'react-hot-toast';
 import api from '../services/api';
 
 function AdminAreas() {
-    const [areas, setAreas] = useState([]);
+    const [areas, setAreas] = useState([]); //area
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({ nome: '', descricao: '' });
-    const [editandoId, setEditandoId] = useState(null);
+    const [editId, setEditId] = useState(null);
 
-    // 1. CARREGAR CURSOS (GET)
+    //GET - Listar Areas
     const loadAreas = async () => {
         setLoading(true);
         try {
@@ -26,26 +26,26 @@ function AdminAreas() {
 
     useEffect(() => { loadAreas(); }, []);
 
-    // 2. CRIAR OU EDITAR (POST / PUT)
+    //POST - Criar/Editar Area
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            if (editandoId) {
-                await api.put(`/areas/update/${editandoId}`, formData);
+            if (editId) {
+                await api.put(`/areas/update/${editId}`, formData);
                 toast.success('Area atualizada!');
             } else {
                 await api.post('/areas/create', formData);
                 toast.success('Area criada!');
             }
             setFormData({ nome: '', descricao: '' });
-            setEditandoId(null);
+            setEditId(null);
             loadAreas();
         } catch (error) {
             toast.error('Erro ao guardar.');
         }
     };
 
-    // 3. APAGAR (DELETE)
+    //DELETE - Apagar Area
     const handleDelete = async (id) => {
         if (!window.confirm("Apagar esta area?")) return;
         try {
@@ -77,7 +77,7 @@ function AdminAreas() {
                             onChange={e => setFormData({ ...formData, descricao: e.target.value })}
                         />
                         <Button type="submit" variant="primary">
-                            {editandoId ? <FaSave /> : <FaPlus />}
+                            {editId ? <FaSave /> : <FaPlus />}
                         </Button>
                     </Form>
                 </Card.Body>
@@ -101,7 +101,7 @@ function AdminAreas() {
                                     <td>{area.descricao}</td>
                                     <td>
                                         <Button variant="link" onClick={() => {
-                                            setEditandoId(area.id);
+                                            setEditId(area.id);
                                             setFormData({ nome: area.nome, descricao: area.descricao });
                                         }}>
                                             <FaEdit />
