@@ -80,7 +80,12 @@ router.get("/", authorization, async (req, res) => {
           formador: row.formador_nome,
           turma: row.turma_codigo,
         },
-        color: row.color || "#3174ad", // Fallback color
+        color: row.color || "#3174ad",
+        // Campos extra para D&D e Updates
+        turma_id: row.turma_id,
+        formador_id: row.formador_id,
+        sala_id: row.sala_id,
+        modulo_id: row.modulo_id, // Precisamos disto para o update não crachar se for obrigatório
       };
     });
 
@@ -89,6 +94,99 @@ router.get("/", authorization, async (req, res) => {
     console.error(err.message);
     res.status(500).send("Erro no servidor ao buscar horários");
   }
+});
+
+// POST /api/schedules
+router.post("/", authorization, async (req, res) => {
+    try {
+        const { turma_id, modulo_id, formador_id, sala_id, data_aula, hora_inicio, hora_fim } = req.body;
+
+        // Validar campos obrigatórios
+        if (!turma_id || !modulo_id || !formador_id || !sala_id || !data_aula || !hora_inicio || !hora_fim) {
+            return res.status(400).json("Todos os campos são obrigatórios.");
+        }
+
+        const query = `
+            INSERT INTO horarios (turma_id, modulo_id, formador_id, sala_id, data_aula, hora_inicio, hora_fim)
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
+            RETURNING *
+        `;
+
+        const newSchedule = await pool.query(query, [turma_id, modulo_id, formador_id, sala_id, data_aula, hora_inicio, hora_fim]);
+
+        res.json(newSchedule.rows[0]);
+
+    } catch (err) {
+        console.error(err.message);
+        if (err.code === '23P01') { // Exclusion violation (Overlap)
+            return res.status(409).json("Conflito de horário! Sala, Formador ou Turma já ocupados neste período.");
+        }
+        res.status(500).send("Erro ao criar horário");
+    }
+});
+
+// PUT /api/schedules/:id
+router.put("/:id", authorization, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { turma_id, modulo_id, formador_id, sala_id, data_aula, hora_inicio, hora_fim } = req.body;
+
+        const query = `
+            UPDATE horarios 
+            SET turma_id = $1, modulo_id = $2, formador_id = $3, sala_id = $4, data_aula = $5, hora_inicio = $6, hora_fim = $7
+            WHERE id = $8
+            RETURNING *
+        `;
+
+        const updateSchedule = await pool.query(query, [turma_id, modulo_id, formador_id, sala_id, data_aula, hora_inicio, hora_fim, id]);
+
+        if (updateSchedule.rows.length === 0) {
+            return res.status(404).json("Horário não encontrado.");
+        }
+
+        res.json(updateSchedule.rows[0]);
+
+    } catch (err) {
+        console.error(err.message);
+        if (err.code === '23P01') {
+             return res.status(409).json("Conflito de horário! Sobreposição detectada.");
+        }
+        res.status(500).send("Erro ao atualizar horário");
+    }
+});
+
+// DELETE /api/schedules/:id
+router.delete("/:id", authorization, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const deleteSchedule = await pool.query("DELETE FROM horarios WHERE id = $1 RETURNING *", [id]);
+
+        if (deleteSchedule.rows.length === 0) {
+            return res.status(404).json("Horário não encontrado.");
+        }
+
+        res.json("Horário removido com sucesso.");
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send("Erro ao remover horário");
+    }
+});
+
+// GET /api/schedules/trainers (Helper para dropdown)
+router.get("/trainers-list", authorization, async (req, res) => {
+    try {
+        // Obter formadores com ID da tabela 'formadores' e Nome
+        const query = `
+            SELECT f.id, u.nome
+            FROM formadores f
+            JOIN utilizadores u ON f.utilizador_id = u.id
+        `;
+        const result = await pool.query(query);
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send("Erro ao buscar formadores");
+    }
 });
 
 module.exports = router;

@@ -1,16 +1,17 @@
 import React from 'react';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
+import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import 'moment/locale/pt'; // Importar locale português
+import 'react-big-calendar/lib/addons/dragAndDrop/styles.css'; // Estilos do D&D
+import 'moment/locale/pt'; 
 import Container from 'react-bootstrap/Container';
 
-// Configurar localizer
 moment.locale('pt');
 const localizer = momentLocalizer(moment);
+const DnDCalendar = withDragAndDrop(Calendar);
 
-const ScheduleCalendar = ({ events, defaultView = 'week' }) => {
-  // Tradução dos textos do calendário
+const ScheduleCalendar = ({ events, defaultView = 'week', onSelectSlot, onEventDrop, onEventResize }) => {
   const messages = {
     allDay: 'Dia todo',
     previous: 'Anterior',
@@ -26,26 +27,24 @@ const ScheduleCalendar = ({ events, defaultView = 'week' }) => {
     noEventsInRange: 'Sem aulas neste período.',
   };
 
-  // Estilizar eventos (cores)
   const eventStyleGetter = (event) => {
     const backgroundColor = event.color || '#3174ad';
-    const style = {
-      backgroundColor,
-      borderRadius: '5px',
-      opacity: 0.8,
-      color: 'white',
-      border: '0px',
-      display: 'block'
-    };
     return {
-      style: style
+      style: {
+        backgroundColor,
+        borderRadius: '5px',
+        opacity: 0.8,
+        color: 'white',
+        border: '0px',
+        display: 'block'
+      }
     };
   };
 
   return (
     <Container fluid className="p-3 bg-white rounded shadow-sm">
       <div style={{ height: '75vh' }}>
-        <Calendar
+        <DnDCalendar
           localizer={localizer}
           events={events}
           startAccessor="start"
@@ -55,11 +54,16 @@ const ScheduleCalendar = ({ events, defaultView = 'week' }) => {
           defaultView={defaultView}
           views={['month', 'week', 'day', 'agenda']}
           eventPropGetter={eventStyleGetter}
-          min={new Date(0, 0, 0, 8, 0, 0)} // Começar às 8h
-          max={new Date(0, 0, 0, 23, 0, 0)} // Terminar às 23h
+          min={new Date(0, 0, 0, 8, 0, 0)}
+          max={new Date(0, 0, 0, 23, 0, 0)}
           formats={{
             dayHeaderFormat: 'dddd, DD MMMM',
           }}
+          selectable
+          resizable
+          onSelectSlot={onSelectSlot}
+          onEventDrop={onEventDrop}
+          onEventResize={onEventResize}
         />
       </div>
     </Container>
