@@ -1,17 +1,45 @@
 import React, { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
-import { Card, Row, Col, Badge } from 'react-bootstrap';
+import { Card, Row, Col, Badge, Form, Button } from 'react-bootstrap';
 import { FaUser, FaEnvelope, FaIdCard, FaUserTag } from 'react-icons/fa';
+import toast from 'react-hot-toast';
+import api from '../services/api';
 
 function PersonalData() {
     const [user, setUser] = useState({ nome: '', email: '', id: '', role: '', is_admin: false });
+    const [files, setFiles] = useState([]);
 
     useEffect(() => {
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-            setUser(JSON.parse(storedUser));
-        }
+        loadData();
+        loadFiles();
     }, []);
+
+    const loadData = async () => {
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) setUser(JSON.parse(storedUser));
+    };
+
+    const loadFiles = async () => {
+        try {
+            const res = await api.get('/files/my-files');
+            setFiles(res.data);
+        } catch (e) { console.error("Erro files"); }
+    }
+
+    const handleDownload = async (filename, originalName) => {
+        try {
+            const response = await api.get(`/files/download/${filename}`, { responseType: 'blob' });
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', originalName || filename);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        } catch (e) {
+            toast.error("Erro ao fazer download.");
+        }
+    };
 
     return (
         <Navbar>
@@ -84,6 +112,67 @@ function PersonalData() {
                                 </Col>
                             </div>
 
+                        </Card.Body>
+                    </Card>
+                    <Card className="mt-4 border-0 shadow-sm">
+                        <Card.Header className="bg-white border-0 pt-4 pb-0">
+                            <h6 className="fw-bold text-uppercase text-secondary ls-1">📄 Meus Documentos</h6>
+                        </Card.Header>
+                        <Card.Body>
+                            {/* FORM UPLOAD */}
+                            <Form.Group className="mb-3">
+                                <Form.Label className="small fw-bold text-secondary">Tipo de Documento</Form.Label>
+                                <Form.Select id="fileType" className="bg-light border-0 py-2">
+                                    <option>Curriculum Vitae</option>
+                                    <option>Registo Criminal</option>
+                                    <option>Certificado de Habilitações</option>
+                                    <option>Outros</option>
+                                </Form.Select>
+                            </Form.Group>
+
+                            <Form.Group className="mb-3">
+                                <Form.Control type="file" id="fileInput" className="bg-light border-0" />
+                            </Form.Group>
+
+                            <Button className="btn-primary-custom w-100 mb-4" onClick={async () => {
+                                const fileInput = document.getElementById('fileInput');
+                                const fileType = document.getElementById('fileType').value;
+                                if (fileInput.files[0]) {
+                                    const formData = new FormData();
+                                    formData.append('file', fileInput.files[0]);
+                                    formData.append('tipo_ficheiro', fileType);
+                                    try {
+                                        await api.post('/files/upload', formData, {
+                                            headers: { 'Content-Type': 'multipart/form-data' }
+                                        });
+                                        toast.success("Ficheiro enviado!");
+                                        loadFiles(); // Recarregar a lista
+                                        fileInput.value = null; // Limpar input
+                                    } catch (e) { toast.error(e.response?.data?.message || "Erro no upload."); }
+                                }
+                            }}>
+                                Enviar Documento 📤
+                            </Button>
+
+                            <hr />
+
+                            {/* LISTA DE FICHEIROS */}
+                            <h6 className="fw-bold text-secondary mb-3">Documentos Enviados</h6>
+                            {files.length === 0 ? <p className="text-muted small">Nenhum ficheiro enviado ainda.</p> : (
+                                <ul className="list-group list-group-flush">
+                                    {files.map(f => (
+                                        <li key={f.id} className="list-group-item d-flex justify-content-between align-items-center bg-transparent px-0">
+                                            <div>
+                                                <div className="fw-bold text-dark-blue">{f.tipo_ficheiro}</div>
+                                                <small className="text-muted">{f.nome_ficheiro.substring(f.nome_ficheiro.indexOf('-') + 1)}</small>
+                                            </div>
+                                            <Button variant="outline-primary" size="sm" onClick={() => handleDownload(f.nome_ficheiro, f.nome_ficheiro)}>
+                                                Download ⬇️
+                                            </Button>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
                         </Card.Body>
                     </Card>
                 </Col>

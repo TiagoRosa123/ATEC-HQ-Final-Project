@@ -68,7 +68,8 @@ function AdminUsers() {
                 await api.put(`/admin/editar/${editandoId}`, {
                     nome: formData.nome,
                     email: formData.email,
-                    is_admin: formData.is_admin
+                    is_admin: formData.is_admin,
+                    role: formData.role // ADICIONADO: Envia o role
                 });
                 toast.success('Utilizador atualizado com sucesso!');
             } else {
@@ -78,7 +79,7 @@ function AdminUsers() {
             }
 
             // Limpar form e recarregar
-            setFormData({ nome: '', email: '', password: '', is_admin: false });
+            setFormData({ nome: '', email: '', password: '', role: 'user', is_admin: false });
             setEditandoId(null);
             loadUsers();
 
@@ -94,7 +95,8 @@ function AdminUsers() {
             nome: user.nome,
             email: user.email,
             password: '', // Não preenchemos a password por segurança
-            is_admin: user.is_admin
+            is_admin: user.is_admin,
+            role: user.role // ADICIONADO: Define o role atual
         });
         // Scroll para o topo para ver o formulário
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -102,7 +104,7 @@ function AdminUsers() {
 
     const handleCancel = () => {
         setEditandoId(null);
-        setFormData({ nome: '', email: '', password: '', is_admin: false });
+        setFormData({ nome: '', email: '', password: '', role: 'user', is_admin: false });
     };
 
     // Filtragem - Pesquisa

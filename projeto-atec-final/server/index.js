@@ -18,6 +18,8 @@ app.use('/modules', require('./routes/modules'));
 app.use('/classes', require('./routes/classes'));
 app.use('/rooms', require('./routes/rooms'));
 app.use('/evaluations', require('./routes/evaluations'));
+app.use('/files', require('./routes/files'));
+app.use('/public', require('./routes/public'));
 
 
 // ROTA TESTE: Ver se a BD responde
