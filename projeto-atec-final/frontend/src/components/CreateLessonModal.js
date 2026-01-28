@@ -3,7 +3,7 @@ import { Modal, Button, Form, Row, Col } from 'react-bootstrap';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
-const CreateLessonModal = ({ show, handleClose, selectedSlot, onSuccess }) => {
+const CreateLessonModal = ({ show, handleClose, selectedSlot, editEvent, onSuccess }) => {
     const [formData, setFormData] = useState({
         turma_id: '',
         modulo_id: '',
@@ -24,22 +24,47 @@ const CreateLessonModal = ({ show, handleClose, selectedSlot, onSuccess }) => {
     useEffect(() => {
         if (show) {
             fetchAuxData();
-            // Preencher dados se vierem do "drag/select" no calendário
-            if (selectedSlot) {
-                // selectedSlot.start é Date object
+            
+            if (editEvent) {
+                // Modo Edição: Preencher com dados existentes
+                setFormData({
+                    turma_id: editEvent.turma_id || '',
+                    modulo_id: editEvent.modulo_id || '',
+                    formador_id: editEvent.formador_id || '',
+                    sala_id: editEvent.sala_id || '',
+                    data_aula: editEvent.start ? editEvent.start.toISOString().split('T')[0] : '',
+                    hora_inicio: editEvent.start ? editEvent.start.toTimeString().split(' ')[0].substring(0, 5) : '',
+                    hora_fim: editEvent.end ? editEvent.end.toTimeString().split(' ')[0].substring(0, 5) : ''
+                });
+            } else if (selectedSlot) {
+                // Modo Criação (Drag/Select)
                 const dateStr = selectedSlot.start.toISOString().split('T')[0];
-                const startStr = selectedSlot.start.toTimeString().split(' ')[0].substring(0, 5); // HH:MM
-                const endStr = selectedSlot.end.toTimeString().split(' ')[0].substring(0, 5); // HH:MM
+                const startStr = selectedSlot.start.toTimeString().split(' ')[0].substring(0, 5);
+                const endStr = selectedSlot.end.toTimeString().split(' ')[0].substring(0, 5);
 
-                setFormData(prev => ({
-                    ...prev,
+                setFormData({
+                    turma_id: '',
+                    modulo_id: '',
+                    formador_id: '',
+                    sala_id: '',
                     data_aula: dateStr,
                     hora_inicio: startStr,
                     hora_fim: endStr
-                }));
+                });
+            } else {
+                // Reset
+                setFormData({
+                    turma_id: '',
+                    modulo_id: '',
+                    formador_id: '',
+                    sala_id: '',
+                    data_aula: '',
+                    hora_inicio: '',
+                    hora_fim: ''
+                });
             }
         }
-    }, [show, selectedSlot]);
+    }, [show, selectedSlot, editEvent]);
 
     const fetchAuxData = async () => {
         try {
@@ -49,7 +74,7 @@ const CreateLessonModal = ({ show, handleClose, selectedSlot, onSuccess }) => {
             const [resTurmas, resModulos, resFormadores, resSalas] = await Promise.all([
                 axios.get('http://localhost:5000/classes', config),
                 axios.get('http://localhost:5000/modules', config),
-                axios.get('http://localhost:5000/schedules/trainers-list', config), // Endpoint dedicado
+                axios.get('http://localhost:5000/schedules/trainers-list', config),
                 axios.get('http://localhost:5000/rooms', config)
             ]);
 
@@ -76,16 +101,41 @@ const CreateLessonModal = ({ show, handleClose, selectedSlot, onSuccess }) => {
             const token = localStorage.getItem('token');
             const config = { headers: { token: token } };
 
-            await axios.post('http://localhost:5000/schedules', formData, config);
+            if (editEvent) {
+                await axios.put(`http://localhost:5000/schedules/${editEvent.id}`, formData, config);
+                toast.success("Aula atualizada com sucesso!");
+            } else {
+                await axios.post('http://localhost:5000/schedules', formData, config);
+                toast.success("Aula agendada com sucesso!");
+            }
             
-            toast.success("Aula agendada com sucesso!");
-            onSuccess(); // Recarregar calendário
+            onSuccess();
             handleClose();
 
         } catch (error) {
             console.error(error);
-            const msg = error.response?.data || "Erro ao criar aula";
+            const msg = error.response?.data || "Erro ao guardar aula";
             toast.error(msg);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleDelete = async () => {
+        if (!window.confirm("Tem a certeza que deseja eliminar esta aula?")) return;
+        
+        setLoading(true);
+        try {
+            const token = localStorage.getItem('token');
+            const config = { headers: { token: token } };
+
+            await axios.delete(`http://localhost:5000/schedules/${editEvent.id}`, config);
+            toast.success("Aula eliminada.");
+            onSuccess();
+            handleClose();
+        } catch (error) {
+            console.error(error);
+            toast.error("Erro ao eliminar aula.");
         } finally {
             setLoading(false);
         }
@@ -94,7 +144,7 @@ const CreateLessonModal = ({ show, handleClose, selectedSlot, onSuccess }) => {
     return (
         <Modal show={show} onHide={handleClose} size="lg">
             <Modal.Header closeButton>
-                <Modal.Title>Agendar Nova Aula</Modal.Title>
+                <Modal.Title>{editEvent ? 'Editar Aula' : 'Agendar Nova Aula'}</Modal.Title>
             </Modal.Header>
             <Form onSubmit={handleSubmit}>
                 <Modal.Body>
@@ -111,8 +161,8 @@ const CreateLessonModal = ({ show, handleClose, selectedSlot, onSuccess }) => {
                         <Col md={6}>
                             <Form.Group>
                                 <Form.Label>Módulo</Form.Label>
-                                <Form.Select name="modulo_id" value={formData.modulo_id} onChange={handleChange} required>
-                                    <option value="">Selecione...</option>
+                                <Form.Select name="modulo_id" value={formData.modulo_id} onChange={handleChange}>
+                                    <option value="">Selecione (Opcional)...</option>
                                     {modulos.map(m => <option key={m.id} value={m.id}>{m.nome} ({m.codigo})</option>)}
                                 </Form.Select>
                             </Form.Group>
@@ -123,23 +173,9 @@ const CreateLessonModal = ({ show, handleClose, selectedSlot, onSuccess }) => {
                         <Col md={6}>
                             <Form.Group>
                                 <Form.Label>Formador</Form.Label>
-                                <Form.Select name="formador_id" value={formData.formador_id} onChange={handleChange} required>
-                                    <option value="">Selecione...</option>
+                                <Form.Select name="formador_id" value={formData.formador_id} onChange={handleChange}>
+                                    <option value="">Selecione (Opcional)...</option>
                                     {formadores.map(f => (
-                                        // Nota: Aqui precisamos do ID da tabela formadores. 
-                                        // O endpoint /admin/todos retorna users... 
-                                        // SE O FORMADOR nao tiver registo na tabela 'formadores', vai dar erro de chave estrangeira (formador_id).
-                                        // SOLUÇÃO: Filtrar apenas users que TÊM formador associado ou assumir que o sistema cria auto.
-                                        // Como o sistema separa User de Formador, este dropdown pode falhar se usarmos user.id em vez de formador.id.
-                                        // Vou assumir provisoriamente user.id e se falhar corrijo a query auxiliar
-                                        // Melhor: Usar o endpoint /admin/users que lista dados completos?
-                                        // O endpoint /admin/todos retorna "utilizadores".
-                                        
-                                        // HACK PROVISORIO: Se o backend espera 'formador_id', preciso do ID da tabela formador. 
-                                        // Se este user for formador, preciso do ID de formador DELE. 
-                                        // Mas o endpoint /admin/todos não deve retornar o ID da tabela 'formadores'.
-                                        // Preciso de um endpoint `GET /trainers` ou algo assim. 
-                                        // Vou assumir que por agora vai falhar se user.id != formador.id e corrigirei no próximo passo se necessario.
                                         <option key={f.id} value={f.id}>{f.nome}</option>
                                     ))}
                                 </Form.Select>
@@ -148,8 +184,8 @@ const CreateLessonModal = ({ show, handleClose, selectedSlot, onSuccess }) => {
                         <Col md={6}>
                             <Form.Group>
                                 <Form.Label>Sala</Form.Label>
-                                <Form.Select name="sala_id" value={formData.sala_id} onChange={handleChange} required>
-                                    <option value="">Selecione...</option>
+                                <Form.Select name="sala_id" value={formData.sala_id} onChange={handleChange}>
+                                    <option value="">Selecione (Opcional)...</option>
                                     {salas.map(s => <option key={s.id} value={s.id}>{s.nome}</option>)}
                                 </Form.Select>
                             </Form.Group>
@@ -178,9 +214,14 @@ const CreateLessonModal = ({ show, handleClose, selectedSlot, onSuccess }) => {
                     </Row>
                 </Modal.Body>
                 <Modal.Footer>
+                    {editEvent && (
+                        <Button variant="danger" onClick={handleDelete} className="me-auto">
+                            Eliminar
+                        </Button>
+                    )}
                     <Button variant="secondary" onClick={handleClose}>Cancelar</Button>
                     <Button variant="primary" type="submit" disabled={loading}>
-                        {loading ? 'A guardar...' : 'Agendar Aula'}
+                        {loading ? 'A guardar...' : (editEvent ? 'Atualizar' : 'Agendar')}
                     </Button>
                 </Modal.Footer>
             </Form>

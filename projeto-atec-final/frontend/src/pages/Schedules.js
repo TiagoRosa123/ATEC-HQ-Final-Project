@@ -14,6 +14,7 @@ const Schedules = () => {
     // Modal state
     const [showModal, setShowModal] = useState(false);
     const [selectedSlot, setSelectedSlot] = useState(null);
+    const [editEvent, setEditEvent] = useState(null); // Novo estado
 
     // Listas para os dropdowns
     const [turmas, setTurmas] = useState([]);
@@ -132,12 +133,23 @@ const Schedules = () => {
         }
     };
 
+    const handleSelectEvent = (event) => {
+        // Modo Edição
+        setSelectedSlot(null);
+        setEditEvent(event);
+        setShowModal(true);
+    };
+
     return (
         <Navbar>
             <Container className="mt-4">
                 <div className="d-flex justify-content-between align-items-center mb-4">
                     <h2 className="mb-0">Gestão de Horários</h2>
-                    <button className="btn btn-success" onClick={() => { setSelectedSlot(null); setShowModal(true); }}>
+                    <button className="btn btn-success" onClick={() => { 
+                        setSelectedSlot(null); 
+                        setEditEvent(null);
+                        setShowModal(true); 
+                    }}>
                         + Nova Aula
                     </button>
                 </div>
@@ -201,14 +213,16 @@ const Schedules = () => {
                 <ScheduleCalendar 
                     events={events} 
                     onSelectSlot={handleSelectSlot}
+                    onSelectEvent={handleSelectEvent} // Novo handler para click no evento
                     onEventDrop={handleEventDrop}
-                    onEventResize={handleEventDrop} // Mesma lógica para resize
+                    onEventResize={handleEventDrop} 
                 />
 
                 <CreateLessonModal 
                     show={showModal} 
                     handleClose={() => setShowModal(false)} 
                     selectedSlot={selectedSlot}
+                    editEvent={editEvent} // Passar evento para edição
                     onSuccess={fetchSchedules}
                 />
             </Container>

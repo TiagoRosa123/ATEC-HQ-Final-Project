@@ -21,9 +21,10 @@ router.get("/", authorization, async (req, res) => {
                 h.turma_id,
                 h.formador_id,
                 h.sala_id,
+                h.modulo_id, -- Necessário para D&D manter o módulo original
                 f.cor_calendario as color -- Cor do formador
             FROM horarios h
-            JOIN modulos m ON h.modulo_id = m.id
+            LEFT JOIN modulos m ON h.modulo_id = m.id -- Alterado para LEFT JOIN para não "sumir" se modulo for null
             LEFT JOIN turmas t ON h.turma_id = t.id
             LEFT JOIN salas s ON h.sala_id = s.id
             LEFT JOIN formadores f ON h.formador_id = f.id
@@ -65,14 +66,11 @@ router.get("/", authorization, async (req, res) => {
     // Formatar para o frontend (react-big-calendar espera start/end como objetos Date, mas API manda string)
     const events = result.rows.map((row) => {
       // Combinar data + hora
-      // data_aula é 2025-11-20, hora_inicio é 09:00:00
-      // Nota: O node-postgres pode retornar data_aula como objeto Date.
-
       const dateStr = new Date(row.data_aula).toISOString().split("T")[0]; // YYYY-MM-DD
 
       return {
         id: row.id,
-        title: `${row.title} (${row.turma_codigo})`, // Ex: "Matemática (TPSI.0525)"
+        title: `${row.title || 'Sem Módulo'} (${row.turma_codigo || 'N/A'})`, // Fallback title
         start: `${dateStr}T${row.hora_inicio}`,
         end: `${dateStr}T${row.hora_fim}`,
         resource: {
@@ -85,7 +83,7 @@ router.get("/", authorization, async (req, res) => {
         turma_id: row.turma_id,
         formador_id: row.formador_id,
         sala_id: row.sala_id,
-        modulo_id: row.modulo_id, // Precisamos disto para o update não crachar se for obrigatório
+        modulo_id: row.modulo_id, 
       };
     });
 
@@ -130,6 +128,11 @@ router.put("/:id", authorization, async (req, res) => {
     try {
         const { id } = req.params;
         const { turma_id, modulo_id, formador_id, sala_id, data_aula, hora_inicio, hora_fim } = req.body;
+
+        // Validar campos obrigatórios (EVITAR QUE VIREM NULL)
+        if (!turma_id || !modulo_id || !formador_id || !sala_id || !data_aula || !hora_inicio || !hora_fim) {
+             return res.status(400).json("Dados incompletos. Todos os campos são obrigatórios.");
+        }
 
         const query = `
             UPDATE horarios 
