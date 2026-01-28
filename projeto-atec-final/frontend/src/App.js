@@ -19,6 +19,7 @@ import AdminAreas from './pages/AdminAreas';
 import AdminModules from './pages/AdminModules';
 import AdminClasses from './pages/AdminClasses';
 import AdminRooms from './pages/AdminRooms';
+import Schedules from './pages/Schedules';
 
 function App() {
   return (
@@ -47,6 +48,7 @@ function App() {
             <Route path="/admin/modules" element={<PrivateRoute><AdminModules /></PrivateRoute>} />
             <Route path="/admin/classes" element={<PrivateRoute><AdminClasses /></PrivateRoute>} />
             <Route path="/admin/rooms" element={<PrivateRoute><AdminRooms /></PrivateRoute>} />
+            <Route path="/schedules" element={<PrivateRoute><Schedules /></PrivateRoute>} />
           </Routes>
         </div>
       </Router>

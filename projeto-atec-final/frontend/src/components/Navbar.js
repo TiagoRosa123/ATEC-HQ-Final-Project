@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { FaHome, FaUserCog, FaSignOutAlt, FaCog, FaUser, FaClipboardList, FaBook, FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import { FaHome, FaUserCog, FaSignOutAlt, FaCog, FaUser, FaClipboardList, FaBook, FaChevronDown, FaChevronUp, FaCalendarAlt } from 'react-icons/fa';
 import { Container, Navbar as BsNavbar, Nav, Dropdown, Button } from 'react-bootstrap';
 import { useAuth } from '../context/AuthContext';
 
@@ -81,6 +81,13 @@ function Navbar({ children }) {
                         <Link to="/evaluations" className={`nav-link-custom ${isActive('/evaluations')}`}>
                             <FaClipboardList className="me-3" size={18} />
                             <span className="fs-6">Avaliações</span>
+                        </Link>
+                    )}
+
+                    {user && (user.is_admin || user.role === 'formador' || user.role === 'formando' || user.role === 'user') && (
+                         <Link to="/schedules" className={`nav-link-custom ${isActive('/schedules')}`}>
+                            <FaCalendarAlt className="me-3" size={18} />
+                            <span className="fs-6">Horários</span>
                         </Link>
                     )}
 
