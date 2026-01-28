@@ -21,7 +21,7 @@ router.post("/register", async (req, res) => {
     const salt = await bcrypt.genSalt(saltRound);
     const bcryptPassword = await bcrypt.hash(password, salt);
 
-    // Criar utilizador 
+    // Criar utilizador
     const newUser = await pool.query(
       "INSERT INTO utilizadores (nome, email, password_hash, ativado) VALUES ($1, $2, $3, $4) RETURNING *",
       [nome, email, bcryptPassword, false]

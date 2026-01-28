@@ -58,22 +58,35 @@ router.put('/promover/:id', authorization, verifyAdmin, async (req, res) => {
   }
 });
 
-// ROTA 3.1: Editar dados - Update
+// ROTA 3.1: Editar dados - Update (COM SINCRONIZAÇÃO DE TABELAS)
 router.put('/editar/:id', authorization, verifyAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    const { nome, email, is_admin } = req.body; //nome e email também
+    const { nome, email, is_admin, role } = req.body;
 
-    //Role
-    const role = is_admin ? 'admin' : 'user';
-
-    // Update: Muda nome, email, role e is_admin
+    // 1. Atualizar Utilizador Geral
     await pool.query(
       "UPDATE utilizadores SET nome = $1, email = $2, role = $3, is_admin = $4 WHERE id = $5",
       [nome, email, role, is_admin, id]
     );
 
-    res.json("Dados do utilizador atualizados com sucesso!");
+    // 2. Verificar e criar registo na tabela específica, se não existir
+    if (role === 'formando') {
+      // Tenta inserir. Se já existir, não faz nada (ON CONFLICT DO NOTHING requer constraint) 
+      // Em vez disso, verificamos antes:
+      const check = await pool.query("SELECT id FROM formandos WHERE utilizador_id = $1", [id]);
+      if (check.rows.length === 0) {
+        await pool.query("INSERT INTO formandos (utilizador_id, nome) VALUES ($1, $2)", [id, nome]);
+      }
+    }
+    else if (role === 'formador') {
+      const check = await pool.query("SELECT id FROM formadores WHERE utilizador_id = $1", [id]);
+      if (check.rows.length === 0) {
+        await pool.query("INSERT INTO formadores (utilizador_id, nome) VALUES ($1, $2)", [id, nome]);
+      }
+    }
+
+    res.json("Utilizador atualizado e perfil sincronizado!");
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Erro ao atualizar utilizador");
