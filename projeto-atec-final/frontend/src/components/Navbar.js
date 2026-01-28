@@ -77,7 +77,7 @@ function Navbar({ children }) {
                         </>
                     )}
 
-                    {user && !user.is_admin && (
+                    {user && (user.is_admin || user.role === 'formador') && (
                         <Link to="/evaluations" className={`nav-link-custom ${isActive('/evaluations')}`}>
                             <FaClipboardList className="me-3" size={18} />
                             <span className="fs-6">Avaliações</span>
