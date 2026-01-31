@@ -116,47 +116,11 @@ function PersonalData() {
                     </Card>
                     <Card className="mt-4 border-0 shadow-sm">
                         <Card.Header className="bg-white border-0 pt-4 pb-0">
-                            <h6 className="fw-bold text-uppercase text-secondary ls-1">📄 Meus Documentos</h6>
+                            <h6 className="fw-bold text-uppercase text-secondary ls-1">Meus Documentos</h6>
                         </Card.Header>
                         <Card.Body>
-                            {/* FORM UPLOAD */}
-                            <Form.Group className="mb-3">
-                                <Form.Label className="small fw-bold text-secondary">Tipo de Documento</Form.Label>
-                                <Form.Select id="fileType" className="bg-light border-0 py-2">
-                                    <option>Curriculum Vitae</option>
-                                    <option>Registo Criminal</option>
-                                    <option>Certificado de Habilitações</option>
-                                    <option>Outros</option>
-                                </Form.Select>
-                            </Form.Group>
 
-                            <Form.Group className="mb-3">
-                                <Form.Control type="file" id="fileInput" className="bg-light border-0" />
-                            </Form.Group>
 
-                            <Button className="btn-primary-custom w-100 mb-4" onClick={async () => {
-                                const fileInput = document.getElementById('fileInput');
-                                const fileType = document.getElementById('fileType').value;
-                                if (fileInput.files[0]) {
-                                    const formData = new FormData();
-                                    formData.append('file', fileInput.files[0]);
-                                    formData.append('tipo_ficheiro', fileType);
-                                    try {
-                                        await api.post('/files/upload', formData, {
-                                            headers: { 'Content-Type': 'multipart/form-data' }
-                                        });
-                                        toast.success("Ficheiro enviado!");
-                                        loadFiles(); // Recarregar a lista
-                                        fileInput.value = null; // Limpar input
-                                    } catch (e) { toast.error(e.response?.data?.message || "Erro no upload."); }
-                                }
-                            }}>
-                                Enviar Documento 📤
-                            </Button>
-
-                            <hr />
-
-                            {/* LISTA DE FICHEIROS */}
                             <h6 className="fw-bold text-secondary mb-3">Documentos Enviados</h6>
                             {files.length === 0 ? <p className="text-muted small">Nenhum ficheiro enviado ainda.</p> : (
                                 <ul className="list-group list-group-flush">

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
-import { Table, Button, Form, Card, Row, Col, Alert, Badge, Spinner } from 'react-bootstrap';
-import { FaEdit, FaTrash, FaUserPlus, FaSave } from 'react-icons/fa';
+import { Table, Button, Form, Card, Row, Col, Alert, Badge, Spinner, Modal} from 'react-bootstrap';
+import { FaEdit, FaTrash, FaUserPlus, FaSave, FaFolder } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -13,6 +13,9 @@ function AdminUsers() {
     const [formData, setFormData] = useState({ nome: '', email: '', password: '', role: 'user', is_admin: false });
     const [searchTerm, setSearchTerm] = useState("");
     const [editandoId, setEditandoId] = useState(null);
+
+    const [filesModalUser, setFilesModalUser] = useState(null);
+    const [userFiles, setUserFiles] = useState([]);
 
     // Para impedir que o admin se apague a si próprio
     const { user: currentUser } = useAuth();
@@ -112,6 +115,62 @@ function AdminUsers() {
         user.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
         user.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
+
+    //Modal Ficheiros
+    const handleOpenFiles = async (user) => {
+        setFilesModalUser(user);
+        try{
+            //rota criada em files.js
+            const response = await api.get(`/files/admin/list/${user.id}`);
+            setUserFiles(response.data);
+        }catch(error){
+            toast.error("Erro ao carregar ficheiros.");
+            setUserFiles([]);
+        }
+    };
+
+    //Dar upload - Admin
+    const handleAdminUpload = async () => {
+        const fileInput = document.getElementById('adminFileInput');
+        const fileType = document.getElementById('adminFileType').value;
+
+        if (!filesModalUser || !fileInput.files[0]) 
+            return toast.error("Escolhe um ficheiro!");
+
+        const formData = new FormData();
+
+        formData.append('file', fileInput.files[0]);
+        formData.append('tipo_ficheiro', fileType);
+
+        try{
+            const response = await api.post(`/files/admin/upload/${filesModalUser.id}`, formData);
+            toast.success("Ficheiro enviado com sucesso!");
+            handleOpenFiles(filesModalUser); //update Lista
+            fileInput.value = null; //limpa input
+
+        }catch(error){
+            toast.error("Erro ao enviar ficheiro.");
+        }
+    };
+
+    //Fazer download
+    const handlleDownload = async (filename) => {
+        try{
+            const response = await api.get(`/files/download/${filename}`, {
+                responseType: 'blob',
+            });
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', filename);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        }catch(error){
+            toast.error("Erro ao fazer download.");
+        }
+    }
+
 
     return (
         <Navbar>
@@ -243,6 +302,9 @@ function AdminUsers() {
                                                     <Button variant="link" className="text-danger p-0 opacity-50 hover-opacity-100" onClick={() => handleDelete(user.id)}>
                                                         <FaTrash />
                                                     </Button>
+                                                    <Button variant="link" className="text-info p-0 opacity-50 hover-opacity-100" onClick={() => handleOpenFiles(user)}>
+                                                        <FaFolder />
+                                                    </Button>
                                                 </td>
                                             </tr>
                                         ))}
@@ -257,6 +319,41 @@ function AdminUsers() {
                         </Card.Body>
                     </Card>
                 </Col>
+
+            {/* MODAL DE FICHEIROS */}
+            <Modal show={filesModalUser !== null} onHide={() => setFilesModalUser(null)} size="lg">
+                <Modal.Header closeButton>
+                    <Modal.Title>Ficha de: {filesModalUser?.nome}</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    {/* 1. Lista de Ficheiros Existentes */}
+                    <h6>Documentos Existentes:</h6>
+                    {userFiles.length === 0 ? <p className="text-muted">Sem ficheiros.</p> : (
+                        <ul>
+                            {userFiles.map(f => (
+                                <li key={f.id}>{f.tipo_ficheiro} - <a href={`#`} onClick={() => handlleDownload(f.nome_ficheiro)}>Transferir</a></li>
+                            ))}
+                        </ul>
+                    )}
+                    <hr/>
+                    {/* 2. Upload de Novo Ficheiro */}
+                    <h6>Adicionar Novo Documento:</h6>
+                    <div className="d-flex gap-2">
+                         <Form.Select id="adminFileType">
+                            <option>Curriculum Vitae</option>
+                            <option>Registo Criminal</option>
+                            <option>Bolsa de Estudo</option>
+                            <option>Certificado de Habilitações</option>
+                            <option>Avaliação</option>
+                            <option>Comprovativo IBAN</option>
+                            <option>Outro</option>
+                        </Form.Select>
+                        <Form.Control type="file" id="adminFileInput" />
+                        <Button onClick={() => handleAdminUpload()}>Anexar Documento</Button>
+                    </div>
+                </Modal.Body>
+            </Modal>
+
             </Row>
         </Navbar>
     );
