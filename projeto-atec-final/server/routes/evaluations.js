@@ -14,6 +14,21 @@ router.get('/', authorization, async (req, res) => {
     }
 });
 
+//get by Class & Module
+router.get('/by-class-module/:turmaId/:moduloId', authorization, async (req, res) => {
+    try {
+        const { turmaId, moduloId } = req.params;
+        const evaluations = await pool.query(
+            "SELECT * FROM avaliacoes WHERE turma_id = $1 AND modulo_id = $2",
+            [turmaId, moduloId]
+        );
+        res.json(evaluations.rows);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send("Erro no servidor");
+    }
+});
+
 //post
 router.post('/create', authorization, async (req, res) => {
     try {
