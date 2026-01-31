@@ -18,6 +18,10 @@ function Evaluations() {
 
     //Obj. guarda notas temporariamente
     const [grades, setGrades] = useState({});
+
+    // Guarda IDs das avaliações existentes para saber se é UPDATE ou CREATE
+    // formato: { formando_id: avaliacao_id }
+    const [existingEvaluations, setExistingEvaluations] = useState({});
     //Carregar Turmas ao iniciar
     useEffect(() => {
         api.get('/classes').then(res => setClasses(res.data));
@@ -44,6 +48,53 @@ function Evaluations() {
             setClassModules(resModules.data);
         }
     };
+
+    // Efeito para carregar notas existentes quando Turma E Módulo são escolhidos
+    useEffect(() => {
+        if (selectedClassId && selectedModuleId) {
+            fetchExistingGrades();
+        } else {
+            // Se mudou e ficou vazio, limpa
+            setGrades({});
+            setExistingEvaluations({});
+        }
+    }, [selectedClassId, selectedModuleId]);
+
+    const fetchExistingGrades = async () => {
+        try {
+            console.log("Fetching grades for:", selectedClassId, selectedModuleId);
+            const res = await api.get(`/evaluations/by-class-module/${selectedClassId}/${selectedModuleId}`);
+            const data = res.data;
+            console.log("Received grades data:", data);
+
+            const newGrades = {};
+            const newExistingIds = {};
+
+            // Mapear o que veio da BD para o estado
+            data.forEach(aval => {
+                newGrades[aval.formando_id] = aval.nota;
+                newExistingIds[aval.formando_id] = aval.id;
+            });
+            console.log("Mapped grades:", newGrades);
+
+            setGrades(newGrades);
+            setExistingEvaluations(newExistingIds);
+
+            // Opcional: Se quiseres pré-preencher a data/tipo da primeira avaliação encontrada (para não ter de meter tudo de novo)
+            if (data.length > 0) {
+                setFormData({
+                    ...formData,
+                    tipo_avaliacao: data[0].tipo_avaliacao,
+                    data_avaliacao: data[0].data_avaliacao ? data[0].data_avaliacao.split('T')[0] : ''
+                    // observacao: ... (se quiseres)
+                });
+            }
+
+        } catch (error) {
+            console.error("Erro ao buscar notas antigas", error);
+            toast.error("Erro ao carregar histórico de notas.");
+        }
+    };
     //Submeter Notas
     const handleSubmit = async () => {
         if (!selectedModuleId || !selectedClassId) return toast.error("Escolhe Turma e Módulo!");
@@ -51,8 +102,11 @@ function Evaluations() {
             // Enviar uma nota por cada aluno que tenha nota preenchida
             const promises = Object.keys(grades).map(async (studentId) => {
                 const nota = grades[studentId];
-                if (nota) {
-                    await api.post('/evaluations/create', {
+                const existingId = existingEvaluations[studentId];
+
+                // Só envia se houver valor
+                if (nota !== "" && nota !== undefined && nota !== null) {
+                    const payload = {
                         turma_id: selectedClassId,
                         modulo_id: selectedModuleId,
                         formando_id: studentId,
@@ -60,12 +114,23 @@ function Evaluations() {
                         tipo_avaliacao: formData.tipo_avaliacao,
                         data_avaliacao: formData.data_avaliacao,
                         observacoes: formData.observacoes
-                    });
+                    };
+
+                    if (existingId) {
+                        // UPDATE
+                        await api.put(`/evaluations/update/${existingId}`, payload);
+                    } else {
+                        // CREATE
+                        await api.post('/evaluations/create', payload);
+                    }
                 }
             });
             await Promise.all(promises);
-            toast.success("Notas lançadas com sucesso!");
-            setGrades({}); // Limpar
+            toast.success("Notas lançadas/atualizadas com sucesso!");
+
+            // Recarregar para garantir consistência
+            fetchExistingGrades();
+
         } catch (error) {
             toast.error("Erro ao lançar notas.");
         }

@@ -39,6 +39,44 @@ function PersonalData() {
         } catch (e) {
             toast.error("Erro ao fazer download.");
         }
+
+    };
+
+    const handleExportPDF = async () => {
+        try {
+            // responseType: 'blob' - Importante para ficheiros binários!
+            const response = await api.get('/files/export-pdf', { responseType: 'blob' });
+
+            // Truque do Blob para forçar o download no browser
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', 'Ficha_Formando.pdf'); // Nome do ficheiro em download
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+
+            toast.success("PDF criado com sucesso!");
+        } catch (e) {
+            console.error(e);
+
+            // Tentar ler a mensagem de erro que vem num Blob
+            if (e.response && e.response.data instanceof Blob) {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    try {
+                        const errorMsg = JSON.parse(reader.result);
+                        toast.error(errorMsg || "Erro ao gerar PDF.");
+                    } catch (jsonError) {
+                        // Se não for JSON, mostra texto cru ou genérico
+                        toast.error(reader.result || "Erro ao gerar PDF.");
+                    }
+                };
+                reader.readAsText(e.response.data);
+            } else {
+                toast.error("Erro ao gerar PDF.");
+            }
+        }
     };
 
     return (
@@ -118,9 +156,16 @@ function PersonalData() {
                         <Card.Header className="bg-white border-0 pt-4 pb-0">
                             <h6 className="fw-bold text-uppercase text-secondary ls-1">Meus Documentos</h6>
                         </Card.Header>
+                        <div className="d-grid gap-2 mb-4">
+                            <Button variant="outline-danger" onClick={handleExportPDF} className="d-flex align-items-center justify-content-center gap-2">
+                                <FaIdCard />
+                                <span>Descarregar Ficha de Avaliação (PDF)</span>
+                            </Button>
+                        </div>
+                        <hr className="text-muted opacity-25" />
                         <Card.Body>
 
-
+                            {/* LISTA DE FICHEIROS */}
                             <h6 className="fw-bold text-secondary mb-3">Documentos Enviados</h6>
                             {files.length === 0 ? <p className="text-muted small">Nenhum ficheiro enviado ainda.</p> : (
                                 <ul className="list-group list-group-flush">
