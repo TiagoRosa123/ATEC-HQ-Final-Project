@@ -48,10 +48,21 @@ function PersonalData() {
             const response = await api.get('/files/export-pdf', { responseType: 'blob' });
 
             // Truque do Blob para forçar o download no browser
+            // Tentar extrair o nome do ficheiro do Header
+            let filename = "Ficha_ATEC.pdf";
+            const disposition = response.headers['content-disposition'];
+            if (disposition && disposition.indexOf('attachment') !== -1) {
+                const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+                const matches = filenameRegex.exec(disposition);
+                if (matches != null && matches[1]) {
+                    filename = matches[1].replace(/['"]/g, '');
+                }
+            }
+
             const url = window.URL.createObjectURL(new Blob([response.data]));
             const link = document.createElement('a');
             link.href = url;
-            link.setAttribute('download', 'Ficha_Formando.pdf'); // Nome do ficheiro em download
+            link.setAttribute('download', filename);
             document.body.appendChild(link);
             link.click();
             link.remove();
@@ -107,8 +118,8 @@ function PersonalData() {
                                 </div>
                                 <div>
                                     <h4 className="fw-bold text-dark-blue mb-1">{user.nome}</h4>
-                                    <Badge bg={user.is_admin ? "primary" : "info"} className="fw-normal px-3 py-2">
-                                        {user.is_admin ? "ADMINISTRADOR" : "UTILIZADOR"}
+                                    <Badge bg={user.role ? "primary" : "info"} className="fw-normal px-3 py-2">
+                                        {user.role.toUpperCase()}
                                     </Badge>
                                 </div>
                             </div>
