@@ -10,7 +10,7 @@ const PdfPrinter = require('pdfmake/js/Printer').default;
 let printer = null;
 try {
     const fontPath = path.join(process.cwd(), 'node_modules', 'pdfmake', 'fonts', 'Roboto');
-    console.log("Tentando carregar fontes de:", fontPath);
+    console.log("Fontes do pdf OK");
 
     const fonts = {
         Roboto: {
@@ -21,9 +21,9 @@ try {
         }
     };
     printer = new PdfPrinter(fonts);
-    console.log("Motor PDF iniciado com sucesso!");
+    console.log("PDFmaker a funcionar");
 } catch (error) {
-    console.error("ERRO GRAVE AO INICIAR PDFPRINTER:", error.message);
+    console.error("ERRO AO INICIAR PDFMAKER:", error.message);
 }
 
 // Configuração do Multer
@@ -165,52 +165,99 @@ router.get('/download/:filename', authorization, async (req, res) => {
 //PDF
 router.get('/export-pdf', authorization, async (req, res) => {
     try {
-        const formando_id = req.user.id;
-        const dados = await pool.query(
-            `SELECT 
-                u.nome as nome, 
-                u.foto_perfil as foto,
-                u.email as email, 
-                c.nome as curso, 
-                m.nome as modulo, 
-                a.nota, 
-                a.tipo_avaliacao,
-                a.data_avaliacao 
-            FROM avaliacoes a
-            JOIN formandos f ON a.formando_id = f.id
-            JOIN utilizadores u ON f.utilizador_id = u.id
-            JOIN modulos m ON a.modulo_id = m.id
-            JOIN turmas t ON a.turma_id = t.id
-            JOIN cursos c ON t.curso_id = c.id
-            WHERE f.utilizador_id = $1`,
-            [req.user.id]);
+        const dadosRole = await pool.query(`SELECT role FROM utilizadores WHERE id = $1`, [req.user.id]);
+        const userName = await pool.query(`SELECT nome FROM utilizadores WHERE id = $1`, [req.user.id]);
+        const role = dadosRole.rows[0].role;
+        let dados = null;
+        let corpoTabela = [];
+        let colunasLarguras = [];
 
-        //Corpo da tabela
-        const corpoTabela = [
-            ['Curso', 'Módulo', 'Avaliação', 'Tipo de Avaliação', 'Data']
-        ];
+        if (role === 'formando') {
 
-        for (let i = 0; i < dados.rows.length; i++) {
-            const linha = dados.rows[i];
-            const dataFormatada = new Date(linha.data_avaliacao).toLocaleDateString('pt-PT');
+            dados = await pool.query(
+                `SELECT 
+                    u.nome as nome, 
+                    u.foto_perfil as foto,
+                    u.email as email, 
+                    c.nome as curso, 
+                    m.nome as modulo, 
+                    a.nota, 
+                    a.tipo_avaliacao,
+                    a.data_avaliacao 
+                FROM avaliacoes a
+                JOIN formandos f ON a.formando_id = f.id
+                JOIN utilizadores u ON f.utilizador_id = u.id
+                JOIN modulos m ON a.modulo_id = m.id
+                JOIN turmas t ON a.turma_id = t.id
+                JOIN cursos c ON t.curso_id = c.id
+                WHERE f.utilizador_id = $1`,
+                [req.user.id]);
 
-            corpoTabela.push([
-                linha.curso || "",
-                linha.modulo || "",
-                linha.nota ? linha.nota.toString() : "0",
-                linha.tipo_avaliacao || "",
-                dataFormatada
-            ]);
-        }
+            //Corpo da tabela
+            corpoTabela = [
+                ['Curso', 'Módulo', 'Avaliação', 'Tipo de Avaliação', 'Data']
+            ];
+            colunasLarguras = ['*', '*', 'auto', 'auto', 'auto'];
 
-        if (dados.rows.length === 0) {
-            return res.status(404).json("Não existem dados de avaliação para este aluno.");
+            for (let i = 0; i < dados.rows.length; i++) {
+                const linha = dados.rows[i];
+                const dataFormatada = new Date(linha.data_avaliacao).toLocaleDateString('pt-PT');
+
+                corpoTabela.push([
+                    linha.curso || "",
+                    linha.modulo || "",
+                    linha.nota ? linha.nota.toString() : "0",
+                    linha.tipo_avaliacao || "",
+                    dataFormatada
+                ]);
+            }
+
+            if (dados.rows.length === 0) {
+                return res.status(404).json("Não existem dados para exportar.");
+            }
+
+        } else {
+
+            dados = await pool.query(
+                `SELECT DISTINCT
+                    u.nome as nome, 
+                    u.foto_perfil as foto,
+                    c.nome as curso, 
+                    t.codigo as turma,
+                    m.nome as modulo
+                FROM horarios h
+                JOIN formadores f ON h.formador_id = f.id
+                JOIN utilizadores u ON f.utilizador_id = u.id
+                JOIN turmas t ON h.turma_id = t.id
+                JOIN cursos c ON t.curso_id = c.id
+                JOIN modulos m ON h.modulo_id = m.id
+                WHERE u.id = $1`,
+                [req.user.id]);
+
+            //Corpo da tabela
+            corpoTabela = [
+                ['Curso', 'Turma', 'Módulo']
+            ];
+            colunasLarguras = ['*', 'auto', '*'];
+
+            for (let i = 0; i < dados.rows.length; i++) {
+                const linha = dados.rows[i];
+
+                corpoTabela.push([
+                    linha.curso || "",
+                    linha.turma || "",
+                    linha.modulo || ""
+                ]);
+            }
+
+            if (dados.rows.length === 0) {
+                return res.status(404).json("Não existem dados para exportar.");
+            }
         }
 
         //Para nao crachar caso nao haja foto
-        // Imagem "cinzenta" básica em Base64 (Quadrado Cinza Visível)
+        // Imagem básica em Base64 
         const placeholderBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==";
-
         let imagemPerfil = placeholderBase64;
 
         // Se houver foto e o ficheiro existir, usamos a foto do utilizador
@@ -223,14 +270,13 @@ router.get('/export-pdf', authorization, async (req, res) => {
 
         const docDefinition = {
             content: [
-                { text: 'Ficha de Formando', style: 'header' },
+                { text: `Ficha de ${userName.rows[0].nome}`, style: 'header' },
                 { image: imagemPerfil, width: 100, height: 100 },
-                { text: `Nome: ${dados.rows[0].nome}` }, // Exemplo de ir buscar o nome ao primeiro resultado
                 { text: '\n' }, // Espaço
                 {
                     table: {
                         headerRows: 1,
-                        widths: ['*', '*', 'auto', 'auto', 'auto'], // Larguras das colunas
+                        widths: colunasLarguras, // Larguras das colunas
                         body: corpoTabela
                     }
                 }
@@ -242,7 +288,11 @@ router.get('/export-pdf', authorization, async (req, res) => {
         // Cria pdf e envia
         const pdfDoc = await printer.createPdfKitDocument(docDefinition);
         res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', 'attachment; filename=Ficha_Formando.pdf');
+
+        // Para não haver risco de cortar o nome em alguns browsers (substitui espaços por _ e remove caracteres estranhos)
+        const safeName = userName.rows[0].nome.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        res.setHeader('Content-Disposition', `attachment; filename="Ficha_${safeName}.pdf"`);
+
         pdfDoc.pipe(res);
         pdfDoc.end();
 
