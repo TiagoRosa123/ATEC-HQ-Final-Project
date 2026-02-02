@@ -10,20 +10,20 @@ const Schedules = () => {
     const [events, setEvents] = useState([]);
     const [filterType, setFilterType] = useState(''); // 'turma', 'formador', 'sala'
     const [filterId, setFilterId] = useState('');
-    
+
     // Modal state
     const [showModal, setShowModal] = useState(false);
     const [selectedSlot, setSelectedSlot] = useState(null);
     const [editEvent, setEditEvent] = useState(null); // Novo estado
 
     // Listas para os dropdowns
-    const [turmas, setTurmas] = useState([]);
+    const [cursos, setCursos] = useState([]);
     const [formadores, setFormadores] = useState([]);
     const [salas, setSalas] = useState([]);
 
     // ... (useEffect e handlers de filtro existentes mantidos, mas omitidos aqui para brevidade se não mudarem, ou incluídos se eu substituir o ficheiro todo.
     // Como estou a substituir o componente todo (ou grande parte), vou ter de reincluir tudo ou usar replace parcial com cuidado.)
-    
+
     // Melhor: Substituir o corpo do componente para incluir as novas funções.
 
     // Carregar opções dos filtros ao iniciar
@@ -33,15 +33,15 @@ const Schedules = () => {
                 const token = localStorage.getItem('token');
                 const config = { headers: { token: token } };
 
-                // Buscar turmas
-                const resTurmas = await axios.get('http://localhost:5000/classes', config);
-                setTurmas(resTurmas.data);
+                // Buscar cursos
+                const resCursos = await axios.get('http://localhost:5000/courses', config);
+                setCursos(resCursos.data);
 
                 // Buscar formadores (rota admin)
-                const resUsers = await axios.get('http://localhost:5000/admin/todos', config); 
+                const resUsers = await axios.get('http://localhost:5000/admin/todos', config);
                 const listFormadores = resUsers.data.filter(u => u.role === 'formador');
                 setFormadores(listFormadores);
-                
+
                 // Buscar salas
                 const resSalas = await axios.get('http://localhost:5000/rooms', config);
                 setSalas(resSalas.data);
@@ -51,22 +51,22 @@ const Schedules = () => {
             }
         };
         fetchOptions();
-        fetchSchedules(); 
+        fetchSchedules();
     }, []);
 
     const fetchSchedules = async () => {
         try {
             const token = localStorage.getItem('token');
-            const config = { 
+            const config = {
                 headers: { token: token },
                 params: {
                     type: filterType,
                     id: filterId
                 }
             };
-            
+
             const res = await axios.get('http://localhost:5000/schedules', config);
-            
+
             const formattedEvents = res.data.map(event => ({
                 ...event,
                 start: new Date(event.start),
@@ -86,7 +86,7 @@ const Schedules = () => {
 
     useEffect(() => {
         if ((filterType && filterId) || (!filterType && !filterId)) {
-             fetchSchedules();
+            fetchSchedules();
         }
     }, [filterType, filterId]);
 
@@ -113,9 +113,9 @@ const Schedules = () => {
             const payload = {
                 turma_id: event.turma_id,
                 modulo_id: event.modulo_id, // Precisamos ter certeza que modulo_id vem do backend (não vi no SELECT)
-                                            // Vou ter de adicionar modulo_id ao SELECT do backend se faltar.
-                                            // Verifiquei: "h.turma_id, h.formador_id, h.sala_id" estavam lá. "h.modulo_id"? 
-                                            // Vou verificar o backend novamente. Se faltar, adiciono.
+                // Vou ter de adicionar modulo_id ao SELECT do backend se faltar.
+                // Verifiquei: "h.turma_id, h.formador_id, h.sala_id" estavam lá. "h.modulo_id"? 
+                // Vou verificar o backend novamente. Se faltar, adiciono.
                 formador_id: event.formador_id,
                 sala_id: event.sala_id,
                 data_aula: start.toISOString().split('T')[0],
@@ -145,39 +145,39 @@ const Schedules = () => {
             <Container className="mt-4">
                 <div className="d-flex justify-content-between align-items-center mb-4">
                     <h2 className="mb-0">Gestão de Horários</h2>
-                    <button className="btn btn-success" onClick={() => { 
-                        setSelectedSlot(null); 
+                    <button className="btn btn-success" onClick={() => {
+                        setSelectedSlot(null);
                         setEditEvent(null);
-                        setShowModal(true); 
+                        setShowModal(true);
                     }}>
                         + Nova Aula
                     </button>
                 </div>
-                
+
                 <Card className="mb-4 p-3 shadow-sm border-0">
                     <Row className="g-3 align-items-end">
                         <Col md={3}>
                             <Form.Label>Filtrar por</Form.Label>
-                            <Form.Select 
-                                value={filterType} 
+                            <Form.Select
+                                value={filterType}
                                 onChange={(e) => {
                                     setFilterType(e.target.value);
-                                    setFilterId(''); 
+                                    setFilterId('');
                                 }}
                             >
-                                <option value="">-- Todos os Horários --</option>
-                                <option value="turma">Turma</option>
+                                <option value="">Todos os Horários</option>
+                                <option value="curso">Curso</option>
                                 <option value="formador">Formador</option>
                                 <option value="sala">Sala</option>
                             </Form.Select>
                         </Col>
 
-                        {filterType === 'turma' && (
+                        {filterType === 'curso' && (
                             <Col md={4}>
-                                <Form.Label>Selecione a Turma</Form.Label>
+                                <Form.Label>Selecione o Curso</Form.Label>
                                 <Form.Select value={filterId} onChange={e => setFilterId(e.target.value)}>
                                     <option value="">Selecione...</option>
-                                    {turmas.map(t => <option key={t.id} value={t.id}>{t.codigo}</option>)}
+                                    {cursos.map(c => <option key={c.id} value={c.id}>{c.nome} ({c.sigla})</option>)}
                                 </Form.Select>
                             </Col>
                         )}
@@ -193,7 +193,7 @@ const Schedules = () => {
                         )}
 
                         {filterType === 'sala' && (
-                             <Col md={4}>
+                            <Col md={4}>
                                 <Form.Label>Sala</Form.Label>
                                 <Form.Select value={filterId} onChange={e => setFilterId(e.target.value)}>
                                     <option value="">Selecione...</option>
@@ -202,25 +202,25 @@ const Schedules = () => {
                             </Col>
                         )}
 
-                         <Col md={2}>
+                        <Col md={2}>
                             <button className="btn btn-primary w-100" onClick={fetchSchedules}>
-                                 Atualizar
+                                Atualizar
                             </button>
                         </Col>
                     </Row>
                 </Card>
 
-                <ScheduleCalendar 
-                    events={events} 
+                <ScheduleCalendar
+                    events={events}
                     onSelectSlot={handleSelectSlot}
                     onSelectEvent={handleSelectEvent} // Novo handler para click no evento
                     onEventDrop={handleEventDrop}
-                    onEventResize={handleEventDrop} 
+                    onEventResize={handleEventDrop}
                 />
 
-                <CreateLessonModal 
-                    show={showModal} 
-                    handleClose={() => setShowModal(false)} 
+                <CreateLessonModal
+                    show={showModal}
+                    handleClose={() => setShowModal(false)}
                     selectedSlot={selectedSlot}
                     editEvent={editEvent} // Passar evento para edição
                     onSuccess={fetchSchedules}
