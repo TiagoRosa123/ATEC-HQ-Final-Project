@@ -2,7 +2,25 @@ const router = require('express').Router();
 const pool = require('../db');
 const authorization = require('../middleware/authorization');
 
-//get
+//get public (LIVRE DE TOKEN)
+router.get('/public', async (req, res) => {
+    try {
+        const query = `
+            SELECT c.*, a.nome as area_nome 
+            FROM cursos c
+            LEFT JOIN areas a ON c.area_id = a.id
+            ORDER BY c.nome ASC
+        `;
+        const courses = await pool.query(query);
+        res.json(courses.rows);
+    }
+    catch (err) {
+        console.error(err.message);
+        res.status(500).send("Erro no servidor");
+    }
+});
+
+//get protected
 router.get('/', authorization, async (req, res) => {
     try {
         const courses = await pool.query("SELECT * FROM cursos");

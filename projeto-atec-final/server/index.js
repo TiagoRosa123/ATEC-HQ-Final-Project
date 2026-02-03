@@ -22,6 +22,7 @@ app.use('/rooms', require('./routes/rooms'));
 app.use('/evaluations', require('./routes/evaluations'));
 app.use('/files', require('./routes/files'));
 app.use('/schedules', require('./routes/schedules'));
+app.use('/dashboard', require('./routes/dashboard'));
 
 
 

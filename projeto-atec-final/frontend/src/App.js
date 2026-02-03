@@ -10,6 +10,7 @@ import Dashboard from './pages/Dashboard';
 import ForgotPw from './pages/ForgotPw';
 import ResetPw from './pages/ResetPw';
 import ActivatePw from './pages/Activate'
+import LandingPage from './pages/LandingPage'; // Importar Landing Page
 import AdminUsers from './pages/AdminUsers';
 import Settings from './pages/Settings';
 import PersonalData from './pages/PersonalData';
@@ -31,7 +32,7 @@ function App() {
 
           <Routes>
             {/* Rot. Publicas */}
-            <Route path="/" element={<Navigate to="/login" />} />
+            <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPw />} />
