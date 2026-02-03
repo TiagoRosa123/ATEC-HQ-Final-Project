@@ -186,7 +186,7 @@ function AdminUsers() {
             <Row>
                 <Col lg={12} className="mb-4">
                     <Card className="card-modern h-100 border-0">
-                        <Card.Header className="bg-white border-0 pt-4 pb-0">
+                        <Card.Header className="border-0 pt-4 pb-0">
                             <h6 className="fw-bold text-uppercase text-secondary ls-1">
                                 {editandoId ? 'Editar Registo' : 'Novo Registo'}
                             </h6>
@@ -200,7 +200,8 @@ function AdminUsers() {
                                         value={formData.nome}
                                         onChange={e => setFormData({ ...formData, nome: e.target.value })}
                                         required
-                                        className="bg-light border-0 py-2"
+                                        className="border-0 py-2 shadow-sm"
+                                        style={{ backgroundColor: 'var(--bg-page)' }}
                                     />
                                 </Form.Group>
 
@@ -211,7 +212,8 @@ function AdminUsers() {
                                         value={formData.email}
                                         onChange={e => setFormData({ ...formData, email: e.target.value })}
                                         required
-                                        className="bg-light border-0 py-2"
+                                        className="border-0 py-2 shadow-sm"
+                                        style={{ backgroundColor: 'var(--bg-page)' }}
                                     />
                                 </Form.Group>
 
@@ -223,7 +225,8 @@ function AdminUsers() {
                                             value={formData.password}
                                             onChange={e => setFormData({ ...formData, password: e.target.value })}
                                             required
-                                            className="bg-light border-0 py-2"
+                                            className="border-0 py-2 shadow-sm"
+                                            style={{ backgroundColor: 'var(--bg-page)' }}
                                         />
                                     </Form.Group>
                                 )}
@@ -240,7 +243,8 @@ function AdminUsers() {
                                                 is_admin: (newRole === 'admin') // Define is_admin automaticamente
                                             });
                                         }}
-                                        className="bg-light border-0 py-2"
+                                        className="border-0 py-2 shadow-sm"
+                                        style={{ backgroundColor: 'var(--bg-page)' }}
                                     >
                                         <option value="user">Utilizador</option>
                                         <option value="formando">Formando</option>
@@ -272,7 +276,7 @@ function AdminUsers() {
                                 <div className="p-5 text-center"><Spinner animation="border" variant="primary" /></div>
                             ) : (
                                 <Table hover responsive className="mb-0 align-middle">
-                                    <thead className="bg-light text-secondary">
+                                    <thead className="text-secondary">
                                         <tr>
                                             <th className="ps-4 py-3 border-0 small fw-bold">NOME / EMAIL</th>
                                             <th className="py-3 border-0 small fw-bold">REGRA</th>
@@ -326,8 +330,37 @@ function AdminUsers() {
                     <Modal.Title>Ficha de: {filesModalUser?.nome}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
+                    <div className="d-flex justify-content-between align-items-center mb-3">
+                         <h6 className="mb-0">Documentos Existentes:</h6>
+                         <Button variant="outline-danger" size="sm" onClick={async () => {
+                             try {
+                                const response = await api.get(`/files/export-pdf/${filesModalUser.id}`, { responseType: 'blob' });
+                                const url = window.URL.createObjectURL(new Blob([response.data]));
+                                const link = document.createElement('a');
+                                link.href = url;
+                                link.setAttribute('download', `Ficha_${filesModalUser.nome}.pdf`);
+                                document.body.appendChild(link);
+                                link.click();
+                                toast.success('Ficha PDF exportada!');
+                             } catch(e) { 
+                                 console.error("Erro export PDF:", e);
+                                 let errorMsg = "Erro ao gerar PDF.";
+                                 if (e.response && e.response.data instanceof Blob) {
+                                     try {
+                                        const blobText = await e.response.data.text();
+                                        errorMsg = blobText || errorMsg;
+                                     } catch (err) { /* ignore */ }
+                                 } else if (e.response && e.response.data) {
+                                     errorMsg = e.response.data;
+                                 }
+                                 toast.error(errorMsg);
+                             }
+                         }}>
+                            <FaSave className="me-2" />
+                            Exportar Ficha (PDF)
+                         </Button>
+                    </div>
                     {/* 1. Lista de Ficheiros Existentes */}
-                    <h6>Documentos Existentes:</h6>
                     {userFiles.length === 0 ? <p className="text-muted">Sem ficheiros.</p> : (
                         <ul>
                             {userFiles.map(f => (

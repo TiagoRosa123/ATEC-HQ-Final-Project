@@ -1,21 +1,33 @@
 import React from 'react';
+import { Navbar, Container, Nav, Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import { Container, Navbar, Nav, Button } from 'react-bootstrap';
+import { FaGraduationCap, FaSignInAlt } from 'react-icons/fa';
+import ThemeToggle from './ThemeToggle';
 
 const PublicNavbar = () => {
     return (
-        <Navbar bg="white" expand="lg" className="shadow-sm py-3 fixed-top">
+        <Navbar className="shadow-sm py-3 mb-4 bg-body-tertiary">
             <Container>
-                <Navbar.Brand as={Link} to="/" className="fw-bold text-dark-blue fs-4">
-                    ATEC <span className="text-accent">Academy</span>
+                <Navbar.Brand as={Link} to="/" className="d-flex align-items-center fw-bold text-primary">
+                    <FaGraduationCap className="me-2 fs-2" />
+                    ATEC
                 </Navbar.Brand>
-                <Navbar.Toggle aria-controls="basic-navbar-nav" />
-                <Navbar.Collapse id="basic-navbar-nav">
+                
+                <Navbar.Toggle aria-controls="public-navbar-nav" />
+                
+                <Navbar.Collapse id="public-navbar-nav">
                     <Nav className="ms-auto align-items-center">
-                        <Nav.Link href="#cursos" className="me-3 fw-medium">Cursos</Nav.Link>
-                        <Nav.Link href="#sobre" className="me-3 fw-medium">Sobre Nós</Nav.Link>
-                        <Nav.Link href="#contactos" className="me-4 fw-medium">Contactos</Nav.Link>
-                        <Button as={Link} to="/login" variant="primary" className="btn-accent px-4 rounded-pill">
+                        <Nav.Link as={Link} to="/" className="mx-2 fw-medium">Início</Nav.Link>
+                        <Nav.Link href="#courses" className="mx-2 fw-medium">Cursos</Nav.Link>
+                        <ThemeToggle />
+                        
+                        <Button 
+                            as={Link} 
+                            to="/login" 
+                            variant="primary" 
+                            className="ms-3 px-4 rounded-pill d-flex align-items-center"
+                        >
+                            <FaSignInAlt className="me-2" />
                             Login
                         </Button>
                     </Nav>

@@ -105,13 +105,13 @@ function PersonalData() {
             <Row className="justify-content-center">
                 <Col lg={8}>
                     <Card className="card-modern border-0">
-                        <Card.Header className="bg-white border-0 pt-4 pb-0">
+                        <Card.Header className="border-0 pt-4 pb-0">
                             <h6 className="fw-bold text-uppercase text-secondary ls-1 small mb-0">Perfil de Utilizador</h6>
                         </Card.Header>
                         <Card.Body className="p-4">
 
                             <div className="d-flex align-items-center mb-5">
-                                <div className="bg-light rounded-circle p-4 me-4 d-flex align-items-center justify-content-center" style={{ width: '80px', height: '80px' }}>
+                                <div className="bg-body-tertiary rounded-circle p-4 me-4 d-flex align-items-center justify-content-center" style={{ width: '80px', height: '80px' }}>
                                     <span className="fs-2 fw-bold text-dark-blue">
                                         {user.nome ? user.nome.charAt(0).toUpperCase() : '?'}
                                     </span>
@@ -126,7 +126,7 @@ function PersonalData() {
 
                             <div className="row g-4">
                                 <Col md={6}>
-                                    <div className="p-3 bg-light rounded h-100 border border-light">
+                                    <div className="p-3 bg-body-tertiary rounded h-100 border border-0 shadow-sm">
                                         <div className="d-flex align-items-center mb-2 text-secondary">
                                             <FaEnvelope className="me-2" />
                                             <span className="small fw-bold">Email</span>
@@ -136,7 +136,7 @@ function PersonalData() {
                                 </Col>
 
                                 <Col md={6}>
-                                    <div className="p-3 bg-light rounded h-100 border border-light">
+                                    <div className="p-3 bg-body-tertiary rounded h-100 border border-0 shadow-sm">
                                         <div className="d-flex align-items-center mb-2 text-secondary">
                                             <FaIdCard className="me-2" />
                                             <span className="small fw-bold">ID Interno</span>
@@ -146,7 +146,7 @@ function PersonalData() {
                                 </Col>
 
                                 <Col md={12}>
-                                    <div className="p-3 bg-light rounded h-100 border border-light">
+                                    <div className="p-3 bg-body-tertiary rounded h-100 border border-0 shadow-sm">
                                         <div className="d-flex align-items-center mb-2 text-secondary">
                                             <FaUserTag className="me-2" />
                                             <span className="small fw-bold">Permissões</span>
@@ -163,8 +163,8 @@ function PersonalData() {
 
                         </Card.Body>
                     </Card>
-                    <Card className="mt-4 border-0 shadow-sm">
-                        <Card.Header className="bg-white border-0 pt-4 pb-0">
+                    <Card className="mt-4 border-0 shadow-sm card-modern">
+                        <Card.Header className="border-0 pt-4 pb-0">
                             <h6 className="fw-bold text-uppercase text-secondary ls-1">Meus Documentos</h6>
                         </Card.Header>
                         <div className="d-grid gap-2 mb-4">

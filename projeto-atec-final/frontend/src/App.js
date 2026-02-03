@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext'; // Importar ThemeProvider
 import PrivateRoute from './components/PrivateRoute';
 
 import Register from './pages/Register';
@@ -24,9 +25,10 @@ import Schedules from './pages/Schedules';
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <div className="App">
+    <ThemeProvider>
+      <AuthProvider>
+        <Router>
+          <div className="App">
           {/*notificações pop-up no canto direito */}
           <Toaster position="top-right" />
 
@@ -54,6 +56,7 @@ function App() {
         </div>
       </Router>
     </AuthProvider>
+    </ThemeProvider>
   );
 }
 

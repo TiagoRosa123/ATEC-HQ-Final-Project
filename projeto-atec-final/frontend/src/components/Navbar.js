@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { FaHome, FaUserCog, FaSignOutAlt, FaCog, FaUser, FaClipboardList, FaBook, FaChevronDown, FaChevronUp, FaCalendarAlt } from 'react-icons/fa';
 import { Container, Navbar as BsNavbar, Nav, Dropdown, Button } from 'react-bootstrap';
 import { useAuth } from '../context/AuthContext';
+import ThemeToggle from './ThemeToggle';
 
 function Navbar({ children }) {
     const navigate = useNavigate();
@@ -24,10 +25,11 @@ function Navbar({ children }) {
             {/*Sidebar*/}
             <div className="sidebar" style={{ width: '280px', flexShrink: 0 }}>
 
-                <div className="p-4 d-flex align-items-center mb-2">
+                <div className="p-4 d-flex align-items-center justify-content-between mb-2">
                     <div className="fs-4 fw-bold text-white tracking-wide">
                         ATEC<span style={{ color: 'var(--accent-orange)' }}>HQ</span>
                     </div>
+                    <ThemeToggle />
                 </div>
 
                 {/* Menu*/}

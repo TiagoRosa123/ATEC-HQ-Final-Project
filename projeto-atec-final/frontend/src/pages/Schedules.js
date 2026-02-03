@@ -154,7 +154,7 @@ const Schedules = () => {
                     </button>
                 </div>
 
-                <Card className="mb-4 p-3 shadow-sm border-0">
+                <Card className="card-modern mb-4 p-3 border-0">
                     <Row className="g-3 align-items-end">
                         <Col md={3}>
                             <Form.Label>Filtrar por</Form.Label>

@@ -4,12 +4,12 @@ const authorization = require('../middleware/authorization');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const PdfPrinter = require('pdfmake/js/Printer').default;
+const PdfPrinter = require('pdfmake');
 
 //Config PDF - DEBUG MODE
 let printer = null;
 try {
-    const fontPath = path.join(process.cwd(), 'node_modules', 'pdfmake', 'fonts', 'Roboto');
+    const fontPath = path.join(__dirname, '../node_modules/pdfmake/fonts/Roboto');
     console.log("Fontes do pdf OK");
 
     const fonts = {
@@ -163,11 +163,29 @@ router.get('/download/:filename', authorization, async (req, res) => {
 });
 
 //PDF
-router.get('/export-pdf', authorization, async (req, res) => {
+const exportPdfHandler = async (req, res) => {
     try {
-        const dadosRole = await pool.query(`SELECT role FROM utilizadores WHERE id = $1`, [req.user.id]);
-        const userName = await pool.query(`SELECT nome FROM utilizadores WHERE id = $1`, [req.user.id]);
+        let targetId = req.user.id; 
+        console.log("Exportar PDF - Start. UserID original:", req.user.id);
+
+        if (req.params.userId) {
+            console.log("Param userID detetado:", req.params.userId);
+            const adminCheck = await pool.query("SELECT is_admin FROM utilizadores WHERE id = $1", [req.user.id]);
+            if (adminCheck.rows[0].is_admin) {
+                targetId = req.params.userId;
+            }
+        }
+        console.log("Target ID:", targetId);
+
+        const dadosRole = await pool.query(`SELECT role FROM utilizadores WHERE id = $1`, [targetId]);
+        const userName = await pool.query(`SELECT nome FROM utilizadores WHERE id = $1`, [targetId]);
+        
+        console.log("User encontrado:", userName.rows.length > 0 ? userName.rows[0].nome : "NÃO");
+        
+        if (dadosRole.rows.length === 0) return res.status(404).json("Utilizador não encontrado");
+        
         const role = dadosRole.rows[0].role;
+        console.log("Role:", role);
         let dados = null;
         let corpoTabela = [];
         let colunasLarguras = [];
@@ -191,7 +209,7 @@ router.get('/export-pdf', authorization, async (req, res) => {
                 JOIN turmas t ON a.turma_id = t.id
                 JOIN cursos c ON t.curso_id = c.id
                 WHERE f.utilizador_id = $1`,
-                [req.user.id]);
+                [targetId]);
 
             //Corpo da tabela
             corpoTabela = [
@@ -213,7 +231,9 @@ router.get('/export-pdf', authorization, async (req, res) => {
             }
 
             if (dados.rows.length === 0) {
-                return res.status(404).json("Não existem dados para exportar.");
+                 // Mesmo sem dados, queremos gerar o PDF com o cabeçalho/foto
+                 // Mas a tabela fica vazia ou com msg
+                 corpoTabela.push([{ text: 'Sem registo de avaliações.', colSpan: 5, alignment: 'center' }, {}, {}, {}, {}]);
             }
 
         } else {
@@ -232,7 +252,7 @@ router.get('/export-pdf', authorization, async (req, res) => {
                 JOIN cursos c ON t.curso_id = c.id
                 JOIN modulos m ON h.modulo_id = m.id
                 WHERE u.id = $1`,
-                [req.user.id]);
+                [targetId]);
 
             //Corpo da tabela
             corpoTabela = [
@@ -251,7 +271,7 @@ router.get('/export-pdf', authorization, async (req, res) => {
             }
 
             if (dados.rows.length === 0) {
-                return res.status(404).json("Não existem dados para exportar.");
+                 corpoTabela.push([{ text: 'Sem registo de aulas.', colSpan: 3, alignment: 'center' }, {}, {}]);
             }
         }
 
@@ -285,11 +305,15 @@ router.get('/export-pdf', authorization, async (req, res) => {
                 header: { fontSize: 18, bold: true, margin: [0, 0, 0, 10] }
             }
         };
+        if (!printer) {
+            return res.status(500).send("Erro: PDF Printer não foi iniciada. Verifique as fontes.");
+        }
+
         // Cria pdf e envia
         const pdfDoc = await printer.createPdfKitDocument(docDefinition);
         res.setHeader('Content-Type', 'application/pdf');
 
-        // Para não haver risco de cortar o nome em alguns browsers (substitui espaços por _ e remove caracteres estranhos)
+        // Para não haver risco de cortar o nome em alguns browsers
         const safeName = userName.rows[0].nome.replace(/[^a-z0-9]/gi, '_').toLowerCase();
         res.setHeader('Content-Disposition', `attachment; filename="Ficha_${safeName}.pdf"`);
 
@@ -297,9 +321,13 @@ router.get('/export-pdf', authorization, async (req, res) => {
         pdfDoc.end();
 
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send("Erro");
+        console.error("ERRO CRÍTICO PDF EXPORT:", err);
+        // Enviar o erro exato para o frontend para conseguirmos ver no Network tab ou Toast
+        res.status(500).send("Msg Servidor: " + err.message);
     }
-});
+};
+
+router.get('/export-pdf', authorization, exportPdfHandler);
+router.get('/export-pdf/:userId', authorization, exportPdfHandler);
 
 module.exports = router;

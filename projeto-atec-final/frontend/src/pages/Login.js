@@ -86,7 +86,7 @@ function Login() {
   };
 
   return (
-    <div className="d-flex align-items-center justify-content-center min-vh-100" style={{ backgroundColor: '#f3f4f6' }}>
+    <div className="d-flex align-items-center justify-content-center min-vh-100">
       <div style={{ width: '100%', maxWidth: '400px' }}>
 
         <div className="text-center mb-4">
@@ -112,7 +112,8 @@ function Login() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
-                      className="bg-light border-0 py-2 ps-5"
+                      className="border-0 py-2 ps-5 shadow-sm"
+                      style={{ backgroundColor: 'var(--bg-page)' }}
                     />
                     <FaEnvelope className="position-absolute top-50 start-0 translate-middle-y ms-3 text-muted" />
                   </div>
@@ -126,7 +127,8 @@ function Login() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
-                      className="bg-light border-0 py-2 ps-5"
+                      className="border-0 py-2 ps-5 shadow-sm"
+                      style={{ backgroundColor: 'var(--bg-page)' }}
                     />
                     <FaLock className="position-absolute top-50 start-0 translate-middle-y ms-3 text-muted" />
                   </div>
@@ -173,7 +175,7 @@ function Login() {
               <>
                 <div className="position-relative my-4">
                   <hr className="text-secondary opacity-25" />
-                  <span className="position-absolute top-50 start-50 translate-middle bg-white px-3 text-muted small">
+                  <span className="position-absolute top-50 start-50 translate-middle px-3 text-muted small" style={{ backgroundColor: 'var(--bg-card)' }}>
                     ou
                   </span>
                 </div>

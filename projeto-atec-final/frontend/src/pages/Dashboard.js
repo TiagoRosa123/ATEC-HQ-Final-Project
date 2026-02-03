@@ -152,7 +152,7 @@ function Dashboard() {
              {/* Charts */}
              <Col lg={8}>
                 <Card className="card-modern border-0 h-100">
-                    <Card.Header className="bg-white border-0 pt-4 fw-bold">Top 10 Formadores (Aulas Agendadas)</Card.Header>
+                <Card.Header className="border-0 pt-4 fw-bold">Top 10 Formadores (Aulas Agendadas)</Card.Header>
                     <Card.Body style={{ height: 300 }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <Treemap
@@ -175,7 +175,7 @@ function Dashboard() {
 
              <Col lg={4}>
                 <Card className="card-modern border-0 h-100">
-                    <Card.Header className="bg-white border-0 pt-4 fw-bold">Distribuição por Área</Card.Header>
+                    <Card.Header className="border-0 pt-4 fw-bold">Distribuição por Área</Card.Header>
                     <Card.Body style={{ height: 300 }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
@@ -207,7 +207,7 @@ function Dashboard() {
             {/* ... (código original para tabela de horário e faltas) ... */}
             <Col lg={12}>
               <Card className="card-modern border-0 h-100">
-                <Card.Header className="bg-white border-0 pt-4 pb-0 d-flex justify-content-between align-items-center">
+                <Card.Header className="border-0 pt-4 pb-0 d-flex justify-content-between align-items-center">
                   <div className="d-flex align-items-center">
                     <FaClock className="text-secondary me-2" />
                     <h6 className="fw-bold mb-0 text-uppercase ls-1 small">Horário Semanal</h6>
@@ -215,7 +215,7 @@ function Dashboard() {
                 </Card.Header>
                 <Card.Body>
                   <Table hover responsive className="align-middle mb-0">
-                    <thead className="bg-light text-secondary">
+                    <thead className="text-secondary">
                       <tr>
                         <th className="border-0 small fw-bold ps-3">DIA</th>
                         <th className="border-0 small fw-bold">HORÁRIO</th>

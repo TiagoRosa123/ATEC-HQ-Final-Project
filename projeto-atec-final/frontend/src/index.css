@@ -1,6 +1,4 @@
-
 :root {
-
   --primary-dark: #0f172a;
   --primary-blue: #1e3a8a;
   --primary-active: #1d4ed8;
@@ -20,9 +18,25 @@
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
 }
 
+[data-bs-theme="dark"] {
+  --primary-dark: #cbd5e1; /* Text color in dark mode sidebar */
+  --bg-page: #111827; /* Dark background */
+  --bg-card: #1f2937; /* Dark card background */
+  --text-main: #f9fafb; /* Light text */
+  --text-menu: #9ca3af;
+  --text-menu-active: #ffffff;
+
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.5);
+}
+
 body {
   margin: 0;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family:
+    "Inter",
+    system-ui,
+    -apple-system,
+    sans-serif;
   background-color: var(--bg-page);
   color: var(--text-main);
   -webkit-font-smoothing: antialiased;
@@ -41,7 +55,7 @@ code {
 
 .sidebar {
   width: 280px;
-  background-color: var(--primary-dark);
+  background-color: #0f172a; /* Always dark blue/black */
   color: #fff;
   display: flex;
   flex-direction: column;
@@ -128,4 +142,41 @@ code {
 
 .text-dark-blue {
   color: var(--primary-dark) !important;
+}
+/* React Big Calendar Dark Mode Overrides */
+[data-bs-theme="dark"] .rbc-calendar {
+    color: var(--text-main);
+}
+[data-bs-theme="dark"] .rbc-off-range-bg {
+    background-color: var(--bg-page);
+}
+[data-bs-theme="dark"] .rbc-header {
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+[data-bs-theme="dark"] .rbc-day-bg + .rbc-day-bg,
+[data-bs-theme="dark"] .rbc-month-row + .rbc-month-row,
+[data-bs-theme="dark"] .rbc-header + .rbc-header,
+[data-bs-theme="dark"] .rbc-month-view,
+[data-bs-theme="dark"] .rbc-day-bg,
+[data-bs-theme="dark"] .rbc-time-view,
+[data-bs-theme="dark"] .rbc-time-header-content,
+[data-bs-theme="dark"] .rbc-time-content,
+[data-bs-theme="dark"] .rbc-timeslot-group,
+[data-bs-theme="dark"] .rbc-time-content > * + * > * {
+    border-color: rgba(255,255,255,0.1) !important;
+}
+[data-bs-theme="dark"] .rbc-today {
+    background-color: rgba(249, 115, 22, 0.1);
+}
+[data-bs-theme="dark"] .rbc-toolbar button {
+    color: var(--text-main);
+    border: 1px solid rgba(255,255,255,0.2);
+}
+[data-bs-theme="dark"] .rbc-toolbar button:hover {
+    background-color: rgba(255,255,255,0.1);
+}
+[data-bs-theme="dark"] .rbc-toolbar button.rbc-active {
+    background-color: var(--primary-blue);
+    color: white;
+    border-color: var(--primary-blue);
 }

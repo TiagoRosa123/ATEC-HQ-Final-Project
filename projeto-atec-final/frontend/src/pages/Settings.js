@@ -102,7 +102,7 @@ function Settings() {
     return (
         <Navbar>
             <div className="d-flex align-items-center mb-5">
-                <div className="bg-white p-2 rounded shadow-sm me-3">
+                <div className="bg-body-tertiary p-2 rounded shadow-sm me-3 border border-0">
                     <FaCog size={24} className="text-secondary" />
                 </div>
                 <div>
@@ -115,7 +115,7 @@ function Settings() {
                 {/* Alterar Password */}
                 <Col lg={12}>
                     <Card className="card-modern h-100 border-0">
-                        <Card.Header className="bg-white border-0 pt-4 pb-0">
+                        <Card.Header className="border-0 pt-4 pb-0">
                             <div className="d-flex align-items-center">
                                 <FaKey className="text-secondary me-2" />
                                 <h6 className="fw-bold mb-0 text-uppercase ls-1 small">Alterar Password</h6>
@@ -127,7 +127,8 @@ function Settings() {
                                 <div className="form-floating mb-3">
                                     <input
                                         type="password"
-                                        className="form-control bg-light border-0"
+                                        className="form-control border-0 shadow-sm"
+                                        style={{ backgroundColor: 'var(--bg-page)' }}
                                         id="floatingPassword"
                                         placeholder="Nova Password"
                                         value={novaPassword}
@@ -147,7 +148,7 @@ function Settings() {
                 {/* 2FA SECURITY */}
                 <Col lg={12}>
                     <Card className="card-modern h-100 border-0">
-                        <Card.Header className="bg-white border-0 pt-4 pb-0">
+                        <Card.Header className="border-0 pt-4 pb-0">
                             <div className="d-flex align-items-center">
                                 <FaShieldAlt className="text-secondary me-2" />
                                 <h6 className="fw-bold mb-0 text-uppercase ls-1 small">Autenticação 2FA</h6>
@@ -157,7 +158,7 @@ function Settings() {
                             <p className="text-muted small mb-4">Adicione uma camada extra de segurança.</p>
 
                             {user.two_fa_ativado ? (
-                                <div className="p-4 bg-light rounded text-center border dashed-border">
+                                <div className="p-4 bg-body-tertiary rounded text-center border dashed-border">
                                     <FaShieldAlt size={40} className="text-success mb-3" />
                                     <h6 className="fw-bold text-success">Proteção Ativa</h6>
                                     <p className="small text-muted mb-0">A tua conta está protegida com autenticação de dois fatores.</p>
@@ -166,7 +167,7 @@ function Settings() {
                                 <div>
                                     {!modoSetup2FA && (
                                         <div className="text-center p-4">
-                                            <Button variant="outline-dark" onClick={iniciarSetup2FA} className="fw-bold px-4 py-2">
+                                            <Button onClick={iniciarSetup2FA} className="btn-primary-custom fw-bold px-4 py-2">
                                                 Configurar 2FA
                                             </Button>
                                             <p className="text-muted small mt-2">Será necessário a app Google Authenticator.</p>

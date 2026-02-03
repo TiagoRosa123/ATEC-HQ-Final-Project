@@ -1,140 +1,149 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Container, Row, Col, Form, Card, Badge, Button } from 'react-bootstrap';
+import { Container, Row, Col, Card, Form, InputGroup, Badge, Button } from 'react-bootstrap';
+import { FaSearch, FaFilter, FaBookOpen, FaGraduationCap } from 'react-icons/fa';
 import axios from 'axios';
 import PublicNavbar from '../components/PublicNavbar';
-import { FaSearch, FaClock, FaCalendarAlt } from 'react-icons/fa';
 
 const LandingPage = () => {
     const [courses, setCourses] = useState([]);
     const [filteredCourses, setFilteredCourses] = useState([]);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [selectedArea, setSelectedArea] = useState("Todas");
+    const [areas, setAreas] = useState([]);
 
     useEffect(() => {
-        fetchPublicCourses();
+        fetchCourses();
     }, []);
 
-    useEffect(() => {
-        const results = courses.filter(course =>
-            course.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            course.sigla?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            course.area_nome?.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-        setFilteredCourses(results);
-    }, [searchTerm, courses]);
-
-    const fetchPublicCourses = async () => {
+    const fetchCourses = async () => {
         try {
-            // Rota pública sem necessidade de token
-            const res = await axios.get('http://localhost:5000/courses/public');
+            const res = await axios.get('http://localhost:5000/api/public/courses');
             setCourses(res.data);
             setFilteredCourses(res.data);
-        } catch (error) {
-            console.error("Erro ao buscar cursos:", error);
-        } finally {
-            setLoading(false);
+            
+            // Extrair áreas únicas
+            const uniqueAreas = ["Todas", ...new Set(res.data.map(c => c.area).filter(Boolean))];
+            setAreas(uniqueAreas);
+        } catch (err) {
+            console.error("Erro ao carregar cursos:", err);
         }
     };
 
+    useEffect(() => {
+        let result = courses;
+
+        if (selectedArea !== "Todas") {
+            result = result.filter(c => c.area === selectedArea);
+        }
+
+        if (searchTerm) {
+            result = result.filter(c => 
+                c.nome.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                (c.descricao && c.descricao.toLowerCase().includes(searchTerm.toLowerCase()))
+            );
+        }
+
+        setFilteredCourses(result);
+    }, [searchTerm, selectedArea, courses]);
+
     return (
-        <>
+        <div className="min-vh-100 pb-5">
             <PublicNavbar />
-            
+
             {/* Hero Section */}
-            <div className="bg-dark text-white py-5 mt-5" style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', background: 'linear-gradient(rgba(15, 23, 42, 0.9), rgba(30, 58, 138, 0.8)), url("https://images.unsplash.com/photo-1517048676732-d65bc937f952?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80") center/cover no-repeat' }}>
-                <Container className="text-center">
-                    <h1 className="display-3 fw-bold mb-4">Invista no seu <span className="text-accent">Futuro</span></h1>
-                    <p className="lead mb-5 mx-auto" style={{ maxWidth: '700px' }}>
-                        Descubra os melhores cursos tecnológicos e especialize-se nas áreas com maior procura no mercado de trabalho.
-                    </p>
-                    <Button href="#cursos" variant="primary" size="lg" className="btn-accent px-5 py-3 rounded-pill fw-bold">
-                        Ver Cursos Disponíveis
+            <div className="py-5 mb-5 text-center text-white" style={{ backgroundColor: 'var(--primary-blue)' }}>
+                <Container>
+                    <h1 className="display-4 fw-bold mb-3">Bem-vindo à ATEC</h1>
+                    <p className="lead mb-4">Descobre o teu futuro com os nossos cursos de excelência.</p>
+                    <Button variant="light" size="lg" className="rounded-pill text-primary fw-bold px-5" href="#courses">
+                        Explorar Cursos
                     </Button>
                 </Container>
             </div>
 
-            {/* Courses Section */}
-            <div id="cursos" className="py-5 bg-light">
-                <Container>
-                    <div className="text-center mb-5">
-                        <h2 className="fw-bold mb-3">Nossos Cursos</h2>
-                        <div className="d-flex justify-content-center">
-                            <div className="position-relative" style={{ maxWidth: '500px', width: '100%' }}>
-                                <Form.Control
-                                    type="text"
-                                    placeholder="Pesquisar curso, área ou sigla..."
-                                    className="py-3 ps-5 rounded-pill shadow-sm border-0"
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                />
-                                <FaSearch className="position-absolute top-50 start-0 translate-middle-y ms-3 text-muted" />
-                            </div>
-                        </div>
+            <Container id="courses">
+                <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4">
+                    <h2 className="fw-bold mb-3 mb-md-0">
+                        <FaBookOpen className="me-2 text-primary" />
+                        Cursos Disponíveis
+                    </h2>
+                    
+                    <div className="d-flex gap-3">
+                        <Form.Select 
+                            value={selectedArea} 
+                            onChange={(e) => setSelectedArea(e.target.value)}
+                            style={{width: '200px'}}
+                            className="shadow-sm border-0"
+                        >
+                            {areas.map(area => (
+                                <option key={area} value={area}>{area}</option>
+                            ))}
+                        </Form.Select>
+
+                        <InputGroup style={{width: '250px'}} className="shadow-sm">
+                            <InputGroup.Text className="bg-white border-0"><FaSearch className="text-muted"/></InputGroup.Text>
+                            <Form.Control 
+                                placeholder="Pesquisar curso..." 
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="border-0"
+                            />
+                        </InputGroup>
                     </div>
+                </div>
 
-                    {loading ? (
-                        <p className="text-center">A carregar cursos...</p>
-                    ) : (
-                        <Row className="g-4">
-                            {filteredCourses.length > 0 ? (
-                                filteredCourses.map(course => (
-                                    <Col key={course.id} lg={4} md={6}>
-                                        <Card className="h-100 border-0 shadow-sm hover-up card-modern">
-                                            <Card.Body className="d-flex flex-column p-4">
-                                                <div className="mb-3 d-flex justify-content-between align-items-start">
-                                                    <Badge bg="light" text="dark" className="border">
-                                                        {course.area_nome || 'Geral'}
-                                                    </Badge>
-                                                    {course.sigla && <Badge bg="primary">{course.sigla}</Badge>}
-                                                </div>
-                                                <Card.Title className="fw-bold text-dark-blue mb-3 fs-5">
-                                                    {course.nome}
-                                                </Card.Title>
-                                                <Card.Text className="text-muted flex-grow-1 small line-clamp-3">
-                                                    {course.descricao || 'Sem descrição disponível.'}
-                                                </Card.Text>
-                                                <div className="mt-4 pt-3 border-top d-flex justify-content-between align-items-center text-muted small">
-                                                    <span><FaCalendarAlt className="me-1" /> Candidaturas Abertas</span>
-                                                    <Link to="/login" className="text-accent fw-bold text-decoration-none">
-                                                        Saber Mais &rarr;
-                                                    </Link>
-                                                </div>
-                                            </Card.Body>
-                                        </Card>
-                                    </Col>
-                                ))
-                            ) : (
-                                <Col xs={12} className="text-center py-5">
-                                    <h5 className="text-muted">Nenhum curso encontrado para "{searchTerm}"</h5>
-                                    <Button variant="link" onClick={() => setSearchTerm('')}>Limpar pesquisa</Button>
-                                </Col>
-                            )}
-                        </Row>
-                    )}
-                </Container>
-            </div>
-
-            {/* Footer Simple */}
-            <footer className="bg-white py-4 mt-auto border-top">
-                <Container className="text-center text-muted small">
-                    <p className="mb-0">&copy; 2026 ATEC Academy. Todos os direitos reservados.</p>
-                </Container>
-            </footer>
+                {filteredCourses.length === 0 ? (
+                    <div className="text-center py-5 text-muted">
+                        <h4>Nenhum curso encontrado.</h4>
+                        <p>Tenta ajustar os filtros de pesquisa.</p>
+                    </div>
+                ) : (
+                    <Row>
+                        {filteredCourses.map(course => (
+                            <Col key={course.id} md={6} lg={4} className="mb-4">
+                                <Card className="h-100 border-0 shadow-sm hover-up transition-all">
+                                    <div className="position-relative">
+                                        {/* Placeholder de imagem se não existir */}
+                                        <div style={{height: '180px', backgroundColor: 'var(--bg-page)'}} className="d-flex align-items-center justify-content-center text-muted border-bottom">
+                                            {course.imagem ? 
+                                                <img src={course.imagem} alt={course.nome} className="w-100 h-100 object-fit-cover" /> 
+                                                : <FaGraduationCap size={40} opacity={0.3} />
+                                            }
+                                        </div>
+                                        <Badge bg="primary" className="position-absolute top-0 end-0 m-3 shadow-sm">
+                                            {course.area || "Geral"}
+                                        </Badge>
+                                    </div>
+                                    <Card.Body className="d-flex flex-column">
+                                        <Card.Title className="fw-bold text-truncate" title={course.nome}>{course.nome}</Card.Title>
+                                        <Card.Text className="text-muted small flex-grow-1">
+                                            {course.descricao ? 
+                                                (course.descricao.length > 100 ? course.descricao.substring(0, 100) + "..." : course.descricao) 
+                                                : "Sem descrição disponível."
+                                            }
+                                        </Card.Text>
+                                        <div className="mt-3 pt-3 border-top d-flex justify-content-between align-items-center">
+                                            <small className="text-muted">
+                                                {course.duracao_horas ? `${course.duracao_horas} Horas` : 'Duração N/A'}
+                                            </small>
+                                            <Button variant="outline-primary" size="sm" className="rounded-pill">
+                                                Saber Mais
+                                            </Button>
+                                        </div>
+                                    </Card.Body>
+                                </Card>
+                            </Col>
+                        ))}
+                    </Row>
+                )}
+            </Container>
 
             <style>{`
                 .hover-up { transition: transform 0.2s; }
                 .hover-up:hover { transform: translateY(-5px); }
-                .line-clamp-3 {
-                    display: -webkit-box;
-                    -webkit-line-clamp: 3;
-                    -webkit-box-orient: vertical;
-                    overflow: hidden;
-                }
             `}</style>
-        </>
+        </div>
     );
 };
-
 
 export default LandingPage;

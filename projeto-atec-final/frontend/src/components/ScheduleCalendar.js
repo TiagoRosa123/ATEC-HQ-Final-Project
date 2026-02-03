@@ -44,7 +44,7 @@ const ScheduleCalendar = ({ events, defaultView = 'week', onSelectSlot, onSelect
   };
 
   return (
-    <Container fluid className="p-3 bg-white rounded shadow-sm">
+    <Container fluid className="p-3 card-modern rounded shadow-sm">
       <div style={{ height: '75vh' }}>
         <DnDCalendar
           localizer={localizer}
