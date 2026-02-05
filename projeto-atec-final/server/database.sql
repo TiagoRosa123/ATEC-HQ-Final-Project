@@ -1,9 +1,9 @@
--- 1. LIMPEZA TOTAL 
+-- 1. LIMPEZA TOTAL
 -- DROP TABLE IF EXISTS ficheiros CASCADE;
 -- DROP TABLE IF EXISTS avaliacoes CASCADE;
 -- DROP TABLE IF EXISTS horarios CASCADE;
 -- DROP TABLE IF EXISTS inscricoes CASCADE;
--- DROP TABLE IF EXISTS turmas_modulos CASCADE; 
+-- DROP TABLE IF EXISTS turmas_modulos CASCADE;
 -- DROP TABLE IF EXISTS turmas CASCADE;
 -- DROP TABLE IF EXISTS disponibilidades CASCADE;
 -- DROP TABLE IF EXISTS competencias_formador CASCADE;
@@ -54,15 +54,15 @@ CREATE TABLE utilizadores (
 -- 2 Áreas
 CREATE TABLE areas (
     id SERIAL PRIMARY KEY,
-    nome VARCHAR(50) UNIQUE NOT NULL, 
+    nome VARCHAR(50) UNIQUE NOT NULL,
     descricao TEXT
 );
 
 -- 3 Salas
 CREATE TABLE salas (
     id SERIAL PRIMARY KEY,
-    area_id INT REFERENCES areas(id), 
-    nome VARCHAR(40) NOT NULL, 
+    area_id INT REFERENCES areas (id),
+    nome VARCHAR(40) NOT NULL,
     capacidade INT NOT NULL,
     recursos TEXT
 );
@@ -70,10 +70,12 @@ CREATE TABLE salas (
 -- 4 Cursos
 CREATE TABLE cursos (
     id SERIAL PRIMARY KEY,
-    area_id INT REFERENCES areas(id),
+    area_id INT REFERENCES areas (id),
     nome VARCHAR(50) NOT NULL,
     sigla VARCHAR(10),
-    descricao TEXT
+    descricao TEXT,
+    imagem TEXT,
+    duracao_horas INT
 );
 
 -- 5 Módulos
@@ -87,15 +89,15 @@ CREATE TABLE modulos (
 -- 6 Estrutura do Curso
 CREATE TABLE curso_modulos (
     id SERIAL PRIMARY KEY,
-    curso_id INT REFERENCES cursos(id) ON DELETE CASCADE,
-    modulo_id INT REFERENCES modulos(id) ON DELETE CASCADE,
+    curso_id INT REFERENCES cursos (id) ON DELETE CASCADE,
+    modulo_id INT REFERENCES modulos (id) ON DELETE CASCADE,
     ordem_sequencia INT -- P/ ordenar visivelmente
 );
 
 -- 7 Formadores
 CREATE TABLE formadores (
     id SERIAL PRIMARY KEY,
-    utilizador_id INT REFERENCES utilizadores(id) ON DELETE CASCADE,
+    utilizador_id INT REFERENCES utilizadores (id) ON DELETE CASCADE,
     nome VARCHAR(40) NOT NULL,
     cor_calendario VARCHAR(7) -- cor p/ formador para melhor visualização Frontend
 );
@@ -103,7 +105,7 @@ CREATE TABLE formadores (
 -- 8 Formandos
 CREATE TABLE formandos (
     id SERIAL PRIMARY KEY,
-    utilizador_id INT REFERENCES utilizadores(id) ON DELETE CASCADE,
+    utilizador_id INT REFERENCES utilizadores (id) ON DELETE CASCADE,
     nome VARCHAR(40) NOT NULL
 );
 
@@ -124,7 +126,7 @@ CREATE TYPE cargo_enum AS ENUM (
 
 CREATE TABLE funcionarios (
     id SERIAL PRIMARY KEY,
-    utilizador_id INT REFERENCES utilizadores(id) ON DELETE CASCADE,
+    utilizador_id INT REFERENCES utilizadores (id) ON DELETE CASCADE,
     nome VARCHAR(40) NOT NULL,
     departamento departamento_enum NOT NULL,
     cargo cargo_enum NOT NULL
@@ -133,18 +135,22 @@ CREATE TABLE funcionarios (
 -- 10 Competências dos Formadores
 CREATE TABLE competencias_formador (
     id SERIAL PRIMARY KEY,
-    formador_id INT REFERENCES formadores(id) ON DELETE CASCADE,
-    modulo_id INT REFERENCES modulos(id) ON DELETE CASCADE,
-    UNIQUE(formador_id, modulo_id)
+    formador_id INT REFERENCES formadores (id) ON DELETE CASCADE,
+    modulo_id INT REFERENCES modulos (id) ON DELETE CASCADE,
+    UNIQUE (formador_id, modulo_id)
 );
 
 -- 11 Disponibilidades
 CREATE TABLE disponibilidades (
     id SERIAL PRIMARY KEY,
-    formador_id INT REFERENCES formadores(id) ON DELETE CASCADE,
-    data_inicio TIMESTAMP WITH TIME ZONE NOT NULL, -- data + hora 
-    data_fim TIMESTAMP WITH TIME ZONE NOT NULL,
-    observacoes TEXT
+    formador_id INT REFERENCES formadores (id) ON DELETE CASCADE,
+    data_inicio TIMESTAMP
+    WITH
+        TIME ZONE NOT NULL, -- data + hora 
+        data_fim TIMESTAMP
+    WITH
+        TIME ZONE NOT NULL,
+        observacoes TEXT
 );
 
 -- 12 Turmas
@@ -158,20 +164,20 @@ CREATE TYPE estado_turma_enum AS ENUM (
 CREATE TABLE turmas (
     id SERIAL PRIMARY KEY,
     codigo VARCHAR(20) UNIQUE NOT NULL,
-    curso_id INT REFERENCES cursos(id),
+    curso_id INT REFERENCES cursos (id),
     data_inicio DATE NOT NULL,
     data_fim DATE,
-    coordenador_id INT REFERENCES formadores(id),
+    coordenador_id INT REFERENCES formadores (id),
     estado estado_turma_enum
 );
 
 -- 13 Turmas modulos
 CREATE TABLE turmas_modulos (
     id SERIAL PRIMARY KEY,
-	formador_id INT REFERENCES formadores(id) ON DELETE CASCADE, 
-    modulo_id INT REFERENCES modulos(id) ON DELETE CASCADE,
-    turmas_id INT REFERENCES turmas(id) ON DELETE CASCADE,
-    UNIQUE(turmas_id, modulo_id)
+    formador_id INT REFERENCES formadores (id) ON DELETE CASCADE,
+    modulo_id INT REFERENCES modulos (id) ON DELETE CASCADE,
+    turmas_id INT REFERENCES turmas (id) ON DELETE CASCADE,
+    UNIQUE (turmas_id, modulo_id)
 );
 
 -- 14 Inscrições
@@ -184,26 +190,56 @@ CREATE TYPE estado_inscricao_enum AS ENUM (
 
 CREATE TABLE inscricoes (
     id SERIAL PRIMARY KEY,
-    turma_id INT REFERENCES turmas(id) ON DELETE CASCADE,
-    formando_id INT REFERENCES formandos(id) ON DELETE CASCADE,
+    turma_id INT REFERENCES turmas (id) ON DELETE CASCADE,
+    formando_id INT REFERENCES formandos (id) ON DELETE CASCADE,
     data_inscricao DATE DEFAULT CURRENT_DATE,
-    estado estado_inscricao_enum, 
-    UNIQUE(turma_id, formando_id)
+    estado estado_inscricao_enum,
+    UNIQUE (turma_id, formando_id)
 );
 
 -- 15 Horários
 CREATE TABLE horarios (
     id SERIAL PRIMARY KEY,
-    turma_id INT REFERENCES turmas(id) ON DELETE CASCADE,
-    modulo_id INT REFERENCES modulos(id),
-    formador_id INT REFERENCES formadores(id),
-    sala_id INT REFERENCES salas(id), 
+    turma_id INT REFERENCES turmas (id) ON DELETE CASCADE,
+    modulo_id INT REFERENCES modulos (id),
+    formador_id INT REFERENCES formadores (id),
+    sala_id INT REFERENCES salas (id),
     data_aula DATE NOT NULL,
     hora_inicio TIME NOT NULL,
     hora_fim TIME NOT NULL,
-    CONSTRAINT no_room_overlap EXCLUDE USING gist (sala_id WITH =, tsrange(data_aula + hora_inicio, data_aula + hora_fim) WITH &&),
-    CONSTRAINT no_teacher_overlap EXCLUDE USING gist (formador_id WITH =, tsrange(data_aula + hora_inicio, data_aula + hora_fim) WITH &&),
-    CONSTRAINT no_class_overlap EXCLUDE USING gist (turma_id WITH =, tsrange(data_aula + hora_inicio, data_aula + hora_fim) WITH &&)
+    CONSTRAINT no_room_overlap EXCLUDE USING gist (
+        sala_id
+        WITH
+            =,
+            tsrange (
+                data_aula + hora_inicio,
+                data_aula + hora_fim
+            )
+        WITH
+            &&
+    ),
+    CONSTRAINT no_teacher_overlap EXCLUDE USING gist (
+        formador_id
+        WITH
+            =,
+            tsrange (
+                data_aula + hora_inicio,
+                data_aula + hora_fim
+            )
+        WITH
+            &&
+    ),
+    CONSTRAINT no_class_overlap EXCLUDE USING gist (
+        turma_id
+        WITH
+            =,
+            tsrange (
+                data_aula + hora_inicio,
+                data_aula + hora_fim
+            )
+        WITH
+            &&
+    )
 );
 
 -- 16 Avaliações
@@ -217,10 +253,10 @@ CREATE TYPE tipo_avaliacao_enum AS ENUM (
 
 CREATE TABLE avaliacoes (
     id SERIAL PRIMARY KEY,
-    turma_id INT REFERENCES turmas(id) ON DELETE CASCADE,
-    modulo_id INT REFERENCES modulos(id) ON DELETE CASCADE, 
-    formando_id INT REFERENCES formandos(id) ON DELETE CASCADE,
-    nota DECIMAL(4,2) NOT NULL, 
+    turma_id INT REFERENCES turmas (id) ON DELETE CASCADE,
+    modulo_id INT REFERENCES modulos (id) ON DELETE CASCADE,
+    formando_id INT REFERENCES formandos (id) ON DELETE CASCADE,
+    nota DECIMAL(4, 2) NOT NULL,
     data_avaliacao DATE NOT NULL,
     tipo_avaliacao tipo_avaliacao_enum NOT NULL, -- enum
     observacoes TEXT
