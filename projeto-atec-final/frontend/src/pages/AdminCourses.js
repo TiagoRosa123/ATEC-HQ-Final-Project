@@ -8,7 +8,7 @@ import api from '../services/api';
 function AdminCourses() {
     const [courses, setCourses] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [formData, setFormData] = useState({ nome: '', sigla: '', descricao: '', area_id: '' }); //guarda o que o user esta a escrever
+    const [formData, setFormData] = useState({ nome: '', sigla: '', descricao: '', area_id: '', imagem: '', duracao_horas: '' }); //guarda o que o user esta a escrever
     const [editId, setEditId] = useState(null); //guarda o ID do curso que esta a ser editado
 
     const [areas, setAreas] = useState([]); //guarda as areas
@@ -65,7 +65,7 @@ function AdminCourses() {
                 await api.post('/courses/create', formData);
                 toast.success('Curso criado!');
             }
-            setFormData({ nome: '', sigla: '', descricao: '', area_id: '' });
+            setFormData({ nome: '', sigla: '', descricao: '', area_id: '', imagem: '', duracao_horas: '' });
             setEditId(null);
             loadCourses();
         } catch (error) {
@@ -125,37 +125,58 @@ function AdminCourses() {
             {/* FORMULÁRIO */}
             <Card className="mb-4 border-0 shadow-sm">
                 <Card.Body>
-                    <Form onSubmit={handleSubmit} className="d-flex gap-2">
-                        <Form.Control
-                            placeholder="Nome do Curso"
-                            value={formData.nome}
-                            onChange={e => setFormData({ ...formData, nome: e.target.value })}
-                            required
-                        />
-                        <Form.Control
-                            placeholder="Sigla"
-                            value={formData.sigla}
-                            onChange={e => setFormData({ ...formData, sigla: e.target.value })}
-                            required
-                            style={{ maxWidth: '150px' }}
-                        />
-                        <Form.Select
-                            value={formData.area_id}
-                            onChange={e => setFormData({ ...formData, area_id: e.target.value })}
-                            required
-                            style={{ maxWidth: '200px' }}
-                        >
-                            <option value="">Área...</option>
-                            {areas.map(area => (
-                                <option key={area.id} value={area.id}>{area.nome}</option>
-                            ))}
-                        </Form.Select>
-                        <Form.Control
-                            placeholder="Descrição"
-                            value={formData.descricao}
-                            onChange={e => setFormData({ ...formData, descricao: e.target.value })}
-                        />
-                        <Button type="submit" variant="primary">
+                    <Form onSubmit={handleSubmit} className="d-flex gap-2 align-items-end">
+                        <div className="d-flex flex-column gap-2 flex-grow-1">
+                            {/* Linha 1 */}
+                            <div className="d-flex gap-2">
+                                <Form.Control
+                                    placeholder="Nome do Curso"
+                                    value={formData.nome}
+                                    onChange={e => setFormData({ ...formData, nome: e.target.value })}
+                                    required
+                                />
+                                <Form.Control
+                                    placeholder="Sigla"
+                                    value={formData.sigla}
+                                    onChange={e => setFormData({ ...formData, sigla: e.target.value })}
+                                    required
+                                    style={{ maxWidth: '100px' }}
+                                />
+                                <Form.Control
+                                    type="number"
+                                    placeholder="Horas"
+                                    value={formData.duracao_horas}
+                                    onChange={e => setFormData({ ...formData, duracao_horas: e.target.value })}
+                                    style={{ maxWidth: '100px' }}
+                                />
+                                <Form.Select
+                                    value={formData.area_id}
+                                    onChange={e => setFormData({ ...formData, area_id: e.target.value })}
+                                    required
+                                    style={{ maxWidth: '200px' }}
+                                >
+                                    <option value="">Área...</option>
+                                    {areas.map(area => (
+                                        <option key={area.id} value={area.id}>{area.nome}</option>
+                                    ))}
+                                </Form.Select>
+                            </div>
+                            {/* Linha 2 */}
+                             <div className="d-flex gap-2">
+                                <Form.Control
+                                    placeholder="URL da Imagem (https://...)"
+                                    value={formData.imagem}
+                                    onChange={e => setFormData({ ...formData, imagem: e.target.value })}
+                                />
+                                <Form.Control
+                                    placeholder="Descrição Curta"
+                                    value={formData.descricao}
+                                    onChange={e => setFormData({ ...formData, descricao: e.target.value })}
+                                />
+                             </div>
+                        </div>
+
+                        <Button type="submit" variant="primary" className="px-4" style={{ height: 'fit-content', alignSelf: 'center' }}>
                             {editId ? <FaSave /> : <FaPlus />}
                         </Button>
                     </Form>
@@ -182,7 +203,14 @@ function AdminCourses() {
                                         {/* Btn Editar */}
                                         <Button variant="link" onClick={() => {
                                             setEditId(course.id);
-                                            setFormData({ nome: course.nome, sigla: course.sigla, descricao: course.descricao });
+                                            setFormData({ 
+                                                nome: course.nome, 
+                                                sigla: course.sigla, 
+                                                descricao: course.descricao, 
+                                                area_id: course.area_id, // Ensure area_id is also set
+                                                imagem: course.imagem || '', 
+                                                duracao_horas: course.duracao_horas || '' 
+                                            });
                                         }}>
                                             <FaEdit />
                                         </Button>

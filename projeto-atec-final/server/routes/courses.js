@@ -35,8 +35,11 @@ router.get('/', authorization, async (req, res) => {
 //post
 router.post('/create', authorization, async (req, res) => {
     try {
-        const { nome, sigla, descricao, area_id } = req.body;
-        const newCourse = await pool.query("INSERT INTO cursos (nome, sigla, descricao, area_id) VALUES ($1, $2, $3, $4) RETURNING *", [nome, sigla, descricao, area_id]);
+        const { nome, sigla, descricao, area_id, imagem, duracao_horas } = req.body;
+        const newCourse = await pool.query(
+            "INSERT INTO cursos (nome, sigla, descricao, area_id, imagem, duracao_horas) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *", 
+            [nome, sigla, descricao, area_id, imagem, duracao_horas]
+        );
         res.json(newCourse.rows[0]);
     }
     catch (err) {
@@ -49,8 +52,11 @@ router.post('/create', authorization, async (req, res) => {
 router.put('/update/:id', authorization, async (req, res) => {
     try {
         const { id } = req.params;
-        const { nome, sigla, descricao, area_id } = req.body;
-        const updateCourse = await pool.query("UPDATE cursos SET nome = $1, sigla = $2, descricao = $3, area_id = $4 WHERE id = $5 RETURNING *", [nome, sigla, descricao, area_id, id]);
+        const { nome, sigla, descricao, area_id, imagem, duracao_horas } = req.body;
+        const updateCourse = await pool.query(
+            "UPDATE cursos SET nome = $1, sigla = $2, descricao = $3, area_id = $4, imagem = $5, duracao_horas = $6 WHERE id = $7 RETURNING *", 
+            [nome, sigla, descricao, area_id, imagem, duracao_horas, id]
+        );
         res.json(updateCourse.rows[0]);
     }
     catch (err) {

@@ -57,7 +57,7 @@ const ScheduleCalendar = ({ events, defaultView = 'week', onSelectSlot, onSelect
           views={['month', 'week', 'day', 'agenda']}
           eventPropGetter={eventStyleGetter}
           min={new Date(0, 0, 0, 8, 0, 0)}
-          max={new Date(0, 0, 0, 23, 0, 0)}
+          max={new Date(0, 0, 0, 23, 59, 59)}
           formats={{
             dayHeaderFormat: 'dddd, DD MMMM',
           }}
