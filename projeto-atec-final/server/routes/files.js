@@ -165,7 +165,7 @@ router.get('/download/:filename', authorization, async (req, res) => {
 //PDF
 const exportPdfHandler = async (req, res) => {
     try {
-        let targetId = req.user.id; 
+        let targetId = req.user.id;
         console.log("Exportar PDF - Start. UserID original:", req.user.id);
 
         if (req.params.userId) {
@@ -179,11 +179,11 @@ const exportPdfHandler = async (req, res) => {
 
         const dadosRole = await pool.query(`SELECT role FROM utilizadores WHERE id = $1`, [targetId]);
         const userName = await pool.query(`SELECT nome FROM utilizadores WHERE id = $1`, [targetId]);
-        
+
         console.log("User encontrado:", userName.rows.length > 0 ? userName.rows[0].nome : "NÃO");
-        
+
         if (dadosRole.rows.length === 0) return res.status(404).json("Utilizador não encontrado");
-        
+
         const role = dadosRole.rows[0].role;
         console.log("Role:", role);
         let dados = null;
@@ -231,9 +231,9 @@ const exportPdfHandler = async (req, res) => {
             }
 
             if (dados.rows.length === 0) {
-                 // Mesmo sem dados, queremos gerar o PDF com o cabeçalho/foto
-                 // Mas a tabela fica vazia ou com msg
-                 corpoTabela.push([{ text: 'Sem registo de avaliações.', colSpan: 5, alignment: 'center' }, {}, {}, {}, {}]);
+                // Mesmo sem dados, queremos gerar o PDF com o cabeçalho/foto
+                // Mas a tabela fica vazia ou com msg
+                corpoTabela.push([{ text: 'Sem registo de avaliações.', colSpan: 5, alignment: 'center' }, {}, {}, {}, {}]);
             }
 
         } else {
@@ -271,7 +271,7 @@ const exportPdfHandler = async (req, res) => {
             }
 
             if (dados.rows.length === 0) {
-                 corpoTabela.push([{ text: 'Sem registo de aulas.', colSpan: 3, alignment: 'center' }, {}, {}]);
+                corpoTabela.push([{ text: 'Sem registo de aulas.', colSpan: 3, alignment: 'center' }, {}, {}]);
             }
         }
 

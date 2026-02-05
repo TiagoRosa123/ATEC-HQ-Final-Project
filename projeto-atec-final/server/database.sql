@@ -17,7 +17,7 @@
 -- DROP TABLE IF EXISTS areas CASCADE;
 -- DROP TABLE IF EXISTS utilizadores CASCADE;
 
--- DROP TYPE IF EXISTS user_role_enum CASCADE;
+-- DROP TYPE IF EXISTS role_enum CASCADE;
 -- DROP TYPE IF EXISTS departamento_enum CASCADE;
 -- DROP TYPE IF EXISTS cargo_enum CASCADE;
 -- DROP TYPE IF EXISTS tipo_avaliacao_enum CASCADE;
