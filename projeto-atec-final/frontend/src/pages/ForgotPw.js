@@ -5,7 +5,7 @@ import { FaEnvelope } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 
 function ForgotPw() {
-  const [email, setEmail] = useState(''); 
+  const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -39,7 +39,7 @@ function ForgotPw() {
 
         <div className="text-center mb-4">
           <div className="fs-3 fw-bold text-dark-blue tracking-wide">
-            ATEC<span className="text-accent">HQ</span>
+            <span className="text-secondary">ATEC</span><span style={{ color: 'var(--primary-blue)' }}>HQ</span>
           </div>
           <p className="text-secondary small mt-2">Recuperação de Acesso</p>
         </div>

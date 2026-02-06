@@ -43,7 +43,7 @@ function ResetPw() {
 
         <div className="text-center mb-4">
           <div className="fs-3 fw-bold text-dark-blue tracking-wide">
-            ATEC<span className="text-accent">HQ</span>
+            <span className="text-secondary">ATEC</span><span style={{ color: 'var(--primary-blue)' }}>HQ</span>
           </div>
         </div>
 

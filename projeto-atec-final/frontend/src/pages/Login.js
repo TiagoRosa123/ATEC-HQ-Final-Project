@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { GoogleLogin } from '@react-oauth/google';
-import { jwtDecode } from "jwt-decode";
+import { useGoogleLogin } from '@react-oauth/google'; // Import the Hook instead of the Component
 import { Form, Button, Card, Spinner } from 'react-bootstrap';
-import { FaLock, FaEnvelope, FaFingerprint } from 'react-icons/fa';
+import { FaLock, FaEnvelope, FaFingerprint, FaGoogle } from 'react-icons/fa'; // Added FaGoogle
 import toast from 'react-hot-toast';
+import axios from 'axios'; // Import standard axios for external call
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [token2fa, setToken2fa] = useState(''); // Cod. do Google Authenticator
+  const [token2fa, setToken2fa] = useState('');
   const [pedir2fa, setPedir2fa] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -29,28 +29,21 @@ function Login() {
     }
 
     try {
-      // --- ALTERAÇÃO AQUI: Usar api.post ---
       const response = await api.post('/auth/login', bodyData);
-
-      // Se chegou aqui, é sucesso (Axios lança erro se for 4xx/5xx)
       const data = response.data;
 
-      login(data.token, data.user); // Guarda a sessão no contexto
+      login(data.token, data.user);
       toast.success(`Bem-vindo, ${data.user.nome.split(' ')[0]}!`);
       navigate('/dashboard');
 
     } catch (error) {
-      // O Axios guarda a resposta do erro em error.response
       const status = error.response?.status;
       const data = error.response?.data;
 
-      // 1. Verifica se o backend pede 2FA (Erro 400 + flag require2fa)
       if (status === 400 && data?.require2fa) {
         setPedir2fa(true);
         toast('Autenticação de 2 fatores necessária.', { icon: '🔐' });
-      }
-      // 2. Outros erros (senha errada, user não encontrado, etc)
-      else {
+      } else {
         const msg = typeof data === 'string' ? data : data?.msg || 'Email ou password incorretos.';
         toast.error(msg);
       }
@@ -59,31 +52,35 @@ function Login() {
     }
   };
 
-  //quando o login com Google corre bem
-  // Quando o login com Google corre bem
-  const handleGoogleSuccess = async (credentialResponse) => {
-    try {
-      const decoded = jwtDecode(credentialResponse.credential);
+  // --- Custom Google Login Hook ---
+  const loginGoogleCustom = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        // 1. Fetch Google User Info
+        const res = await axios.get('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
+        });
+        const profile = res.data;
 
-      const response = await api.post('/auth/google', {
-        email: decoded.email,
-        nome: decoded.name,
-        googleId: decoded.sub || null
-      });
+        // 2. Send to Backend
+        const response = await api.post('/auth/google', {
+          email: profile.email,
+          nome: profile.name,
+          googleId: profile.sub
+        });
 
-      // Com axios (api.js), a resposta já é JSON em response.data
-      const data = response.data;
+        const data = response.data;
+        login(data.token, data.user);
+        toast.success(`Login Google com sucesso!`);
+        navigate('/dashboard');
 
-      login(data.token, data.user);
-      toast.success(`Login Google com sucesso!`);
-      navigate('/dashboard');
-
-    } catch (error) {
-      console.error(error);
-      const msg = error.response?.data?.message || 'Erro de conexão ao Google.';
-      toast.error(msg);
-    }
-  };
+      } catch (error) {
+        console.error("Google Login Error:", error);
+        toast.error('Erro ao conectar com Google.');
+      }
+    },
+    onError: () => toast.error('Login com Google Falhou'),
+  });
 
   return (
     <div className="d-flex align-items-center justify-content-center min-vh-100">
@@ -91,7 +88,7 @@ function Login() {
 
         <div className="text-center mb-4">
           <div className="fs-3 fw-bold text-dark-blue tracking-wide">
-            ATEC<span className="text-accent">HQ</span>
+            <span className="text-secondary">ATEC</span><span style={{ color: 'var(--primary-blue)' }}>HQ</span>
           </div>
           <p className="text-secondary small mt-2">Plataforma de Gestão de Formação</p>
         </div>
@@ -139,7 +136,7 @@ function Login() {
                   </div>
                 </Form.Group>
 
-                <Button type="submit" className="btn-primary-custom w-100 py-2 mb-3" disabled={loading}>
+                <Button type="submit" className="btn-secondary w-100 py-2 mb-3" disabled={loading}>
                   {loading ? <Spinner animation="border" size="sm" /> : "Entrar"}
                 </Button>
               </Form>
@@ -165,7 +162,7 @@ function Login() {
                   />
                 </Form.Group>
 
-                <Button type="submit" className="btn-primary-custom w-100 py-2" disabled={loading}>
+                <Button type="submit" className="btn-secondary w-100 py-2" disabled={loading}>
                   {loading ? <Spinner animation="border" size="sm" /> : "Verificar Identidade"}
                 </Button>
               </Form>
@@ -181,18 +178,25 @@ function Login() {
                 </div>
 
                 <div className="d-flex justify-content-center mb-4">
-                  <GoogleLogin
-                    onSuccess={handleGoogleSuccess}
-                    onError={() => toast.error('Login com Google Falhou')}
-                    theme="filled_blue"
-                    shape="circle"
-                  />
+                  {/* Custom Google Button */}
+                  <Button
+                    onClick={() => loginGoogleCustom()}
+                    className="w-100 py-2 d-flex align-items-center justify-content-center border-0"
+                    style={{ backgroundColor: 'var(--primary-blue)', color: 'white' }}
+                  >
+                    <FaGoogle className="me-2" />
+                    Entrar com Google
+                  </Button>
                 </div>
 
                 <div className="text-center border-top pt-3">
                   <span className="small text-secondary">Ainda não tem conta ? </span>
                   <Link to="/register" className="small fw-bold text-decoration-none" style={{ color: 'var(--primary-blue)' }}>
                     Criar conta
+                  </Link>
+                  <br />
+                  <Link to="/" className="small fw-bold text-decoration-none" style={{ color: 'var(--primary-blue)' }}>
+                    Voltar ao início
                   </Link>
                 </div>
               </>
@@ -201,7 +205,7 @@ function Login() {
         </Card>
 
         <div className="text-center mt-4">
-          <span className="text-muted small opacity-50">© 2026 ATE.HQ Academia de Formação</span>
+          <span className="text-muted small opacity-50">© 2026 ATEC.HQ Academia de Formação</span>
         </div>
       </div>
     </div>

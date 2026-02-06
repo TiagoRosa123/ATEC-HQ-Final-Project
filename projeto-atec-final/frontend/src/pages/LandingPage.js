@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Form, InputGroup, Badge, Button } from 'react-bootstrap';
-import { FaSearch, FaFilter, FaBookOpen, FaGraduationCap } from 'react-icons/fa';
+import { Container, Row, Col, Card, Form, InputGroup, Badge } from 'react-bootstrap';
+import { FaSearch, FaGraduationCap } from 'react-icons/fa';
 import axios from 'axios';
 import PublicNavbar from '../components/PublicNavbar';
 
@@ -20,7 +20,7 @@ const LandingPage = () => {
             const res = await axios.get('http://localhost:5000/api/public/courses');
             setCourses(res.data);
             setFilteredCourses(res.data);
-            
+
             // Extrair áreas únicas
             const uniqueAreas = ["Todas", ...new Set(res.data.map(c => c.area).filter(Boolean))];
             setAreas(uniqueAreas);
@@ -37,8 +37,8 @@ const LandingPage = () => {
         }
 
         if (searchTerm) {
-            result = result.filter(c => 
-                c.nome.toLowerCase().includes(searchTerm.toLowerCase()) || 
+            result = result.filter(c =>
+                c.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 (c.descricao && c.descricao.toLowerCase().includes(searchTerm.toLowerCase()))
             );
         }
@@ -53,26 +53,22 @@ const LandingPage = () => {
             {/* Hero Section */}
             <div className="py-5 mb-5 text-center text-white" style={{ backgroundColor: 'var(--primary-blue)' }}>
                 <Container>
-                    <h1 className="display-4 fw-bold mb-3">Bem-vindo à ATEC</h1>
-                    <p className="lead mb-4">Descobre o teu futuro com os nossos cursos de excelência.</p>
-                    <Button variant="light" size="lg" className="rounded-pill text-primary fw-bold px-5" href="#courses">
-                        Explorar Cursos
-                    </Button>
+                    <h1 className="display-4 fw-bold mb-3">Bem-vindo à ATEC.HQ</h1>
+                    <p className="lead mb-4">Descobre o teu futuro com os nossos cursos.</p>
                 </Container>
             </div>
 
             <Container id="courses">
                 <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4">
                     <h2 className="fw-bold mb-3 mb-md-0">
-                        <FaBookOpen className="me-2 text-primary" />
                         Cursos Disponíveis
                     </h2>
-                    
+
                     <div className="d-flex gap-3">
-                        <Form.Select 
-                            value={selectedArea} 
+                        <Form.Select
+                            value={selectedArea}
                             onChange={(e) => setSelectedArea(e.target.value)}
-                            style={{width: '200px'}}
+                            style={{ width: '200px' }}
                             className="shadow-sm border-0"
                         >
                             {areas.map(area => (
@@ -80,10 +76,10 @@ const LandingPage = () => {
                             ))}
                         </Form.Select>
 
-                        <InputGroup style={{width: '250px'}} className="shadow-sm">
-                            <InputGroup.Text className="bg-white border-0"><FaSearch className="text-muted"/></InputGroup.Text>
-                            <Form.Control 
-                                placeholder="Pesquisar curso..." 
+                        <InputGroup style={{ width: '250px' }} className="shadow-sm">
+                            <InputGroup.Text className="bg-white border-0"><FaSearch className="text-muted" /></InputGroup.Text>
+                            <Form.Control
+                                placeholder="Pesquisar curso..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="border-0"
@@ -95,7 +91,6 @@ const LandingPage = () => {
                 {filteredCourses.length === 0 ? (
                     <div className="text-center py-5 text-muted">
                         <h4>Nenhum curso encontrado.</h4>
-                        <p>Tenta ajustar os filtros de pesquisa.</p>
                     </div>
                 ) : (
                     <Row>
@@ -104,9 +99,9 @@ const LandingPage = () => {
                                 <Card className="h-100 border-0 shadow-sm hover-up transition-all">
                                     <div className="position-relative">
                                         {/* Placeholder de imagem se não existir */}
-                                        <div style={{height: '180px', backgroundColor: 'var(--bg-page)'}} className="d-flex align-items-center justify-content-center text-muted border-bottom">
-                                            {course.imagem ? 
-                                                <img src={course.imagem} alt={course.nome} className="w-100 h-100 object-fit-cover" /> 
+                                        <div style={{ height: '180px', backgroundColor: 'var(--bg-page)' }} className="d-flex align-items-center justify-content-center text-muted border-bottom">
+                                            {course.imagem ?
+                                                <img src={course.imagem} alt={course.nome} className="w-100 h-100 object-fit-cover" />
                                                 : <FaGraduationCap size={40} opacity={0.3} />
                                             }
                                         </div>
@@ -117,18 +112,15 @@ const LandingPage = () => {
                                     <Card.Body className="d-flex flex-column">
                                         <Card.Title className="fw-bold text-truncate" title={course.nome}>{course.nome}</Card.Title>
                                         <Card.Text className="text-muted small flex-grow-1">
-                                            {course.descricao ? 
-                                                (course.descricao.length > 100 ? course.descricao.substring(0, 100) + "..." : course.descricao) 
+                                            {course.descricao ?
+                                                (course.descricao.length > 100 ? course.descricao.substring(0, 100) + "..." : course.descricao)
                                                 : "Sem descrição disponível."
                                             }
                                         </Card.Text>
                                         <div className="mt-3 pt-3 border-top d-flex justify-content-between align-items-center">
                                             <small className="text-muted">
-                                                {course.duracao_horas ? `${course.duracao_horas} Horas` : 'Duração N/A'}
+                                                {course.duracao_horas ? `Duração: ${course.duracao_horas} Horas` : 'Duração N/A'}
                                             </small>
-                                            <Button variant="outline-primary" size="sm" className="rounded-pill">
-                                                Saber Mais
-                                            </Button>
                                         </div>
                                     </Card.Body>
                                 </Card>

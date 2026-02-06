@@ -1,129 +1,122 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { FaHome, FaUserCog, FaSignOutAlt, FaCog, FaUser, FaClipboardList, FaBook, FaChevronDown, FaChevronUp, FaCalendarAlt } from 'react-icons/fa';
-import { Container, Navbar as BsNavbar, Nav, Dropdown, Button } from 'react-bootstrap';
+import { FaGraduationCap, FaSignOutAlt, FaCog, FaUser, FaClipboardList, FaCalendarAlt, FaTools, FaUsers, FaBook, FaLayerGroup, FaChalkboardTeacher, FaDoorOpen } from 'react-icons/fa';
+import { Container, Navbar as BsNavbar, Nav, NavDropdown } from 'react-bootstrap';
 import { useAuth } from '../context/AuthContext';
 import ThemeToggle from './ThemeToggle';
 
 function Navbar({ children }) {
     const navigate = useNavigate();
     const location = useLocation();
-    const { user, logout } = useAuth(); // Precisa do user para saber se é Admin ou não
-
-    const [isAdminOpen, setIsAdminOpen] = useState(true); // Começa aberto para ver
+    const { user, logout } = useAuth();
 
     const handleLogout = () => {
         logout();
-        navigate("/login");
+        navigate("/");
     };
 
-    const isActive = (path) => location.pathname === path ? 'active' : '';
+    const isActive = (path) => location.pathname === path ? 'active fw-bold text-primary' : '';
 
     return (
-        <div className="app-container">
+        <div className="d-flex flex-column min-vh-100">
+            {/* Top Navbar */}
+            <BsNavbar expand="lg" className="shadow-sm py-3 mb-4 bg-body-tertiary">
+                <Container>
+                    <BsNavbar.Brand as={Link} to="/dashboard" className="d-flex align-items-center fw-bold">
+                        <FaGraduationCap className="me-2 fs-2 text-primary" />
+                        <span className="text-secondary">ATEC</span><span style={{ color: 'var(--primary-blue)' }}>HQ</span>
+                    </BsNavbar.Brand>
 
-            {/*Sidebar*/}
-            <div className="sidebar" style={{ width: '280px', flexShrink: 0 }}>
+                    <BsNavbar.Toggle aria-controls="private-navbar-nav" />
 
-                <div className="p-4 d-flex align-items-center justify-content-between mb-2">
-                    <div className="fs-4 fw-bold text-white tracking-wide">
-                        ATEC<span style={{ color: 'var(--accent-orange)' }}>HQ</span>
-                    </div>
-                    <ThemeToggle />
-                </div>
+                    <BsNavbar.Collapse id="private-navbar-nav">
+                        <Nav className="me-auto">
+                            <Nav.Link as={Link} to="/dashboard" className={isActive('/dashboard')}>
+                                Dashboard
+                            </Nav.Link>
 
-                {/* Menu*/}
-                <nav className="flex-column mb-auto">
-                    <Link to="/dashboard" className={`nav-link-custom ${isActive('/dashboard')}`}>
-                        <FaHome className="me-3" size={18} />
-                        <span className="fs-6">Dashboard</span>
-                    </Link>
+                            {/* Menu Administrativo */}
+                            {user && user.is_admin && (
+                                <NavDropdown title={<span><FaTools className="me-1" /> Administração</span>} id="admin-nav-dropdown">
+                                    <NavDropdown.Item as={Link} to="/admin" className={location.pathname === '/admin' ? 'active' : ''}>
+                                        <FaUsers className="me-2" /> Utilizadores
+                                    </NavDropdown.Item>
+                                    <NavDropdown.Item as={Link} to="/admin/courses">
+                                        <FaBook className="me-2" /> Cursos
+                                    </NavDropdown.Item>
+                                    <NavDropdown.Item as={Link} to="/admin/modules">
+                                        <FaLayerGroup className="me-2" /> Módulos
+                                    </NavDropdown.Item>
+                                    <NavDropdown.Item as={Link} to="/admin/areas">
+                                        <FaChalkboardTeacher className="me-2" /> Áreas
+                                    </NavDropdown.Item>
+                                    <NavDropdown.Item as={Link} to="/admin/classes">
+                                        <FaUsers className="me-2" /> Turmas
+                                    </NavDropdown.Item>
+                                    <NavDropdown.Item as={Link} to="/admin/rooms">
+                                        <FaDoorOpen className="me-2" /> Salas
+                                    </NavDropdown.Item>
+                                </NavDropdown>
+                            )}
 
-                    {user && user.is_admin && (
-                        <>
-                            <div
-                                className={`nav-link-custom ${location.pathname.includes('/admin') ? 'active-parent' : ''}`}
-                                onClick={() => setIsAdminOpen(!isAdminOpen)}
-                                style={{ cursor: 'pointer', justifyContent: 'space-between', display: 'flex', alignItems: 'center' }}
-                            >
-                                <div className="d-flex align-items-center">
-                                    <FaUserCog className="me-3" size={18} />
-                                    <span className="fs-6">Administração</span>
-                                </div>
-                                {isAdminOpen ? <FaChevronUp size={12} /> : <FaChevronDown size={12} />}
+                            {/* Links Comuns */}
+                            {user && (user.is_admin || user.role === 'formador') && (
+                                <Nav.Link as={Link} to="/evaluations" className={isActive('/evaluations')}>
+                                    <FaClipboardList className="me-1" /> Avaliações
+                                </Nav.Link>
+                            )}
+
+                            {user && (user.is_admin || user.role === 'formador' || user.role === 'formando' || user.role === 'user') && (
+                                <Nav.Link as={Link} to="/schedules" className={isActive('/schedules')}>
+                                    <FaCalendarAlt className="me-1" /> Horários
+                                </Nav.Link>
+                            )}
+                        </Nav>
+
+                        {/* Lado Direito */}
+                        <Nav className="align-items-center">
+                            <div className="me-3">
+                                <ThemeToggle />
                             </div>
 
-                            {isAdminOpen && (
-                                <div className="ms-4 ps-2 mb-2" style={{ borderLeft: '1px solid rgba(255,255,255,0.1)' }}>
-                                    <Link to="/admin" className={`nav-link-custom py-2 ${location.pathname === '/admin' ? 'active' : ''}`} style={{ fontSize: '0.9rem' }}>
-                                        Utilizadores
-                                    </Link>
-                                    <Link to="/admin/courses" className={`nav-link-custom py-2 ${location.pathname === '/admin/courses' ? 'active' : ''}`} style={{ fontSize: '0.9rem' }}>
-                                        Cursos
-                                    </Link>
-                                    <Link to="/admin/modules" className={`nav-link-custom py-2 ${location.pathname === '/admin/modules' ? 'active' : ''}`} style={{ fontSize: '0.9rem' }}>
-                                        Módulos
-                                    </Link>
-                                    <Link to="/admin/areas" className={`nav-link-custom py-2 ${location.pathname === '/admin/areas' ? 'active' : ''}`} style={{ fontSize: '0.9rem' }}>
-                                        Áreas
-                                    </Link>
-                                    <Link to="/admin/classes" className={`nav-link-custom py-2 ${location.pathname === '/admin/classes' ? 'active' : ''}`} style={{ fontSize: '0.9rem' }}>
-                                        Turmas
-                                    </Link>
-                                    <Link to="/admin/rooms" className={`nav-link-custom py-2 ${location.pathname === '/admin/rooms' ? 'active' : ''}`} style={{ fontSize: '0.9rem' }}>
-                                        Salas
-                                    </Link>
+                            <NavDropdown
+                                title={
+                                    <div className="d-inline-flex align-items-center">
+                                        <div className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style={{ width: '32px', height: '32px' }}>
+                                            {user?.nome?.charAt(0).toUpperCase() || <FaUser />}
+                                        </div>
+                                        <span>{user?.nome?.split(' ')[0]}</span>
+                                    </div>
+                                }
+                                id="user-nav-dropdown"
+                                align="end"
+                            >
+                                <NavDropdown.Item as={Link} to="/profile">
+                                    <FaUser className="me-2" /> Dados Pessoais
+                                </NavDropdown.Item>
+                                <NavDropdown.Item as={Link} to="/settings">
+                                    <FaCog className="me-2" /> Configurações
+                                </NavDropdown.Item>
+                                <NavDropdown.Divider />
+                                <NavDropdown.Item onClick={handleLogout} className="text-danger">
+                                    <FaSignOutAlt className="me-2" /> Sair
+                                </NavDropdown.Item>
+                            </NavDropdown>
+                        </Nav>
+                    </BsNavbar.Collapse>
+                </Container>
+            </BsNavbar>
 
-                                </div>
-                            )}
-                        </>
-                    )}
-
-                    {user && (user.is_admin || user.role === 'formador') && (
-                        <Link to="/evaluations" className={`nav-link-custom ${isActive('/evaluations')}`}>
-                            <FaClipboardList className="me-3" size={18} />
-                            <span className="fs-6">Avaliações</span>
-                        </Link>
-                    )}
-
-                    {user && (user.is_admin || user.role === 'formador' || user.role === 'formando' || user.role === 'user') && (
-                         <Link to="/schedules" className={`nav-link-custom ${isActive('/schedules')}`}>
-                            <FaCalendarAlt className="me-3" size={18} />
-                            <span className="fs-6">Horários</span>
-                        </Link>
-                    )}
-
-                    <Link to="/profile" className={`nav-link-custom ${isActive('/profile')}`}>
-                        <FaUser className="me-3" size={18} />
-                        <span className="fs-6">Dados pessoais</span>
-                    </Link>
-
-                    <Link to="/settings" className={`nav-link-custom ${isActive('/settings')}`}>
-                        <FaCog className="me-3" size={18} />
-                        <span className="fs-6">Configurações</span>
-                    </Link>
-                </nav>
-
-                {/* Sair*/}
-                <div className="p-4 border-top border-secondary">
-                    <Button
-                        variant="link"
-                        onClick={handleLogout}
-                        className="w-100 d-flex align-items-center justify-content-center text-decoration-none"
-                        style={{ color: '#ef4444', fontWeight: '600' }}
-                    >
-                        <FaSignOutAlt className="me-2" /> Sair
-                    </Button>
-                </div>
-            </div>
-
-            {/*Conteudo*/}
-            <div className="main-content">
-                <div className="container-fluid p-0">
+            {/* Main Content */}
+            <div className="flex-grow-1">
+                <Container fluid={false} className="pb-5">
                     {children}
-                </div>
+                </Container>
             </div>
 
+            <footer className="py-4 text-center text-muted small bg-body-tertiary mt-auto">
+                © 2026 ATEC.HQ Academia de Formação
+            </footer>
         </div>
     );
 }
