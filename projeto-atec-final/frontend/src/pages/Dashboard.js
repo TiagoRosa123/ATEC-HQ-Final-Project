@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Row, Col, Table } from 'react-bootstrap';
 import { FaCalendarAlt, FaClock, FaBook, FaUserGraduate, FaChalkboardTeacher } from 'react-icons/fa';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, Treemap } from 'recharts';
+import { Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, Treemap } from 'recharts';
 import axios from 'axios';
 
 import { useAuth } from '../context/AuthContext';
@@ -121,30 +121,39 @@ function Dashboard() {
         /* DASHBOARD ADMIN */
         <Row className="g-4">
              {/* Totais Cards */}
-             <Col md={4}>
+             <Col md={3}>
+                <Card className="card-modern border-0 p-3 h-100 text-center">
+                    <Card.Body>
+                        <FaBook className="text-secondary mb-2 display-6" opacity={0.5} />
+                        <h3 className="fw-bold">{stats.totais.cursosConcluidos}</h3>
+                        <span className="text-muted small">Cursos Terminados</span>
+                    </Card.Body>
+                </Card>
+             </Col>
+             <Col md={3}>
                 <Card className="card-modern border-0 p-3 h-100 text-center">
                     <Card.Body>
                         <FaBook className="text-primary mb-2 display-6" />
-                        <h3 className="fw-bold">{stats.totais.cursos}</h3>
-                        <span className="text-muted">Cursos Totais</span>
+                        <h3 className="fw-bold">{stats.totais.cursosDecorrer}</h3>
+                        <span className="text-muted small">Cursos a Decorrer</span>
                     </Card.Body>
                 </Card>
              </Col>
-             <Col md={4}>
+             <Col md={3}>
                 <Card className="card-modern border-0 p-3 h-100 text-center">
                     <Card.Body>
                         <FaUserGraduate className="text-success mb-2 display-6" />
-                        <h3 className="fw-bold">{stats.totais.formandos}</h3>
-                        <span className="text-muted">Formandos Inscritos</span>
+                        <h3 className="fw-bold">{stats.totais.formandosAtivos}</h3>
+                        <span className="text-muted small">Formandos Ativos</span>
                     </Card.Body>
                 </Card>
              </Col>
-             <Col md={4}>
+             <Col md={3}>
                 <Card className="card-modern border-0 p-3 h-100 text-center">
                     <Card.Body>
                         <FaChalkboardTeacher className="text-warning mb-2 display-6" />
                         <h3 className="fw-bold">{stats.totais.formadores}</h3>
-                        <span className="text-muted">Formadores</span>
+                        <span className="text-muted small">Total Formadores</span>
                     </Card.Body>
                 </Card>
              </Col>

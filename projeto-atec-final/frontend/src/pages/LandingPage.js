@@ -10,6 +10,7 @@ const LandingPage = () => {
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedArea, setSelectedArea] = useState("Todas");
     const [areas, setAreas] = useState([]);
+    const [showUpcoming, setShowUpcoming] = useState(false); // Estado para o filtro de 60 dias
 
     useEffect(() => {
         fetchCourses();
@@ -22,7 +23,7 @@ const LandingPage = () => {
             setFilteredCourses(res.data);
 
             // Extrair áreas únicas
-            const uniqueAreas = ["Todas", ...new Set(res.data.map(c => c.area).filter(Boolean))];
+            const uniqueAreas = ["Todas", ...new Set(res.data.map(c => c.area_nome).filter(Boolean))]; // Use area_nome from backend
             setAreas(uniqueAreas);
         } catch (err) {
             console.error("Erro ao carregar cursos:", err);
@@ -33,7 +34,7 @@ const LandingPage = () => {
         let result = courses;
 
         if (selectedArea !== "Todas") {
-            result = result.filter(c => c.area === selectedArea);
+            result = result.filter(c => c.area_nome === selectedArea);
         }
 
         if (searchTerm) {
@@ -43,8 +44,21 @@ const LandingPage = () => {
             );
         }
 
+        // Filtro "Próximos 60 dias"
+        if (showUpcoming) {
+            const today = new Date();
+            const sixtyDaysFromNow = new Date();
+            sixtyDaysFromNow.setDate(today.getDate() + 60);
+
+            result = result.filter(c => {
+                if (!c.proxima_data_inicio) return false;
+                const startDate = new Date(c.proxima_data_inicio);
+                return startDate >= today && startDate <= sixtyDaysFromNow;
+            });
+        }
+
         setFilteredCourses(result);
-    }, [searchTerm, selectedArea, courses]);
+    }, [searchTerm, selectedArea, courses, showUpcoming]);
 
     return (
         <div className="min-vh-100 pb-5">
@@ -64,7 +78,16 @@ const LandingPage = () => {
                         Cursos Disponíveis
                     </h2>
 
-                    <div className="d-flex gap-3">
+                    <div className="d-flex gap-3 align-items-center flex-wrap">
+                        {/* Checkbox 60 Dias */}
+                        <Form.Check 
+                            type="switch"
+                            id="upcoming-switch"
+                            label="Inicia em breve"
+                            className="me-3 fw-bold text-primary"
+                            checked={showUpcoming}
+                            onChange={(e) => setShowUpcoming(e.target.checked)}
+                        />
                         <Form.Select
                             value={selectedArea}
                             onChange={(e) => setSelectedArea(e.target.value)}
@@ -106,8 +129,15 @@ const LandingPage = () => {
                                             }
                                         </div>
                                         <Badge bg="primary" className="position-absolute top-0 end-0 m-3 shadow-sm">
-                                            {course.area || "Geral"}
+                                            {course.area_nome || "Geral"}
                                         </Badge>
+                                        
+                                        {/* Badge de Próxima Data */}
+                                        {course.proxima_data_inicio && (
+                                            <Badge bg="success" className="position-absolute bottom-0 start-0 m-3 shadow-sm">
+                                                Inicia a: {new Date(course.proxima_data_inicio).toLocaleDateString('pt-PT')}
+                                            </Badge>
+                                        )}
                                     </div>
                                     <Card.Body className="d-flex flex-column">
                                         <Card.Title className="fw-bold text-truncate" title={course.nome}>{course.nome}</Card.Title>

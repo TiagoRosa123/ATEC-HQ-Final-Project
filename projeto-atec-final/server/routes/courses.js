@@ -6,7 +6,14 @@ const authorization = require('../middleware/authorization');
 router.get('/public', async (req, res) => {
     try {
         const query = `
-            SELECT c.*, a.nome as area_nome 
+            SELECT c.*, a.nome as area_nome,
+            (
+                SELECT MIN(t.data_inicio)
+                FROM turmas t
+                WHERE t.curso_id = c.id
+                AND t.data_inicio >= CURRENT_DATE
+                AND t.estado != 'cancelada'
+            ) as proxima_data_inicio
             FROM cursos c
             LEFT JOIN areas a ON c.area_id = a.id
             ORDER BY c.nome ASC

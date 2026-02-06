@@ -11,9 +11,16 @@ router.get('/stats', authorization, async (req, res) => {
              return res.status(403).json("Acesso negado.");
         }
 
-        // 1. Totais
-        const totalCourses = await pool.query("SELECT COUNT(*) FROM cursos");
-        const totalTrainees = await pool.query("SELECT COUNT(*) FROM formandos");
+        // 1. Totais Detalhados
+        // Total de cursos (Turmas) terminados
+        const finishedCourses = await pool.query("SELECT COUNT(*) FROM turmas WHERE estado = 'concluida'");
+        
+        // Total de cursos (Turmas) a decorrer
+        const activeCourses = await pool.query("SELECT COUNT(*) FROM turmas WHERE estado = 'ativa'");
+        
+        // Total de formandos a frequentar (inscricoes ativas)
+        const activeTrainees = await pool.query("SELECT COUNT(*) FROM inscricoes WHERE estado = 'ativa'");
+        
         const totalTrainers = await pool.query("SELECT COUNT(*) FROM formadores");
 
         // 2. Cursos por Área (Pie Chart)
@@ -25,7 +32,6 @@ router.get('/stats', authorization, async (req, res) => {
         `);
 
         // 3. Top 10 Formadores com mais aulas agendadas (Bar Chart)
-        // Conta quantas entradas na tabela horarios cada formador tem
         const topTrainers = await pool.query(`
             SELECT f.nome as nome, COUNT(h.id) as aulas
             FROM horarios h
@@ -37,8 +43,9 @@ router.get('/stats', authorization, async (req, res) => {
 
         res.json({
             totais: {
-                cursos: parseInt(totalCourses.rows[0].count),
-                formandos: parseInt(totalTrainees.rows[0].count),
+                cursosConcluidos: parseInt(finishedCourses.rows[0].count),
+                cursosDecorrer: parseInt(activeCourses.rows[0].count),
+                formandosAtivos: parseInt(activeTrainees.rows[0].count),
                 formadores: parseInt(totalTrainers.rows[0].count)
             },
             cursosPorArea: coursesByArea.rows.map(row => ({...row, valor: parseInt(row.valor)})),

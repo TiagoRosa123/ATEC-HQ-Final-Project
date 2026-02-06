@@ -4,7 +4,7 @@ const authorization = require('../middleware/authorization');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const PdfPrinter = require('pdfmake');
+const PdfPrinter = require('pdfmake/js/Printer').default;
 
 //Config PDF - DEBUG MODE
 let printer = null;
