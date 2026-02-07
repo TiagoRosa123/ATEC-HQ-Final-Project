@@ -22,6 +22,7 @@ import AdminModules from './pages/AdminModules';
 import AdminClasses from './pages/AdminClasses';
 import AdminRooms from './pages/AdminRooms';
 import Schedules from './pages/Schedules';
+import TawkChat from './components/TawkChat';
 
 function App() {
   return (
@@ -29,33 +30,34 @@ function App() {
       <AuthProvider>
         <Router>
           <div className="App">
-          {/*notificações pop-up no canto direito */}
-          <Toaster position="top-right" />
+            {/*notificações pop-up no canto direito */}
+            <Toaster position="top-right" />
 
-          <Routes>
-            {/* Rot. Publicas */}
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/forgot-password" element={<ForgotPw />} />
-            <Route path="/reset-password/:token" element={<ResetPw />} />
-            <Route path="/activate/:token" element={<ActivatePw />} />
-            {/* Rot. Privadas */}
-            <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
-            <Route path="/admin" element={<PrivateRoute><AdminUsers /></PrivateRoute>} />
-            <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
-            <Route path="/profile" element={<PrivateRoute><PersonalData /></PrivateRoute>} />
-            <Route path="/evaluations" element={<PrivateRoute><Evaluations /></PrivateRoute>} />
-            <Route path="/admin/courses" element={<PrivateRoute><AdminCourses /></PrivateRoute>} />
-            <Route path="/admin/areas" element={<PrivateRoute><AdminAreas /></PrivateRoute>} />
-            <Route path="/admin/modules" element={<PrivateRoute><AdminModules /></PrivateRoute>} />
-            <Route path="/admin/classes" element={<PrivateRoute><AdminClasses /></PrivateRoute>} />
-            <Route path="/admin/rooms" element={<PrivateRoute><AdminRooms /></PrivateRoute>} />
-            <Route path="/schedules" element={<PrivateRoute><Schedules /></PrivateRoute>} />
-          </Routes>
-        </div>
-      </Router>
-    </AuthProvider>
+            <Routes>
+              {/* Rot. Publicas */}
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/forgot-password" element={<ForgotPw />} />
+              <Route path="/reset-password/:token" element={<ResetPw />} />
+              <Route path="/activate/:token" element={<ActivatePw />} />
+              {/* Rot. Privadas */}
+              <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+              <Route path="/admin" element={<PrivateRoute><AdminUsers /></PrivateRoute>} />
+              <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
+              <Route path="/profile" element={<PrivateRoute><PersonalData /></PrivateRoute>} />
+              <Route path="/evaluations" element={<PrivateRoute><Evaluations /></PrivateRoute>} />
+              <Route path="/admin/courses" element={<PrivateRoute><AdminCourses /></PrivateRoute>} />
+              <Route path="/admin/areas" element={<PrivateRoute><AdminAreas /></PrivateRoute>} />
+              <Route path="/admin/modules" element={<PrivateRoute><AdminModules /></PrivateRoute>} />
+              <Route path="/admin/classes" element={<PrivateRoute><AdminClasses /></PrivateRoute>} />
+              <Route path="/admin/rooms" element={<PrivateRoute><AdminRooms /></PrivateRoute>} />
+              <Route path="/schedules" element={<PrivateRoute><Schedules /></PrivateRoute>} />
+            </Routes>
+            <TawkChat />
+          </div>
+        </Router>
+      </AuthProvider>
     </ThemeProvider>
   );
 }

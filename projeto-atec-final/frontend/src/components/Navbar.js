@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { FaGraduationCap, FaSignOutAlt, FaCog, FaUser, FaClipboardList, FaCalendarAlt, FaTools, FaUsers, FaBook, FaLayerGroup, FaChalkboardTeacher, FaDoorOpen } from 'react-icons/fa';
+import { FaSignOutAlt, FaCog, FaUser, FaClipboardList, FaCalendarAlt, FaTools, FaUsers, FaBook, FaLayerGroup, FaChalkboardTeacher, FaDoorOpen } from 'react-icons/fa';
 import { Container, Navbar as BsNavbar, Nav, NavDropdown } from 'react-bootstrap';
 import { useAuth } from '../context/AuthContext';
 import ThemeToggle from './ThemeToggle';
@@ -23,7 +23,6 @@ function Navbar({ children }) {
             <BsNavbar expand="lg" className="shadow-sm py-3 mb-4 bg-body-tertiary">
                 <Container>
                     <BsNavbar.Brand as={Link} to="/dashboard" className="d-flex align-items-center fw-bold">
-                        <FaGraduationCap className="me-2 fs-2 text-primary" />
                         <span className="text-secondary">ATEC</span><span style={{ color: 'var(--primary-blue)' }}>HQ</span>
                     </BsNavbar.Brand>
 
