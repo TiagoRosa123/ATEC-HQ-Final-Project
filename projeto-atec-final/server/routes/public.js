@@ -5,7 +5,19 @@ const pool = require('../db');
 router.get('/courses', async (req, res) => {
     try {
         const result = await pool.query(`
-            SELECT c.id, c.nome, c.descricao, a.nome as area, c.imagem, c.duracao_horas 
+            SELECT 
+                c.id, 
+                c.nome, 
+                c.descricao, 
+                a.nome as area, 
+                c.imagem, 
+                c.duracao_horas,
+                (
+                    SELECT MIN(t.data_inicio)
+                    FROM turmas t
+                    WHERE t.curso_id = c.id
+                    AND t.data_inicio >= CURRENT_DATE
+                ) as proxima_data_inicio
             FROM cursos c
             LEFT JOIN areas a ON c.area_id = a.id
             ORDER BY a.nome ASC, c.nome ASC

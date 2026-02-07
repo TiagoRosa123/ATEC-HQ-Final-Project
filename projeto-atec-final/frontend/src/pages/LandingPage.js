@@ -47,6 +47,7 @@ const LandingPage = () => {
         // Filtro "Próximos 60 dias"
         if (showUpcoming) {
             const today = new Date();
+            today.setHours(0, 0, 0, 0);
             const sixtyDaysFromNow = new Date();
             sixtyDaysFromNow.setDate(today.getDate() + 60);
 
@@ -80,10 +81,10 @@ const LandingPage = () => {
 
                     <div className="d-flex gap-3 align-items-center flex-wrap">
                         {/* Checkbox 60 Dias */}
-                        <Form.Check 
+                        <Form.Check
                             type="switch"
                             id="upcoming-switch"
-                            label="Inicia em breve"
+                            label="A iniciar em breve"
                             className="me-3 fw-bold text-primary"
                             checked={showUpcoming}
                             onChange={(e) => setShowUpcoming(e.target.checked)}
@@ -131,7 +132,7 @@ const LandingPage = () => {
                                         <Badge bg="primary" className="position-absolute top-0 end-0 m-3 shadow-sm">
                                             {course.area_nome || "Geral"}
                                         </Badge>
-                                        
+
                                         {/* Badge de Próxima Data */}
                                         {course.proxima_data_inicio && (
                                             <Badge bg="success" className="position-absolute bottom-0 start-0 m-3 shadow-sm">
