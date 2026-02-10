@@ -19,7 +19,7 @@ router.get('/stats', authorization, async (req, res) => {
         const activeCourses = await pool.query("SELECT COUNT(*) FROM turmas WHERE estado = 'ativa'");
         
         // Total de formandos a frequentar (inscricoes ativas)
-        const activeTrainees = await pool.query("SELECT COUNT(*) FROM inscricoes WHERE estado = 'ativa'");
+        const activeTrainees = await pool.query("SELECT COUNT(*) FROM inscricoes WHERE estado = 'ativa' OR estado IS NULL");
         
         const totalTrainers = await pool.query("SELECT COUNT(*) FROM formadores");
 

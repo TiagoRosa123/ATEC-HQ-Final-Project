@@ -75,7 +75,7 @@ router.post('/:id/students', authorization, async (req, res) => {
     try {
         const { id } = req.params;
         const { formando_id } = req.body;
-        const newStudent = await pool.query("INSERT INTO inscricoes (turma_id, formando_id) VALUES ($1, $2) RETURNING *", [id, formando_id]);
+        const newStudent = await pool.query("INSERT INTO inscricoes (turma_id, formando_id, estado) VALUES ($1, $2, 'ativa') RETURNING *", [id, formando_id]);
         res.json(newStudent.rows[0]);
     } catch (err) {
         console.error(err.message);
