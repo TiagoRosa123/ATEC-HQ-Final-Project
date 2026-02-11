@@ -58,6 +58,10 @@ router.get("/", authorization, async (req, res) => {
         query += ` AND h.sala_id = $${paramCounter}`;
         values.push(id);
         paramCounter++;
+      } else if (type === "turma") {
+        query += ` AND h.turma_id = $${paramCounter}`;
+        values.push(id);
+        paramCounter++;
       }
     }
 
@@ -143,6 +147,9 @@ router.post("/", authorization, async (req, res) => {
         `;
 
     const newSchedule = await pool.query(query, [turma_id, modulo_id, formador_id, sala_id, data_aula, hora_inicio, hora_fim]);
+
+    // Quando sala é ocupada, estado passa a 'indisponivel'
+    await pool.query("UPDATE salas SET estado = 'indisponivel' WHERE id = $1", [sala_id]);
 
     res.json(newSchedule.rows[0]);
 

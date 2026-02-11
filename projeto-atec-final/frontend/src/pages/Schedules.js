@@ -8,34 +8,28 @@ import toast from 'react-hot-toast';
 
 const Schedules = () => {
     const [events, setEvents] = useState([]);
-    const [filterType, setFilterType] = useState(''); // 'turma', 'formador', 'sala'
+    const [activeTab, setActiveTab] = useState('turma'); // 'turma', 'formador', 'sala'
     const [filterId, setFilterId] = useState('');
 
     // Modal state
     const [showModal, setShowModal] = useState(false);
     const [selectedSlot, setSelectedSlot] = useState(null);
-    const [editEvent, setEditEvent] = useState(null); // Novo estado
+    const [editEvent, setEditEvent] = useState(null);
 
     // Listas para os dropdowns
-    const [cursos, setCursos] = useState([]);
+    const [turmas, setTurmas] = useState([]);
     const [formadores, setFormadores] = useState([]);
     const [salas, setSalas] = useState([]);
 
-    // ... (useEffect e handlers de filtro existentes mantidos, mas omitidos aqui para brevidade se não mudarem, ou incluídos se eu substituir o ficheiro todo.
-    // Como estou a substituir o componente todo (ou grande parte), vou ter de reincluir tudo ou usar replace parcial com cuidado.)
-
-    // Melhor: Substituir o corpo do componente para incluir as novas funções.
-
-    // Carregar opções dos filtros ao iniciar
     useEffect(() => {
         const fetchOptions = async () => {
             try {
                 const token = localStorage.getItem('token');
                 const config = { headers: { token: token } };
 
-                // Buscar cursos
-                const resCursos = await axios.get('http://localhost:5000/courses', config);
-                setCursos(resCursos.data);
+                // Buscar Turmas
+                const resTurmas = await axios.get('http://localhost:5000/classes', config);
+                setTurmas(resTurmas.data);
 
                 // Buscar formadores (rota admin)
                 const resUsers = await axios.get('http://localhost:5000/admin/todos', config);
@@ -51,8 +45,20 @@ const Schedules = () => {
             }
         };
         fetchOptions();
-        fetchSchedules();
+        fetchSchedules(); // Load initial (all or filtered)
     }, []);
+
+    // Quando troca de tab ou id, recarregar. 
+    // Se ID vazio, talvez não buscar nada ou buscar tudo? 
+    // Requirement implies "Consulta de X", então se não escolheu X, mostra vazio ou tudo?
+    // Vamos mostrar tudo se vazio, ou filtrar se tem ID.
+    useEffect(() => {
+        setFilterId(''); // Reset selection on tab change
+    }, [activeTab]);
+
+    useEffect(() => {
+        fetchSchedules();
+    }, [activeTab, filterId]);
 
     const fetchSchedules = async () => {
         try {
@@ -60,7 +66,7 @@ const Schedules = () => {
             const config = {
                 headers: { token: token },
                 params: {
-                    type: filterType,
+                    type: activeTab, // backend aceita 'turma', 'formador', 'sala'
                     id: filterId
                 }
             };
@@ -71,29 +77,18 @@ const Schedules = () => {
                 ...event,
                 start: new Date(event.start),
                 end: new Date(event.end),
-                // Para D&D, precisamos de acesso aos IDs originais
-                // Já vem no 'event' se o backend mandar
             }));
 
             setEvents(formattedEvents);
 
         } catch (error) {
             console.error(error);
-            const errMsg = error.response?.data || error.message;
-            toast.error("Erro ao atualizar calendário: " + errMsg);
+            // toast.error("Erro ao carregar horários"); // Avoid spam on initial load
         }
     };
 
-    useEffect(() => {
-        if ((filterType && filterId) || (!filterType && !filterId)) {
-            fetchSchedules();
-        }
-    }, [filterType, filterId]);
-
-    // Handlers para o Calendário
+    // Handlers para o Calendário (Mantidos iguais)
     const handleSelectSlot = (slotInfo) => {
-        // Apenas permitir criar se o user for Admin (idealmente validar via role, mas aqui simplicamos)
-        // Para já, abre o modal.
         setSelectedSlot(slotInfo);
         setShowModal(true);
     };
@@ -103,29 +98,19 @@ const Schedules = () => {
             const token = localStorage.getItem('token');
             const config = { headers: { token: token } };
 
-            // Preparar payload para update
-            // Nota: event.resource tem os nomes, mas precisamos dos IDs originais.
-            // O backend deve retornar os IDs. Vou verificar se 'schedules.js' retorna turma_id, sala_id, etc.
-            // Sim, retorna h.turma_id, h.formador_id, h.sala_id. Estão na raiz do objeto ou em resource?
-            // Verifiquei schedules.js: retorna na raiz (row.turma_id etc).
-            // O frontend map colocou-os em ...event, então estão acessíveis.
-
             const payload = {
                 turma_id: event.turma_id,
-                modulo_id: event.modulo_id, // Precisamos ter certeza que modulo_id vem do backend (não vi no SELECT)
-                // Vou ter de adicionar modulo_id ao SELECT do backend se faltar.
-                // Verifiquei: "h.turma_id, h.formador_id, h.sala_id" estavam lá. "h.modulo_id"? 
-                // Vou verificar o backend novamente. Se faltar, adiciono.
+                modulo_id: event.modulo_id,
                 formador_id: event.formador_id,
                 sala_id: event.sala_id,
                 data_aula: start.toISOString().split('T')[0],
-                hora_inicio: start.toTimeString().split(' ')[0], // HH:MM:SS
+                hora_inicio: start.toTimeString().split(' ')[0],
                 hora_fim: end.toTimeString().split(' ')[0]
             };
 
             await axios.put(`http://localhost:5000/schedules/${event.id}`, payload, config);
             toast.success("Horário atualizado!");
-            fetchSchedules(); // Refresh
+            fetchSchedules();
 
         } catch (error) {
             console.error(error);
@@ -134,7 +119,6 @@ const Schedules = () => {
     };
 
     const handleSelectEvent = (event) => {
-        // Modo Edição
         setSelectedSlot(null);
         setEditEvent(event);
         setShowModal(true);
@@ -144,7 +128,7 @@ const Schedules = () => {
         <Navbar>
             <Container className="mt-4">
                 <div className="d-flex justify-content-between align-items-center mb-4">
-                    <h2 className="mb-0">Gestão de Horários</h2>
+                    <h2 className="mb-0">Consultas de Horários</h2>
                     <button className="btn btn-success" onClick={() => {
                         setSelectedSlot(null);
                         setEditEvent(null);
@@ -155,57 +139,65 @@ const Schedules = () => {
                 </div>
 
                 <Card className="card-modern mb-4 p-3 border-0">
-                    <Row className="g-3 align-items-end">
-                        <Col md={3}>
-                            <Form.Label>Filtrar por</Form.Label>
-                            <Form.Select
-                                value={filterType}
-                                onChange={(e) => {
-                                    setFilterType(e.target.value);
-                                    setFilterId('');
-                                }}
+                    {/* Tabs Navigation */}
+                    <ul className="nav nav-pills mb-3">
+                        <li className="nav-item">
+                            <button
+                                className={`nav-link ${activeTab === 'turma' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('turma')}
                             >
-                                <option value="">Todos os Horários</option>
-                                <option value="curso">Curso</option>
-                                <option value="formador">Formador</option>
-                                <option value="sala">Sala</option>
-                            </Form.Select>
-                        </Col>
-
-                        {filterType === 'curso' && (
-                            <Col md={4}>
-                                <Form.Label>Selecione o Curso</Form.Label>
-                                <Form.Select value={filterId} onChange={e => setFilterId(e.target.value)}>
-                                    <option value="">Selecione...</option>
-                                    {cursos.map(c => <option key={c.id} value={c.id}>{c.nome} ({c.sigla})</option>)}
-                                </Form.Select>
-                            </Col>
-                        )}
-
-                        {filterType === 'formador' && (
-                            <Col md={4}>
-                                <Form.Label>Formador</Form.Label>
-                                <Form.Select value={filterId} onChange={e => setFilterId(e.target.value)}>
-                                    <option value="">Selecione...</option>
-                                    {formadores.map(f => <option key={f.id} value={f.id}>{f.nome}</option>)}
-                                </Form.Select>
-                            </Col>
-                        )}
-
-                        {filterType === 'sala' && (
-                            <Col md={4}>
-                                <Form.Label>Sala</Form.Label>
-                                <Form.Select value={filterId} onChange={e => setFilterId(e.target.value)}>
-                                    <option value="">Selecione...</option>
-                                    {salas.map(s => <option key={s.id} value={s.id}>{s.nome} ({s.capacidade} lug.)</option>)}
-                                </Form.Select>
-                            </Col>
-                        )}
-
-                        <Col md={2}>
-                            <button className="btn btn-primary w-100" onClick={fetchSchedules}>
-                                Atualizar
+                                Por Turma
                             </button>
+                        </li>
+                        <li className="nav-item">
+                            <button
+                                className={`nav-link ${activeTab === 'formador' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('formador')}
+                            >
+                                Por Formador
+                            </button>
+                        </li>
+                        <li className="nav-item">
+                            <button
+                                className={`nav-link ${activeTab === 'sala' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('sala')}
+                            >
+                                Alocação de Sala
+                            </button>
+                        </li>
+                    </ul>
+
+                    <Row className="g-3 align-items-end">
+                        <Col md={12}>
+                            {activeTab === 'turma' && (
+                                <>
+                                    <Form.Label>Selecione a Turma para Consulta Rápida</Form.Label>
+                                    <Form.Select value={filterId} onChange={e => setFilterId(e.target.value)}>
+                                        <option value="">Selecione uma turma...</option>
+                                        {turmas.map(t => <option key={t.id} value={t.id}>{t.codigo}</option>)}
+                                    </Form.Select>
+                                </>
+                            )}
+
+                            {activeTab === 'formador' && (
+                                <>
+                                    <Form.Label>Selecione o Formador</Form.Label>
+                                    <Form.Select value={filterId} onChange={e => setFilterId(e.target.value)}>
+                                        <option value="">Selecione um formador...</option>
+                                        {formadores.map(f => <option key={f.id} value={f.id}>{f.nome}</option>)}
+                                    </Form.Select>
+                                </>
+                            )}
+
+                            {activeTab === 'sala' && (
+                                <>
+                                    <Form.Label>Selecione a Sala</Form.Label>
+                                    <Form.Select value={filterId} onChange={e => setFilterId(e.target.value)}>
+                                        <option value="">Selecione uma sala...</option>
+                                        {salas.map(s => <option key={s.id} value={s.id}>{s.nome} ({s.capacidade} lug.)</option>)}
+                                    </Form.Select>
+                                </>
+                            )}
                         </Col>
                     </Row>
                 </Card>
@@ -213,16 +205,17 @@ const Schedules = () => {
                 <ScheduleCalendar
                     events={events}
                     onSelectSlot={handleSelectSlot}
-                    onSelectEvent={handleSelectEvent} // Novo handler para click no evento
+                    onSelectEvent={handleSelectEvent}
                     onEventDrop={handleEventDrop}
                     onEventResize={handleEventDrop}
+                    defaultView={activeTab === 'sala' ? 'day' : 'week'} // Default to Day view for Rooms
                 />
 
                 <CreateLessonModal
                     show={showModal}
                     handleClose={() => setShowModal(false)}
                     selectedSlot={selectedSlot}
-                    editEvent={editEvent} // Passar evento para edição
+                    editEvent={editEvent}
                     onSuccess={fetchSchedules}
                 />
             </Container>

@@ -14,12 +14,27 @@ router.get('/', authorization, async (req, res) => {
     }
 });
 
+//get salas disponiveis
+router.get('/available', authorization, async (req, res) => {
+    try {
+        const rooms = await pool.query("SELECT * FROM salas WHERE estado = 'disponivel'");
+        res.json(rooms.rows);
+    }
+    catch (err) {
+        console.error(err.message);
+        res.status(500).send("Erro no servidor");
+    }
+});
+
 //post
 router.post('/create', authorization, async (req, res) => {
 
     try {
-        const { area_id, nome, capacidade, recursos } = req.body;
-        const newRoom = await pool.query("INSERT INTO salas (area_id, nome, capacidade, recursos) VALUES ($1, $2, $3, $4) RETURNING *", [area_id, nome, capacidade, recursos]);
+        const { area_id, nome, capacidade, recursos, estado } = req.body;
+        // Default para 'disponivel' se não vier nada
+        const statusFinal = estado || 'disponivel';
+
+        const newRoom = await pool.query("INSERT INTO salas (area_id, nome, capacidade, recursos, estado) VALUES ($1, $2, $3, $4, $5) RETURNING *", [area_id, nome, capacidade, recursos, statusFinal]);
         res.json(newRoom.rows[0]);
     } catch (err) {
         console.error(err.message);
@@ -31,8 +46,9 @@ router.post('/create', authorization, async (req, res) => {
 router.put('/update/:id', authorization, async (req, res) => {
     try {
         const { id } = req.params;
-        const { area_id, nome, capacidade, recursos } = req.body;
-        const updateRoom = await pool.query("UPDATE salas SET area_id = $1, nome = $2, capacidade = $3, recursos = $4 WHERE id = $5 RETURNING *", [area_id, nome, capacidade, recursos, id]);
+        const { area_id, nome, capacidade, recursos, estado } = req.body;
+
+        const updateRoom = await pool.query("UPDATE salas SET area_id = $1, nome = $2, capacidade = $3, recursos = $4, estado = $5 WHERE id = $6 RETURNING *", [area_id, nome, capacidade, recursos, estado, id]);
         res.json(updateRoom.rows[0]);
     }
     catch (err) {

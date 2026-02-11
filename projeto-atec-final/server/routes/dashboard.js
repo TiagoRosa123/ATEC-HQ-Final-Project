@@ -8,19 +8,19 @@ router.get('/stats', authorization, async (req, res) => {
         // Se quiseres abrir a formadores, remove esta verificação.
         const adminCheck = await pool.query("SELECT is_admin FROM utilizadores WHERE id = $1", [req.user.id]);
         if (!adminCheck.rows[0].is_admin) {
-             return res.status(403).json("Acesso negado.");
+            return res.status(403).json("Acesso negado.");
         }
 
         // 1. Totais Detalhados
         // Total de cursos (Turmas) terminados
         const finishedCourses = await pool.query("SELECT COUNT(*) FROM turmas WHERE estado = 'concluida'");
-        
+
         // Total de cursos (Turmas) a decorrer
         const activeCourses = await pool.query("SELECT COUNT(*) FROM turmas WHERE estado = 'ativa'");
-        
+
         // Total de formandos a frequentar (inscricoes ativas)
         const activeTrainees = await pool.query("SELECT COUNT(*) FROM inscricoes WHERE estado = 'ativa'");
-        
+
         const totalTrainers = await pool.query("SELECT COUNT(*) FROM formadores");
 
         // 2. Cursos por Área (Pie Chart)
@@ -48,12 +48,46 @@ router.get('/stats', authorization, async (req, res) => {
                 formandosAtivos: parseInt(activeTrainees.rows[0].count),
                 formadores: parseInt(totalTrainers.rows[0].count)
             },
-            cursosPorArea: coursesByArea.rows.map(row => ({...row, valor: parseInt(row.valor)})),
-            topFormadores: topTrainers.rows.map(row => ({...row, aulas: parseInt(row.aulas)}))
+            cursosPorArea: coursesByArea.rows.map(row => ({ ...row, valor: parseInt(row.valor) })),
+            topFormadores: topTrainers.rows.map(row => ({ ...row, aulas: parseInt(row.aulas) }))
         });
 
     } catch (err) {
         console.error(err.message);
+        res.status(500).send("Erro no servidor");
+    }
+});
+
+// ROTA: Listar Formandos (Protegida)
+router.get('/students', authorization, async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT f.id, f.nome, u.email 
+            FROM formandos f
+            JOIN utilizadores u ON f.utilizador_id = u.id
+            ORDER BY f.nome ASC
+        `);
+        res.json(result.rows);
+
+    } catch (err) {
+        console.error("Erro /dashboard/students:", err.message);
+        res.status(500).send("Erro no servidor");
+    }
+
+});
+
+// ROTA: Listar Formadores (Protegida)
+router.get('/teachers', authorization, async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT f.id, f.nome, u.email 
+            FROM formadores f
+            JOIN utilizadores u ON f.utilizador_id = u.id
+            ORDER BY f.nome ASC
+        `);
+        res.json(result.rows);
+    } catch (err) {
+        console.error("Erro /dashboard/teachers:", err.message);
         res.status(500).send("Erro no servidor");
     }
 });

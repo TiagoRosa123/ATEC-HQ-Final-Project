@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
-import { Table, Button, Form, Card, Row, Col, Alert, Badge, Spinner, Modal} from 'react-bootstrap';
+import { Table, Button, Form, Card, Row, Col, Alert, Badge, Spinner, Modal } from 'react-bootstrap';
 import { FaEdit, FaTrash, FaUserPlus, FaSave, FaFolder } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import api from '../services/api';
@@ -119,11 +119,11 @@ function AdminUsers() {
     //Modal Ficheiros
     const handleOpenFiles = async (user) => {
         setFilesModalUser(user);
-        try{
+        try {
             //rota criada em files.js
             const response = await api.get(`/files/admin/list/${user.id}`);
             setUserFiles(response.data);
-        }catch(error){
+        } catch (error) {
             toast.error("Erro ao carregar ficheiros.");
             setUserFiles([]);
         }
@@ -134,7 +134,7 @@ function AdminUsers() {
         const fileInput = document.getElementById('adminFileInput');
         const fileType = document.getElementById('adminFileType').value;
 
-        if (!filesModalUser || !fileInput.files[0]) 
+        if (!filesModalUser || !fileInput.files[0])
             return toast.error("Escolhe um ficheiro!");
 
         const formData = new FormData();
@@ -142,20 +142,20 @@ function AdminUsers() {
         formData.append('file', fileInput.files[0]);
         formData.append('tipo_ficheiro', fileType);
 
-        try{
+        try {
             const response = await api.post(`/files/admin/upload/${filesModalUser.id}`, formData);
             toast.success("Ficheiro enviado com sucesso!");
             handleOpenFiles(filesModalUser); //update Lista
             fileInput.value = null; //limpa input
 
-        }catch(error){
+        } catch (error) {
             toast.error("Erro ao enviar ficheiro.");
         }
     };
 
     //Fazer download
     const handlleDownload = async (filename) => {
-        try{
+        try {
             const response = await api.get(`/files/download/${filename}`, {
                 responseType: 'blob',
             });
@@ -166,7 +166,7 @@ function AdminUsers() {
             document.body.appendChild(link);
             link.click();
             link.remove();
-        }catch(error){
+        } catch (error) {
             toast.error("Erro ao fazer download.");
         }
     }
@@ -178,6 +178,16 @@ function AdminUsers() {
                 <div>
                     <h2 className="fw-bold text-dark-blue mb-1">Utilizadores</h2>
                     <p className="text-secondary small mb-0">Gestão de acessos e permissões.</p>
+                </div>
+                {/* Search Input */}
+                <div style={{ width: '300px' }}>
+                    <Form.Control
+                        type="text"
+                        placeholder="Pesquisar por nome ou email..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="shadow-sm border-0"
+                    />
                 </div>
             </div>
 
@@ -284,7 +294,7 @@ function AdminUsers() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {users.map(user => (
+                                        {filteredUsers.map(user => (
                                             <tr key={user.id}>
                                                 <td className="ps-4 py-3">
                                                     <div className="fw-bold text-dark-blue">{user.nome}</div>
@@ -312,7 +322,7 @@ function AdminUsers() {
                                                 </td>
                                             </tr>
                                         ))}
-                                        {users.length === 0 && (
+                                        {filteredUsers.length === 0 && (
                                             <tr>
                                                 <td colSpan="3" className="text-center py-5 text-muted">Ainda não existem utilizadores.</td>
                                             </tr>
@@ -324,68 +334,68 @@ function AdminUsers() {
                     </Card>
                 </Col>
 
-            {/* MODAL DE FICHEIROS */}
-            <Modal show={filesModalUser !== null} onHide={() => setFilesModalUser(null)} size="lg">
-                <Modal.Header closeButton>
-                    <Modal.Title>Ficha de: {filesModalUser?.nome}</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <div className="d-flex justify-content-between align-items-center mb-3">
-                         <h6 className="mb-0">Documentos Existentes:</h6>
-                         <Button variant="outline-danger" size="sm" onClick={async () => {
-                             try {
-                                const response = await api.get(`/files/export-pdf/${filesModalUser.id}`, { responseType: 'blob' });
-                                const url = window.URL.createObjectURL(new Blob([response.data]));
-                                const link = document.createElement('a');
-                                link.href = url;
-                                link.setAttribute('download', `Ficha_${filesModalUser.nome}.pdf`);
-                                document.body.appendChild(link);
-                                link.click();
-                                toast.success('Ficha PDF exportada!');
-                             } catch(e) { 
-                                 console.error("Erro export PDF:", e);
-                                 let errorMsg = "Erro ao gerar PDF.";
-                                 if (e.response && e.response.data instanceof Blob) {
-                                     try {
-                                        const blobText = await e.response.data.text();
-                                        errorMsg = blobText || errorMsg;
-                                     } catch (err) { /* ignore */ }
-                                 } else if (e.response && e.response.data) {
-                                     errorMsg = e.response.data;
-                                 }
-                                 toast.error(errorMsg);
-                             }
-                         }}>
-                            <FaSave className="me-2" />
-                            Exportar Ficha (PDF)
-                         </Button>
-                    </div>
-                    {/* 1. Lista de Ficheiros Existentes */}
-                    {userFiles.length === 0 ? <p className="text-muted">Sem ficheiros.</p> : (
-                        <ul>
-                            {userFiles.map(f => (
-                                <li key={f.id}>{f.tipo_ficheiro} - <a href={`#`} onClick={() => handlleDownload(f.nome_ficheiro)}>Transferir</a></li>
-                            ))}
-                        </ul>
-                    )}
-                    <hr/>
-                    {/* 2. Upload de Novo Ficheiro */}
-                    <h6>Adicionar Novo Documento:</h6>
-                    <div className="d-flex gap-2">
-                         <Form.Select id="adminFileType">
-                            <option>Curriculum Vitae</option>
-                            <option>Registo Criminal</option>
-                            <option>Bolsa de Estudo</option>
-                            <option>Certificado de Habilitações</option>
-                            <option>Avaliação</option>
-                            <option>Comprovativo IBAN</option>
-                            <option>Outro</option>
-                        </Form.Select>
-                        <Form.Control type="file" id="adminFileInput" />
-                        <Button onClick={() => handleAdminUpload()}>Anexar Documento</Button>
-                    </div>
-                </Modal.Body>
-            </Modal>
+                {/* MODAL DE FICHEIROS */}
+                <Modal show={filesModalUser !== null} onHide={() => setFilesModalUser(null)} size="lg">
+                    <Modal.Header closeButton>
+                        <Modal.Title>Ficha de: {filesModalUser?.nome}</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <div className="d-flex justify-content-between align-items-center mb-3">
+                            <h6 className="mb-0">Documentos Existentes:</h6>
+                            <Button variant="outline-danger" size="sm" onClick={async () => {
+                                try {
+                                    const response = await api.get(`/files/export-pdf/${filesModalUser.id}`, { responseType: 'blob' });
+                                    const url = window.URL.createObjectURL(new Blob([response.data]));
+                                    const link = document.createElement('a');
+                                    link.href = url;
+                                    link.setAttribute('download', `Ficha_${filesModalUser.nome}.pdf`);
+                                    document.body.appendChild(link);
+                                    link.click();
+                                    toast.success('Ficha PDF exportada!');
+                                } catch (e) {
+                                    console.error("Erro export PDF:", e);
+                                    let errorMsg = "Erro ao gerar PDF.";
+                                    if (e.response && e.response.data instanceof Blob) {
+                                        try {
+                                            const blobText = await e.response.data.text();
+                                            errorMsg = blobText || errorMsg;
+                                        } catch (err) { /* ignore */ }
+                                    } else if (e.response && e.response.data) {
+                                        errorMsg = e.response.data;
+                                    }
+                                    toast.error(errorMsg);
+                                }
+                            }}>
+                                <FaSave className="me-2" />
+                                Exportar Ficha (PDF)
+                            </Button>
+                        </div>
+                        {/* 1. Lista de Ficheiros Existentes */}
+                        {userFiles.length === 0 ? <p className="text-muted">Sem ficheiros.</p> : (
+                            <ul>
+                                {userFiles.map(f => (
+                                    <li key={f.id}>{f.tipo_ficheiro} - <a href={`#`} onClick={() => handlleDownload(f.nome_ficheiro)}>Transferir</a></li>
+                                ))}
+                            </ul>
+                        )}
+                        <hr />
+                        {/* 2. Upload de Novo Ficheiro */}
+                        <h6>Adicionar Novo Documento:</h6>
+                        <div className="d-flex gap-2">
+                            <Form.Select id="adminFileType">
+                                <option>Curriculum Vitae</option>
+                                <option>Registo Criminal</option>
+                                <option>Bolsa de Estudo</option>
+                                <option>Certificado de Habilitações</option>
+                                <option>Avaliação</option>
+                                <option>Comprovativo IBAN</option>
+                                <option>Outro</option>
+                            </Form.Select>
+                            <Form.Control type="file" id="adminFileInput" />
+                            <Button onClick={() => handleAdminUpload()}>Anexar Documento</Button>
+                        </div>
+                    </Modal.Body>
+                </Modal>
 
             </Row>
         </Navbar>

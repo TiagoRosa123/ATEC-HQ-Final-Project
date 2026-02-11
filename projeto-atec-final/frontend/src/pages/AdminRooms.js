@@ -9,7 +9,8 @@ function AdminRooms() {
     const [rooms, setRooms] = useState([]);
     const [areas, setAreas] = useState([]); // Para o dropdown
     const [loading, setLoading] = useState(false);
-    const [formData, setFormData] = useState({ area_id: '', nome: '', capacidade: '', recursos: '' });
+    // Novo campo: estado
+    const [formData, setFormData] = useState({ area_id: '', nome: '', capacidade: '', recursos: '', estado: 'disponivel' });
     const [editId, setEditId] = useState(null);
 
     //GET - Salas e Areas
@@ -43,7 +44,7 @@ function AdminRooms() {
                 toast.success('Sala criada!');
             }
             // Reset form
-            setFormData({ area_id: '', nome: '', capacidade: '', recursos: '' });
+            setFormData({ area_id: '', nome: '', capacidade: '', recursos: '', estado: 'disponivel' });
             setEditId(null);
             loadData();
         } catch (error) {
@@ -76,7 +77,7 @@ function AdminRooms() {
             {/* FORMULÁRIO */}
             <Card className="mb-4 border-0 shadow-sm">
                 <Card.Body>
-                    <Form onSubmit={handleSubmit} className="d-flex gap-2">
+                    <Form onSubmit={handleSubmit} className="d-flex gap-2 flex-wrap align-items-end">
                         <Form.Control
                             placeholder="Nome da Sala"
                             value={formData.nome}
@@ -89,21 +90,32 @@ function AdminRooms() {
                             value={formData.capacidade}
                             onChange={e => setFormData({ ...formData, capacidade: e.target.value })}
                             required
-                            style={{ maxWidth: '120px' }}
+                            style={{ maxWidth: '100px' }}
                         />
                         <Form.Select
                             value={formData.area_id}
                             onChange={e => setFormData({ ...formData, area_id: e.target.value })}
                             required
-                            style={{ maxWidth: '200px' }}
+                            style={{ maxWidth: '180px' }}
                         >
                             <option value="">Área...</option>
                             {areas.map(area => (
                                 <option key={area.id} value={area.id}>{area.nome}</option>
                             ))}
                         </Form.Select>
+
+                        {/* ESTADO SALA */}
+                        <Form.Select
+                            value={formData.estado || 'disponivel'} // Fallback
+                            onChange={e => setFormData({ ...formData, estado: e.target.value })}
+                            style={{ maxWidth: '150px' }}
+                        >
+                            <option value="disponivel">Disponível</option>
+                            <option value="indisponivel">Indisponível</option>
+                        </Form.Select>
+
                         <Form.Control
-                            placeholder="Recursos (ex: Projetor, PCs)"
+                            placeholder="Recursos..."
                             value={formData.recursos}
                             onChange={e => setFormData({ ...formData, recursos: e.target.value })}
                         />
@@ -120,6 +132,7 @@ function AdminRooms() {
                     <Table hover>
                         <thead>
                             <tr>
+                                <th>Estado</th> {/* NOVO */}
                                 <th>Nome</th>
                                 <th>Área</th>
                                 <th>Capacidade</th>
@@ -130,6 +143,11 @@ function AdminRooms() {
                         <tbody>
                             {rooms.map(room => (
                                 <tr key={room.id}>
+                                    <td>
+                                        <span className={`badge ${room.estado === 'disponivel' ? 'bg-success' : 'bg-danger'}`}>
+                                            {room.estado === 'disponivel' ? 'Livre' : 'Ocupada'}
+                                        </span>
+                                    </td>
                                     <td><strong>{room.nome}</strong></td>
                                     <td>{getAreaName(room.area_id)}</td>
                                     <td>{room.capacidade}</td>
@@ -141,7 +159,8 @@ function AdminRooms() {
                                                 area_id: room.area_id,
                                                 nome: room.nome,
                                                 capacidade: room.capacidade,
-                                                recursos: room.recursos
+                                                recursos: room.recursos,
+                                                estado: room.estado // Carregar estado
                                             });
                                         }}>
                                             <FaEdit />
@@ -153,7 +172,7 @@ function AdminRooms() {
                                 </tr>
                             ))}
                             {rooms.length === 0 && !loading &&
-                                <tr><td colSpan="5" className="text-center text-muted">Ainda não há salas criadas.</td></tr>
+                                <tr><td colSpan="6" className="text-center text-muted">Ainda não há salas criadas.</td></tr>
                             }
                         </tbody>
                     </Table>
