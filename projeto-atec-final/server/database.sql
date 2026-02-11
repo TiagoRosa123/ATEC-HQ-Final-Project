@@ -59,12 +59,18 @@ CREATE TABLE areas (
 );
 
 -- 3 Salas
+CREATE TYPE estado_salas_enum AS ENUM (
+    'disponivel', 
+    'indisponivel'
+);
+
 CREATE TABLE salas (
     id SERIAL PRIMARY KEY,
     area_id INT REFERENCES areas (id),
     nome VARCHAR(40) NOT NULL,
     capacidade INT NOT NULL,
-    recursos TEXT
+    recursos TEXT NOT NULL,
+	estado estado_salas_enum NOT NULL
 );
 
 -- 4 Cursos
