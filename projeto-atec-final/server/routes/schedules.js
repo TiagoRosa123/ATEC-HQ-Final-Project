@@ -1,6 +1,10 @@
 const router = require("express").Router();
 const pool = require("../db");
 const authorization = require("../middleware/authorization");
+const autoScheduleRouter = require("./autoSchedule");
+
+// Montar sub-rota de geração automática
+router.use("/", autoScheduleRouter);
 
 // GET /api/schedules
 // Query Params: start (date), end (date), type (turma/formador/sala), id (optional entity id)

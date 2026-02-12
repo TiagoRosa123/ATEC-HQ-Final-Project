@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Form, Card } from 'react-bootstrap';
 import axios from 'axios';
 import ScheduleCalendar from '../components/ScheduleCalendar';
-import CreateLessonModal from '../components/CreateLessonModal'; // Importar
+import CreateLessonModal from '../components/CreateLessonModal';
+import AutoScheduleModal from '../components/AutoScheduleModal';
 import Navbar from '../components/Navbar';
 import toast from 'react-hot-toast';
 
@@ -15,6 +16,7 @@ const Schedules = () => {
     const [showModal, setShowModal] = useState(false);
     const [selectedSlot, setSelectedSlot] = useState(null);
     const [editEvent, setEditEvent] = useState(null);
+    const [showAutoModal, setShowAutoModal] = useState(false);
 
     // Listas para os dropdowns
     const [turmas, setTurmas] = useState([]);
@@ -129,13 +131,18 @@ const Schedules = () => {
             <Container className="mt-4">
                 <div className="d-flex justify-content-between align-items-center mb-4">
                     <h2 className="mb-0">Consultas de Horários</h2>
-                    <button className="btn btn-success" onClick={() => {
-                        setSelectedSlot(null);
-                        setEditEvent(null);
-                        setShowModal(true);
-                    }}>
-                        + Nova Aula
-                    </button>
+                    <div className="d-flex gap-2">
+                        <button className="btn btn-primary" onClick={() => setShowAutoModal(true)}>
+                            ⚡ Gerar Horário
+                        </button>
+                        <button className="btn btn-success" onClick={() => {
+                            setSelectedSlot(null);
+                            setEditEvent(null);
+                            setShowModal(true);
+                        }}>
+                            + Nova Aula
+                        </button>
+                    </div>
                 </div>
 
                 <Card className="card-modern mb-4 p-3 border-0">
@@ -216,6 +223,12 @@ const Schedules = () => {
                     handleClose={() => setShowModal(false)}
                     selectedSlot={selectedSlot}
                     editEvent={editEvent}
+                    onSuccess={fetchSchedules}
+                />
+
+                <AutoScheduleModal
+                    show={showAutoModal}
+                    handleClose={() => setShowAutoModal(false)}
                     onSuccess={fetchSchedules}
                 />
             </Container>
