@@ -31,7 +31,6 @@ class StudentsViewModel (application: Application) : AndroidViewModel(applicatio
                     println ("Erro: ${response.code()}")
                 }
             }
-
             override fun onFailure(call: Call<List<Students>>, t: Throwable) {
                 isLoading = false
                 println("Erro Rede: ${t.message}")

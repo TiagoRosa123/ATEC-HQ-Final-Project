@@ -27,8 +27,15 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import pt.atec.atec_hq_mobile.ui.theme.ATEC_HQ_MobileTheme
-
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.shape.RoundedCornerShape
+import pt.atec.atec_hq_mobile.ui.theme.*
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,48 +46,47 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 val viewModel: LoginViewModel = viewModel()
 
+                // Define ecrãs da app
                 NavHost(navController = navController, startDestination = "login") {
 
                     //Login
                     composable("login") {
+
+                        //loginSuccess = true
                         LaunchedEffect(viewModel.loginSuccess) {
                             if (viewModel.loginSuccess) {
-                                // 1. Navegar para o Dashboard
+                                // vai p/ dashboard
                                 navController.navigate("dashboard") {
-                                    // 2. Apagar o histórico (para o botão "Voltar" fechar a app e não voltar ao Login)
+                                    // "popUpTo": Remove o Login da pilha (botão voltar fecha a app)
                                     popUpTo("login") { inclusive = true }
                                 }
-                                // 3. Reset da bandeira
-                                viewModel.loginSuccess = false
+                                viewModel.loginSuccess = false //"reset"
                             }
                         }
 
                         LoginScreen(viewModel = viewModel)
                     }
+                    
                     //Dashboard
                     composable("dashboard") {
-                        DashboardScreen(navController = navController, userName = viewModel.email)
+                        DashboardScreen(navController = navController, userName = viewModel.userName)
                     }
-
-                    //Courses
+                    
                     composable("courses") {
                         val coursesViewModel: CoursesViewModel = viewModel()
                         CoursesScreen(navController = navController, viewModel = coursesViewModel)
                     }
-
-                    //Students
+                    
                     composable("students") {
                         val studentsViewModel: StudentsViewModel = viewModel()
                         StudentsScreen(navController = navController, viewModel = studentsViewModel)
                     }
-
-                    //Teachers
+                    
                     composable("teachers") {
                         val teachersViewModel: TeachersViewModel = viewModel()
                         TeachersScreen(navController = navController, viewModel = teachersViewModel)
                     }
-
-                    //Rooms
+                    
                     composable("rooms") {
                         val roomsViewModel: RoomsViewModel = viewModel()
                         RoomsScreen(navController = navController, viewModel = roomsViewModel)
@@ -94,47 +100,121 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun LoginScreen(
     modifier: Modifier = Modifier,
-    viewModel: LoginViewModel = viewModel() //viewModel
+    viewModel: LoginViewModel = viewModel()
 ) {
     val context = LocalContext.current
 
-    // mensagens do ViewModel
+    // mensagens ViewModel
     if (viewModel.mensagemStatus != null) {
         Toast.makeText(context, viewModel.mensagemStatus, Toast.LENGTH_SHORT).show()
         viewModel.mensagemStatus = null // Limpa mensagem
     }
-    Column(
+
+    Box(
         modifier = modifier
             .fillMaxSize()
             .padding(16.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+        contentAlignment = Alignment.Center
     ) {
-        Text(text = "Login ATEC HQ", style = MaterialTheme.typography.headlineMedium)
-        Spacer(modifier = Modifier.height(32.dp))
-        // Ler e Escrever no ViewModel
-        OutlinedTextField(
-            value = viewModel.email,
-            onValueChange = { viewModel.email = it },
-            label = { Text("Email") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-        OutlinedTextField(
-            value = viewModel.password,
-            onValueChange = { viewModel.password = it },
-            label = { Text("Password") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(modifier = Modifier.height(24.dp))
-        Button(
-            onClick = {
-                viewModel.fazerLogin() //função do ViewModel
-            },
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Entrar")
+            // LOGO: ATEC (Cinza) HQ (Azul)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = "ATEC",
+                    style = MaterialTheme.typography.headlineLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Gray // AtecText ou Secondary
+                )
+                Text(
+                    text = "HQ",
+                    style = MaterialTheme.typography.headlineLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = AtecBlue
+                )
+            }
+            Text(
+                text = "Plataforma de Gestão de Formação",
+                style = MaterialTheme.typography.bodySmall,
+                color = Color.Gray
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // CARD DO FORMULÁRIO
+            Card(
+                colors = CardDefaults.cardColors(containerColor = AtecCard),
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier.padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Iniciar Sessão",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = AtecDarkBlue,
+                        fontWeight = FontWeight.Bold
+                    )
+                    
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    // EMAIL
+                    OutlinedTextField(
+                        value = viewModel.email,
+                        onValueChange = { viewModel.email = it },
+                        label = { Text("Email") },
+                        leadingIcon = { Icon(imageVector = Icons.Default.Email, contentDescription = null, tint = Color.Gray) },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = AtecBlue,
+                            unfocusedBorderColor = Color.LightGray
+                        )
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // PASSWORD
+                    OutlinedTextField(
+                        value = viewModel.password,
+                        onValueChange = { viewModel.password = it },
+                        label = { Text("Password") },
+                        leadingIcon = { Icon(imageVector = Icons.Default.Lock, contentDescription = null, tint = Color.Gray) },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        visualTransformation = PasswordVisualTransformation(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = AtecBlue,
+                            unfocusedBorderColor = Color.LightGray
+                        )
+                    )
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    // BOTÃO ENTRAR
+                    Button(
+                        onClick = { viewModel.fazerLogin() },
+                        modifier = Modifier.fillMaxWidth().height(50.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = AtecBlue),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text("Entrar", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // FOOTER
+            Text(
+                text = "© 2026 ATEC.HQ Academia de Formação",
+                style = MaterialTheme.typography.bodySmall,
+                color = Color.Gray.copy(alpha = 0.6f)
+            )
         }
     }
 }

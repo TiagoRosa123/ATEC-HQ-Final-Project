@@ -63,11 +63,12 @@ router.put('/editar/:id', authorization, verifyAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const { nome, email, is_admin, role } = req.body;
+    const cleanEmail = email.trim().toLowerCase();
 
     // 1. Atualizar Utilizador Geral
     await pool.query(
       "UPDATE utilizadores SET nome = $1, email = $2, role = $3, is_admin = $4 WHERE id = $5",
-      [nome, email, role, is_admin, id]
+      [nome, cleanEmail, role, is_admin, id]
     );
 
     // 2. Verificar e criar registo na tabela específica, se não existir
@@ -97,9 +98,10 @@ router.put('/editar/:id', authorization, verifyAdmin, async (req, res) => {
 router.post('/criar', authorization, verifyAdmin, async (req, res) => {
   try {
     const { nome, email, password, role } = req.body; //role vem do frontend
+    const cleanEmail = email.trim().toLowerCase();
 
     // Verifica se user existe
-    const userExist = await pool.query("SELECT * FROM utilizadores WHERE email = $1", [email]);
+    const userExist = await pool.query("SELECT * FROM utilizadores WHERE email = $1", [cleanEmail]);
     if (userExist.rows.length > 0) {
       return res.status(401).json("Utilizador já existe!");
     }
@@ -114,7 +116,7 @@ router.post('/criar', authorization, verifyAdmin, async (req, res) => {
     // Insere na BD
     const newUser = await pool.query(
       "INSERT INTO utilizadores (nome, email, password_hash, role, is_admin, ativado) VALUES ($1, $2, $3, $4, $5, true) RETURNING *",
-      [nome, email, bcryptPassword, role, is_admin]
+      [nome, cleanEmail, bcryptPassword, role, is_admin]
     );
 
     const newUserId = newUser.rows[0].id;

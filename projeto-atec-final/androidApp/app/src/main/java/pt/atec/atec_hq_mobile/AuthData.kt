@@ -17,53 +17,48 @@ data class Students(val id: Int, val nome: String, val email: String)
 data class Teachers(val id: Int, val nome: String, val email: String)
 data class Rooms(val id: Int, val nome: String, val capacidade: Int, val recursos: String)
 
-//Interface API
+// endpoints
 interface ApiService {
     @POST("/auth/login")
     fun login(@Body request: LoginRequest): Call<LoginResponse>
-
     @GET("/api/public/courses")
     fun getCourses(): Call<List<Courses>>
-
     @GET("/dashboard/students")
     fun getStudents(): Call<List<Students>>
-
     @GET("/dashboard/teachers")
     fun getTeachers(): Call<List<Teachers>>
-
     @GET("/rooms/available")
     fun getRooms(): Call<List<Rooms>>
 }
-//Retrofit "Carteiro"
-object RetrofitClient {
-    private const val BASE_URL = "http://192.168.60.1:5000/"
 
-    // Volatile garante que todos os processadores veem a mesma variável
+//Comun. API
+object RetrofitClient {
+    private const val BASE_URL = "http://10.0.2.2:5000/"
+
+    // em memoria volatile para garantir queprocessos veem a versão mais atual
     @Volatile
     private var instance: ApiService? = null
 
     fun getInstance(context: Context): ApiService {
-
-        // Se já existe, devolve (Singleton)
-        // Se não existe, cria!
+        // synchronized - impossivel criar instância ao mesmo tempo
         return instance ?: synchronized(this) {
-
-            // 1. Criar o Motor (OkHttp) e meter lá o Segurança
+            
+            // Configurar HTTP
+            // Add AuthInterceptor para colar o Token em cada pedido
             val motor = OkHttpClient.Builder()
                 .addInterceptor(AuthInterceptor(context))
                 .build()
 
-
+            //Construir o Retrofit
             val retrofit = Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .client(motor)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
+                .baseUrl(BASE_URL)
+                .client(motor)
+                .addConverterFactory(GsonConverterFactory.create()) //converte JSON p/ Kotlin
+                .build()
 
-            // 3. Criar e guardar o serviço
+            //cria a instância API
             instance = retrofit.create(ApiService::class.java)
             instance!!
-
         }
     }
 }

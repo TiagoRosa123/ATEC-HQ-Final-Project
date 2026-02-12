@@ -4,21 +4,23 @@ import android.content.Context
 import okhttp3.Interceptor
 import okhttp3.Response
 
-// Recebe do tokenManager
+//"cola" o Token
 class AuthInterceptor(private val context: Context) : Interceptor {
 
     override fun intercept(chain: Interceptor.Chain): Response {
 
-        //Agarra no pedido
+        // agarrar no pedido original
         val pedidoOriginal = chain.request()
         val construtorDoPedido = pedidoOriginal.newBuilder()
-        // Vai buscar o token
+        
+        // buscar o token
         val token = TokenManager.getToken(context)
-        //Se tiver token, cola
+
+        //caso haja token, add ao header
         if (token != null) {
             construtorDoPedido.addHeader("token", token)
         }
-        // Constrói o pedido final
+
         return chain.proceed(construtorDoPedido.build())
     }
 }

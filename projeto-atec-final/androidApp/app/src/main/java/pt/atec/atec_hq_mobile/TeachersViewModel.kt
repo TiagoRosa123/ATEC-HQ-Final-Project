@@ -11,18 +11,17 @@ import retrofit2.Response
 
 class TeachersViewModel(application: Application) : AndroidViewModel(application) {
 
-    // Lista de Formadores (inicialmente vazia)
+    // Lista de Formadores
     var teachersList by mutableStateOf(emptyList<Teachers>()) 
     var isLoading by mutableStateOf(false)
     var messageStatus by mutableStateOf("")
-
     fun fetchTeachers() {
         isLoading = true 
 
-        // 1. Obter Contexto
+        // Obte Contexto
         val context = getApplication<Application>().applicationContext
 
-        // 2. Chamar o serviço
+        //Chamar o serviço
         RetrofitClient.getInstance(context).getTeachers().enqueue(object : Callback<List<Teachers>> {
             override fun onResponse(call: Call<List<Teachers>>, response: Response<List<Teachers>>) {
                 isLoading = false

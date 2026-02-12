@@ -9,9 +9,10 @@ const sendEmail = require("../utils/sendEmail");
 router.post("/register", async (req, res) => {
   try {
     const { nome, email, password } = req.body;
+    const cleanEmail = email.trim().toLowerCase(); // Normalize email
 
     // Verifica se user existe
-    const user = await pool.query("SELECT * FROM utilizadores WHERE email = $1", [email]);
+    const user = await pool.query("SELECT * FROM utilizadores WHERE email = $1", [cleanEmail]);
     if (user.rows.length > 0) {
       return res.status(401).json("O utilizador já existe!");
     }
@@ -24,7 +25,7 @@ router.post("/register", async (req, res) => {
     // Criar utilizador
     const newUser = await pool.query(
       "INSERT INTO utilizadores (nome, email, password_hash, ativado) VALUES ($1, $2, $3, $4) RETURNING *",
-      [nome, email, bcryptPassword, false]
+      [nome, cleanEmail, bcryptPassword, false]
     );
 
     // Gera token de ativação
@@ -38,7 +39,7 @@ router.post("/register", async (req, res) => {
     const url = `http://localhost:3000/activate/${activationToken}`;
 
     await sendEmail({
-      email: email,
+      email: cleanEmail,
       subject: 'Bem-vindo à ATEC.HQ! Ativa a tua conta',
       message: `Olá ${nome}, clica aqui: ${url}`,
       html: `
@@ -78,17 +79,24 @@ router.post("/activate-account", async (req, res) => {
 router.post("/login", async (req, res) => {
   try {
     const { email, password, token2fa } = req.body;
-    const user = await pool.query("SELECT * FROM utilizadores WHERE email = $1", [email]);
+    const cleanEmail = email.trim().toLowerCase(); // Limpa espaços e mete em minúsculas
+    const user = await pool.query("SELECT * FROM utilizadores WHERE email = $1", [cleanEmail]);
 
-    if (user.rows.length === 0) return res.status(401).json({ message: "Dados incorretos" });
+    if (user.rows.length === 0) {
+      return res.status(401).json({ message: "Dados incorretos" });
+    }
 
     // Verifica se conta está ativa
     if (user.rows[0].ativado === false) {
+      console.log("Account not activated");
       return res.status(401).json({ message: "Tens de ativar a conta no teu email primeiro!" });
     }
 
     const validPassword = await bcrypt.compare(password, user.rows[0].password_hash);
-    if (!validPassword) return res.status(401).json({ message: "Dados incorretos" });
+    if (!validPassword) {
+      console.log("Invalid password");
+      return res.status(401).json({ message: "Dados incorretos" });
+    }
 
     // Lógica 2FA
     if (user.rows[0].two_fa_ativado) {
@@ -118,7 +126,8 @@ router.post("/login", async (req, res) => {
 router.post('/google', async (req, res) => {
   try {
     const { email, nome } = req.body;
-    const user = await pool.query("SELECT * FROM utilizadores WHERE email = $1", [email]);
+    const cleanEmail = email.trim().toLowerCase();
+    const user = await pool.query("SELECT * FROM utilizadores WHERE email = $1", [cleanEmail]);
     let userId;
     if (user.rows.length > 0) {
       userId = user.rows[0].id;
@@ -126,7 +135,7 @@ router.post('/google', async (req, res) => {
       const randomPass = await bcrypt.hash(Math.random().toString(), 10);
       const newUser = await pool.query(
         "INSERT INTO utilizadores (nome, email, password_hash, ativado) VALUES ($1, $2, $3, $4) RETURNING id",
-        [nome, email, randomPass, true]
+        [nome, cleanEmail, randomPass, true]
       );
       userId = newUser.rows[0].id;
     }
@@ -143,7 +152,8 @@ router.post('/google', async (req, res) => {
 router.post('/esqueci-Pw', async (req, res) => {
   try {
     const { email } = req.body;
-    const user = await pool.query("SELECT * FROM utilizadores WHERE email = $1", [email]);
+    const cleanEmail = email.trim().toLowerCase();
+    const user = await pool.query("SELECT * FROM utilizadores WHERE email = $1", [cleanEmail]);
 
     if (user.rows.length === 0) {
       return res.status(404).json({ message: "Utilizador não encontrado" });
@@ -158,7 +168,7 @@ router.post('/esqueci-Pw', async (req, res) => {
     const url = `http://localhost:3000/reset-password/${resetToken}`;
 
     await sendEmail({
-      email: email,
+      email: cleanEmail,
       subject: 'Recuperação de Password - ATEC.HQ',
       message: `Clica aqui para repor a password: ${url}`,
       html: `

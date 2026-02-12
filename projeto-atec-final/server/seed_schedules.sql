@@ -7,10 +7,10 @@ INSERT INTO areas (nome, descricao) VALUES
 ON CONFLICT (nome) DO NOTHING;
 
 -- 2. Create Rooms
-INSERT INTO salas (area_id, nome, capacidade, recursos) VALUES 
-((SELECT id FROM areas WHERE nome = 'Informatica'), 'Sala 1', 20, 'Computadores, Projetor'),
-((SELECT id FROM areas WHERE nome = 'Informatica'), 'Sala 2', 20, 'Computadores, Projetor'),
-((SELECT id FROM areas WHERE nome = 'Soldadura'), 'Sala 3', 15, 'Oficina de Soldadura')
+INSERT INTO salas (area_id, nome, capacidade, recursos, estado) VALUES 
+((SELECT id FROM areas WHERE nome = 'Informatica'), 'Sala 1', 20, 'Computadores, Projetor', 'disponivel'),
+((SELECT id FROM areas WHERE nome = 'Informatica'), 'Sala 2', 20, 'Computadores, Projetor', 'disponivel'),
+((SELECT id FROM areas WHERE nome = 'Soldadura'), 'Sala 3', 15, 'Oficina de Soldadura', 'disponivel')
 ON CONFLICT DO NOTHING;
 
 -- 3. Create Users (Trainers)
