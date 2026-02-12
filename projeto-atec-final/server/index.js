@@ -47,4 +47,5 @@ const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
   console.log(`Servidor: http://localhost:${PORT}/teste-db`);
+  console.log(`Frontend: http://localhost`);
 });
