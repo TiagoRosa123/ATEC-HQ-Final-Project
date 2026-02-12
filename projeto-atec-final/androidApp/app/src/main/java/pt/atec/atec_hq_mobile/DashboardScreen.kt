@@ -45,7 +45,7 @@ fun DashboardScreen(navController: NavController, userName: String, modifier: Mo
         Text(
             text = "Bem-vindo à ATEC HQ",
             style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.secondary
+            color = MaterialTheme.colorScheme.primary
         )
 
         Spacer(modifier = Modifier.height(32.dp))

@@ -76,11 +76,11 @@ fun StudentCard(student: Students) {
         ) {
             Surface(
                 shape = CircleShape,
-                color = AtecOrange.copy(alpha = 0.1f), // Laranja para alunos
+                color = AtecDarkBlue.copy(alpha = 0.1f),
                 modifier = Modifier.size(50.dp)
             ) {
                 Box(contentAlignment = Alignment.Center) {
-                    Icon(imageVector = Icons.Default.Face, contentDescription = null, tint = AtecOrange, modifier = Modifier.size(24.dp))
+                    Icon(imageVector = Icons.Default.Face, contentDescription = null, tint = AtecBlue, modifier = Modifier.size(24.dp))
                 }
             }
             Spacer(modifier = Modifier.width(16.dp))

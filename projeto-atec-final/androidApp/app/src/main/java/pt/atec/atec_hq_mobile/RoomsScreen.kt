@@ -76,17 +76,17 @@ fun RoomCard(room: Rooms) {
         ) {
             Surface(
                 shape = CircleShape,
-                color = AtecText.copy(alpha = 0.1f), // Cinza para salas
+                color = AtecDarkBlue.copy(alpha = 0.1f),
                 modifier = Modifier.size(50.dp)
             ) {
                 Box(contentAlignment = Alignment.Center) {
-                    Icon(imageVector = Icons.Default.Home, contentDescription = null, tint = AtecText, modifier = Modifier.size(24.dp))
+                    Icon(imageVector = Icons.Default.Home, contentDescription = null, tint = AtecBlue, modifier = Modifier.size(24.dp))
                 }
             }
             Spacer(modifier = Modifier.width(16.dp))
             Column {
                 Text(text = room.nome, style = MaterialTheme.typography.titleMedium, color = AtecText, fontWeight = FontWeight.Bold)
-                Text(text = "Lotação: ${room.capacidade} • ${room.recursos}", style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
+                Text(text = "Capacidade: ${room.capacidade} • ${room.recursos}", style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
             }
         }
     }
