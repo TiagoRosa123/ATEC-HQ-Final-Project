@@ -12,14 +12,12 @@ services:
       - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
-      - ./server/database.sql:/docker-entrypoint-initdb.d/01_schema.sql
-      - ./server/seed_data.sql:/docker-entrypoint-initdb.d/02_seed.sql
 
   backend:
     build: ./server
     restart: always
     ports:
-      - "5000:5000"
+      - "3000:3000"
     environment:
       DB_USER: ${DB_USER:-postgres}
       DB_PASSWORD: ${DB_PASSWORD:-root}
