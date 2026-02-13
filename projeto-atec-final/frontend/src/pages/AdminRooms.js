@@ -4,6 +4,7 @@ import { Table, Button, Form, Card } from 'react-bootstrap';
 import { FaEdit, FaTrash, FaPlus, FaSave } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import api from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 function AdminRooms() {
     const [rooms, setRooms] = useState([]);
@@ -12,6 +13,9 @@ function AdminRooms() {
     // Novo campo: estado
     const [formData, setFormData] = useState({ area_id: '', nome: '', capacidade: '', recursos: '', estado: 'disponivel' });
     const [editId, setEditId] = useState(null);
+
+    const { user } = useAuth();
+    const canEdit = user && user.is_admin;
 
     //GET - Salas e Areas
     const loadData = async () => {
@@ -75,6 +79,7 @@ function AdminRooms() {
             <h2 className="mb-4">Gestão de Salas</h2>
 
             {/* FORMULÁRIO */}
+            {canEdit && (
             <Card className="mb-4 border-0 shadow-sm">
                 <Card.Body>
                     <Form onSubmit={handleSubmit} className="d-flex gap-2 flex-wrap align-items-end">
@@ -125,6 +130,7 @@ function AdminRooms() {
                     </Form>
                 </Card.Body>
             </Card>
+            )}
 
             {/* TABELA */}
             <Card className="border-0 shadow-sm">
@@ -137,7 +143,7 @@ function AdminRooms() {
                                 <th>Área</th>
                                 <th>Capacidade</th>
                                 <th>Recursos</th>
-                                <th>Ações</th>
+                                {canEdit && <th>Ações</th>}
                             </tr>
                         </thead>
                         <tbody>
@@ -152,6 +158,7 @@ function AdminRooms() {
                                     <td>{getAreaName(room.area_id)}</td>
                                     <td>{room.capacidade}</td>
                                     <td>{room.recursos}</td>
+                                    {canEdit && (
                                     <td>
                                         <Button variant="link" onClick={() => {
                                             setEditId(room.id);
@@ -160,7 +167,7 @@ function AdminRooms() {
                                                 nome: room.nome,
                                                 capacidade: room.capacidade,
                                                 recursos: room.recursos,
-                                                estado: room.estado // Carregar estado
+                                                estado: room.estado
                                             });
                                         }}>
                                             <FaEdit />
@@ -169,6 +176,7 @@ function AdminRooms() {
                                             <FaTrash />
                                         </Button>
                                     </td>
+                                    )}
                                 </tr>
                             ))}
                             {rooms.length === 0 && !loading &&

@@ -4,24 +4,16 @@ import { Table, Button, Form, Card, Row, Col, Alert, Spinner } from 'react-boots
 import { FaEdit, FaTrash, FaPlus, FaSave } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import api from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 function AdminModules() {
     const [modules, setModules] = useState([]);
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({ nome: '', horas_totais: '', codigo: '' });
     const [editandoId, setEditandoId] = useState(null);
-    const [modulos, setModule] = useState([]);
 
-    //GET - Listar Modulos
-    const loadModule = async () => {
-        try {
-            const res = await api.get('/modules');
-            setModule(res.data);
-        } catch (error) {
-            toast.error('Erro ao carregar módulos');
-        }
-    }
-    useEffect(() => { loadModule(); }, []);
+    const { user } = useAuth();
+    const canEdit = user && user.is_admin;
 
 
     //GET Modulos
@@ -74,6 +66,7 @@ function AdminModules() {
         <Navbar>
             <h2 className="mb-4">Gestão de Módulos</h2>
 
+            {canEdit && (
             <Card className="mb-4 border-0 shadow-sm">
                 <Card.Body>
                     <Form onSubmit={handleSubmit} className="d-flex gap-2">
@@ -101,6 +94,7 @@ function AdminModules() {
                     </Form>
                 </Card.Body>
             </Card>
+            )}
 
             {/* TABELA */}
             <Card className="border-0 shadow-sm">
@@ -111,7 +105,7 @@ function AdminModules() {
                                 <th>Nome</th>
                                 <th>Horas totais</th>
                                 <th>Código</th>
-                                <th>Ações</th>
+                                {canEdit && <th>Ações</th>}
                             </tr>
                         </thead>
                         <tbody>
@@ -120,6 +114,7 @@ function AdminModules() {
                                     <td><strong>{module.nome}</strong></td>
                                     <td>{module.horas_totais}</td>
                                     <td>{module.codigo}</td>
+                                    {canEdit && (
                                     <td>
                                         <Button variant="link" onClick={() => {
                                             setEditandoId(module.id);
@@ -131,6 +126,7 @@ function AdminModules() {
                                             <FaTrash />
                                         </Button>
                                     </td>
+                                    )}
                                 </tr>
                             ))}
                         </tbody>

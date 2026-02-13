@@ -57,7 +57,8 @@ CREATE TYPE role_enum AS ENUM (
     'formador', 
     'formando', 
     'user',
-	'funcionario'
+	'funcionario',
+	'secretaria'
 );
 
 CREATE TABLE utilizadores (

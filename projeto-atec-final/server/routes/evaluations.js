@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const pool = require('../db');
 const authorization = require('../middleware/authorization');
+const verifyFormador = require('../middleware/verifyFormador');
 
 //get
 router.get('/', authorization, async (req, res) => {
@@ -30,7 +31,7 @@ router.get('/by-class-module/:turmaId/:moduloId', authorization, async (req, res
 });
 
 //post
-router.post('/create', authorization, async (req, res) => {
+router.post('/create', authorization, verifyFormador, async (req, res) => {
     try {
         const { turma_id, modulo_id, formando_id, nota, data_avaliacao, tipo_avaliacao, observacoes } = req.body;
         const newEvaluation = await pool.query("INSERT INTO avaliacoes (turma_id, modulo_id, formando_id, nota, data_avaliacao, tipo_avaliacao, observacoes) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *", [turma_id, modulo_id, formando_id, nota, data_avaliacao, tipo_avaliacao, observacoes]);
@@ -43,7 +44,7 @@ router.post('/create', authorization, async (req, res) => {
 });
 
 //put
-router.put('/update/:id', authorization, async (req, res) => {
+router.put('/update/:id', authorization, verifyFormador, async (req, res) => {
     try {
         const { id } = req.params;
         const { turma_id, modulo_id, formando_id, nota, data_avaliacao, tipo_avaliacao, observacoes } = req.body;

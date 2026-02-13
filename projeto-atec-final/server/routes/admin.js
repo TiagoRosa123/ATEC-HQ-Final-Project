@@ -1,21 +1,8 @@
 const router = require('express').Router();
 const pool = require('../db');
 const authorization = require('../middleware/authorization');
+const verifyAdmin = require('../middleware/verifyAdmin');
 const bcrypt = require("bcrypt");
-
-// Verificar se é MESMO admin
-const verifyAdmin = async (req, res, next) => {
-  try {
-    const user = await pool.query("SELECT * FROM utilizadores WHERE id = $1", [req.user.id]);
-
-    if (user.rows.length === 0 || !user.rows[0].is_admin) {
-      return res.status(403).json("Acesso negado. Apenas para Administradores.");
-    }
-    next();
-  } catch (err) {
-    res.status(500).send("Erro ao verificar permissões");
-  }
-};
 
 // ROTA 1: lista todos users - Read
 router.get('/todos', authorization, verifyAdmin, async (req, res) => {
@@ -86,6 +73,12 @@ router.put('/editar/:id', authorization, verifyAdmin, async (req, res) => {
         await pool.query("INSERT INTO formadores (utilizador_id, nome) VALUES ($1, $2)", [id, nome]);
       }
     }
+    else if (role === 'secretaria') {
+      const check = await pool.query("SELECT id FROM funcionarios WHERE utilizador_id = $1", [id]);
+      if (check.rows.length === 0) {
+        await pool.query("INSERT INTO funcionarios (utilizador_id, nome, departamento, cargo) VALUES ($1, $2, 'Secretaria', 'Assistente')", [id, nome]);
+      }
+    }
 
     res.json("Utilizador atualizado e perfil sincronizado!");
   } catch (err) {
@@ -126,6 +119,9 @@ router.post('/criar', authorization, verifyAdmin, async (req, res) => {
     }
     else if (role === 'formador') {
       await pool.query("INSERT INTO formadores (utilizador_id, nome) VALUES ($1, $2)", [newUserId, nome]);
+    }
+    else if (role === 'secretaria') {
+      await pool.query("INSERT INTO funcionarios (utilizador_id, nome, departamento, cargo) VALUES ($1, $2, 'Secretaria', 'Assistente')", [newUserId, nome]);
     }
 
     res.json(newUser.rows[0]);

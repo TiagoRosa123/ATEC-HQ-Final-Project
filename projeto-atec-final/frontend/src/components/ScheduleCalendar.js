@@ -11,7 +11,7 @@ moment.locale('pt');
 const localizer = momentLocalizer(moment);
 const DnDCalendar = withDragAndDrop(Calendar);
 
-const ScheduleCalendar = ({ events, defaultView = 'week', onSelectSlot, onSelectEvent, onEventDrop, onEventResize }) => {
+const ScheduleCalendar = ({ events, defaultView = 'week', onSelectSlot, onSelectEvent, onEventDrop, onEventResize, selectable = true, resizable = true }) => {
   const messages = {
     // ... (mantém igual)
     allDay: 'Dia todo',
@@ -61,8 +61,8 @@ const ScheduleCalendar = ({ events, defaultView = 'week', onSelectSlot, onSelect
           formats={{
             dayHeaderFormat: 'dddd, DD MMMM',
           }}
-          selectable
-          resizable
+          selectable={selectable}
+          resizable={resizable}
           onSelectSlot={onSelectSlot}
           onSelectEvent={onSelectEvent} // Adicionado!
           onEventDrop={onEventDrop}

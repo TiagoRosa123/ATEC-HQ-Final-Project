@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const pool = require('../db');
 const authorization = require('../middleware/authorization');
+const verifyAdmin = require('../middleware/verifyAdmin');
 
 //get
 router.get('/', authorization, async (req, res) => {
@@ -15,7 +16,7 @@ router.get('/', authorization, async (req, res) => {
 });
 
 //post
-router.post('/create', authorization, async (req, res) => {
+router.post('/create', authorization, verifyAdmin, async (req, res) => {
     try {
         const { nome, horas_totais, codigo } = req.body;
         const newModule = await pool.query("INSERT INTO modulos (nome, horas_totais, codigo) VALUES ($1, $2, $3) RETURNING *", [nome, horas_totais, codigo]);
@@ -28,7 +29,7 @@ router.post('/create', authorization, async (req, res) => {
 });
 
 //put
-router.put('/update/:id', authorization, async (req, res) => {
+router.put('/update/:id', authorization, verifyAdmin, async (req, res) => {
     try {
         const { id } = req.params;
         const { nome, horas_totais, codigo } = req.body;
@@ -42,7 +43,7 @@ router.put('/update/:id', authorization, async (req, res) => {
 });
 
 //delete
-router.delete('/delete/:id', authorization, async (req, res) => {
+router.delete('/delete/:id', authorization, verifyAdmin, async (req, res) => {
     try {
         const { id } = req.params;
         const deleteModule = await pool.query("DELETE FROM modulos WHERE id = $1 RETURNING *", [id]);

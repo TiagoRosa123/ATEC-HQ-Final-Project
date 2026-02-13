@@ -5,6 +5,7 @@ import ScheduleCalendar from '../components/ScheduleCalendar';
 import CreateLessonModal from '../components/CreateLessonModal';
 import AutoScheduleModal from '../components/AutoScheduleModal';
 import Navbar from '../components/Navbar';
+import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
 const Schedules = () => {
@@ -22,6 +23,9 @@ const Schedules = () => {
     const [turmas, setTurmas] = useState([]);
     const [formadores, setFormadores] = useState([]);
     const [salas, setSalas] = useState([]);
+
+    const { user } = useAuth();
+    const canManage = user && (user.is_admin || user.role === 'secretaria');
 
     useEffect(() => {
         const fetchOptions = async () => {
@@ -132,16 +136,20 @@ const Schedules = () => {
                 <div className="d-flex justify-content-between align-items-center mb-4">
                     <h2 className="mb-0">Consultas de Horários</h2>
                     <div className="d-flex gap-2">
+                        {canManage && (
                         <button className="btn btn-primary-custom" onClick={() => setShowAutoModal(true)}>
                             Horário Automático
                         </button>
-                        <button className="btn btn-success" onClick={() => {
-                            setSelectedSlot(null);
-                            setEditEvent(null);
-                            setShowModal(true);
-                        }}>
-                            + Nova Aula
-                        </button>
+                        )}
+                        {canManage && (
+                    <button className="btn btn-success" onClick={() => {
+                        setSelectedSlot(null);
+                        setEditEvent(null);
+                        setShowModal(true);
+                    }}>
+                        + Nova Aula
+                    </button>
+                    )}
                     </div>
                 </div>
 
@@ -211,11 +219,13 @@ const Schedules = () => {
 
                 <ScheduleCalendar
                     events={events}
-                    onSelectSlot={handleSelectSlot}
-                    onSelectEvent={handleSelectEvent}
-                    onEventDrop={handleEventDrop}
-                    onEventResize={handleEventDrop}
-                    defaultView={activeTab === 'sala' ? 'day' : 'week'} // Default to Day view for Rooms
+                    onSelectSlot={canManage ? handleSelectSlot : undefined}
+                    onSelectEvent={canManage ? handleSelectEvent : undefined}
+                    onEventDrop={canManage ? handleEventDrop : undefined}
+                    onEventResize={canManage ? handleEventDrop : undefined}
+                    defaultView={activeTab === 'sala' ? 'day' : 'week'}
+                    selectable={canManage}
+                    resizable={canManage}
                 />
 
                 <CreateLessonModal

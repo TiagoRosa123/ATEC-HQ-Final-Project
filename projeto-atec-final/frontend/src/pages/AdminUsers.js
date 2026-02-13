@@ -299,6 +299,7 @@ function AdminUsers() {
                                         <option value="user">Utilizador</option>
                                         <option value="formando">Formando</option>
                                         <option value="formador">Formador</option>
+                                        <option value="secretaria">Secretária</option>
                                         <option value="admin">Administrador</option>
                                     </Form.Select>
                                 </Form.Group>
@@ -346,6 +347,7 @@ function AdminUsers() {
                                                     ) : (
                                                         user.role === 'formando' ? <Badge bg="success" className="px-3 py-2 fw-normal">FORMANDO</Badge> :
                                                             user.role === 'formador' ? <Badge bg="warning" text="dark" className="px-3 py-2 fw-normal">FORMADOR</Badge> :
+                                                                user.role === 'secretaria' ? <Badge bg="info" className="px-3 py-2 fw-normal">SECRETÁRIA</Badge> :
                                                                 <Badge bg="light" text="dark" className="px-3 py-2 fw-normal border">USER</Badge>
                                                     )}
                                                 </td>

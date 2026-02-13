@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const pool = require('../db');
 const authorization = require('../middleware/authorization');
+const verifyAdmin = require('../middleware/verifyAdmin');
 
 //get public (LIVRE DE TOKEN)
 router.get('/public', async (req, res) => {
@@ -59,7 +60,7 @@ router.get('/', authorization, async (req, res) => {
 });
 
 //post
-router.post('/create', authorization, async (req, res) => {
+router.post('/create', authorization, verifyAdmin, async (req, res) => {
     try {
         const { nome, sigla, descricao, area_id, imagem, duracao_horas } = req.body;
         const newCourse = await pool.query(
@@ -75,7 +76,7 @@ router.post('/create', authorization, async (req, res) => {
 });
 
 //put
-router.put('/update/:id', authorization, async (req, res) => {
+router.put('/update/:id', authorization, verifyAdmin, async (req, res) => {
     try {
         const { id } = req.params;
         const { nome, sigla, descricao, area_id, imagem, duracao_horas } = req.body;
@@ -92,7 +93,7 @@ router.put('/update/:id', authorization, async (req, res) => {
 });
 
 //delete
-router.delete('/delete/:id', authorization, async (req, res) => {
+router.delete('/delete/:id', authorization, verifyAdmin, async (req, res) => {
     try {
         const { id } = req.params;
         const deleteCourse = await pool.query("DELETE FROM cursos WHERE id = $1 RETURNING *", [id]);
@@ -120,7 +121,7 @@ router.get('/:id/modules', authorization, async (req, res) => {
 });
 
 //post
-router.post('/:id/modules', authorization, async (req, res) => {
+router.post('/:id/modules', authorization, verifyAdmin, async (req, res) => {
     try {
         const { id } = req.params;
         const { modulo_id } = req.body;
@@ -134,7 +135,7 @@ router.post('/:id/modules', authorization, async (req, res) => {
 });
 
 //delete
-router.delete('/:id/modules/:modulo_id', authorization, async (req, res) => {
+router.delete('/:id/modules/:modulo_id', authorization, verifyAdmin, async (req, res) => {
     try {
         const { id } = req.params;
         const { modulo_id } = req.params;
