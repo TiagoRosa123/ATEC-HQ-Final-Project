@@ -43,12 +43,8 @@ function Evaluations() {
         const turma = classes.find(c => c.id == turmaId);
 
         if (turma) {
-            // 1. Buscar módulos associados a este curso via tabela intermédia (idealmente)
-            // Como não temos essa rota direta, vamos buscar todos e filtrar FEIO mas funcional por agora
-            // TODO: Criar rota /courses/:id/modules para ser mais limpo
-            const resModules = await api.get(`/modules`);
-            // NOTA: Isto assume que a rota /modules retorna o curso_id ou que vamos buscar a relação
-            // SE NÃO TIVERMOS RELAÇÃO NO GET /modules, mostramos todos (é o bug que te avisei).
+            // Buscar módulos associados a este curso
+            const resModules = await api.get(`/courses/${turma.curso_id}/modules`);
             setClassModules(resModules.data);
         }
     };

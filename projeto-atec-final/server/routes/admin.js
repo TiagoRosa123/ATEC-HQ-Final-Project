@@ -1,21 +1,8 @@
 const router = require('express').Router();
 const pool = require('../db');
 const authorization = require('../middleware/authorization');
+const verifyAdmin = require('../middleware/verifyAdmin');
 const bcrypt = require("bcrypt");
-
-// Verificar se é MESMO admin
-const verifyAdmin = async (req, res, next) => {
-  try {
-    const user = await pool.query("SELECT * FROM utilizadores WHERE id = $1", [req.user.id]);
-
-    if (user.rows.length === 0 || !user.rows[0].is_admin) {
-      return res.status(403).json("Acesso negado. Apenas para Administradores.");
-    }
-    next();
-  } catch (err) {
-    res.status(500).send("Erro ao verificar permissões");
-  }
-};
 
 // ROTA 1: lista todos users - Read
 router.get('/todos', authorization, verifyAdmin, async (req, res) => {

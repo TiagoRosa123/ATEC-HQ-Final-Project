@@ -21,6 +21,7 @@ function AdminClasses() {
     const [selectedClass, setSelectedClass] = useState(null);
     const [studentsList, setStudentsList] = useState([]); // Para listar os alunos
     const [newStudentId, setNewStudentId] = useState(""); // Para adicionar um aluno
+    const [allFormandos, setAllFormandos] = useState([]); // Todos os formandos disponíveis
 
     const { user } = useAuth();
     const canEdit = user && user.is_admin;
@@ -30,6 +31,11 @@ function AdminClasses() {
         setSelectedClass(cls);
         setShowStudentsModal(true);
         loadStudents(cls.id);
+        // Carregar lista de formandos para o dropdown
+        try {
+            const res = await api.get('/classes/formandos');
+            setAllFormandos(res.data);
+        } catch (err) { console.error('Erro ao carregar formandos'); }
     };
 
     //GET - Listar alunos
@@ -231,12 +237,18 @@ function AdminClasses() {
                 <Modal.Body>
                     {canEdit && (
                     <Form onSubmit={handleAddStudent} className="d-flex gap-2 mb-4 p-3 bg-light rounded">
-                        <Form.Control
-                            placeholder="ID Formando"
+                        <Form.Select
                             value={newStudentId}
                             onChange={e => setNewStudentId(e.target.value)}
                             required
-                        />
+                        >
+                            <option value="">Selecionar Formando...</option>
+                            {allFormandos
+                                .filter(f => !studentsList.some(s => s.formando_id === f.id))
+                                .map(f => (
+                                    <option key={f.id} value={f.id}>{f.nome} ({f.email})</option>
+                                ))}
+                        </Form.Select>
                         <Button type="submit" variant="success"><FaPlus /> Inscrever</Button>
                     </Form>
                     )}

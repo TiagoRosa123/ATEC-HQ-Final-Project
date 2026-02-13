@@ -11,21 +11,9 @@ function AdminModules() {
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({ nome: '', horas_totais: '', codigo: '' });
     const [editandoId, setEditandoId] = useState(null);
-    const [modulos, setModule] = useState([]);
 
     const { user } = useAuth();
     const canEdit = user && user.is_admin;
-
-    //GET - Listar Modulos
-    const loadModule = async () => {
-        try {
-            const res = await api.get('/modules');
-            setModule(res.data);
-        } catch (error) {
-            toast.error('Erro ao carregar módulos');
-        }
-    }
-    useEffect(() => { loadModule(); }, []);
 
 
     //GET Modulos

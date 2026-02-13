@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const pool = require('../db');
 const authorization = require('../middleware/authorization');
+const verifyAdmin = require('../middleware/verifyAdmin');
 
 //get
 router.get('/', authorization, async (req, res) => {
@@ -15,7 +16,7 @@ router.get('/', authorization, async (req, res) => {
 });
 
 //post
-router.post('/create', authorization, async (req, res) => {
+router.post('/create', authorization, verifyAdmin, async (req, res) => {
 
     try {
         const { codigo, curso_id, data_inicio, data_fim, estado } = req.body;
@@ -28,7 +29,7 @@ router.post('/create', authorization, async (req, res) => {
 });
 
 //put
-router.put('/update/:id', authorization, async (req, res) => {
+router.put('/update/:id', authorization, verifyAdmin, async (req, res) => {
     try {
         const { id } = req.params;
         const { codigo, curso_id, data_inicio, data_fim, estado } = req.body;
@@ -42,7 +43,7 @@ router.put('/update/:id', authorization, async (req, res) => {
 });
 
 //delete
-router.delete('/delete/:id', authorization, async (req, res) => {
+router.delete('/delete/:id', authorization, verifyAdmin, async (req, res) => {
     try {
         const { id } = req.params;
         const deleteClass = await pool.query("DELETE FROM turmas WHERE id = $1 RETURNING *", [id]);
@@ -70,7 +71,7 @@ router.get('/:id/students', authorization, async (req, res) => {
 });
 
 //post
-router.post('/:id/students', authorization, async (req, res) => {
+router.post('/:id/students', authorization, verifyAdmin, async (req, res) => {
 
     try {
         const { id } = req.params;
@@ -84,7 +85,7 @@ router.post('/:id/students', authorization, async (req, res) => {
 });
 
 //delete
-router.delete('/:id/students/:formando_id', authorization, async (req, res) => {
+router.delete('/:id/students/:formando_id', authorization, verifyAdmin, async (req, res) => {
     try {
         const { id, formando_id } = req.params;
         const deleteStudent = await pool.query("DELETE FROM inscricoes WHERE turma_id = $1 AND formando_id = $2 RETURNING *", [id, formando_id]);
@@ -93,6 +94,19 @@ router.delete('/:id/students/:formando_id', authorization, async (req, res) => {
     catch (err) {
         console.error(err.message);
         res.status(500).send("Erro no servidor")
+    }
+});
+
+//get - listar todos os formandos (para dropdown de inscrição)
+router.get('/formandos', authorization, async (req, res) => {
+    try {
+        const formandos = await pool.query(
+            "SELECT f.id, u.nome, u.email FROM formandos f JOIN utilizadores u ON f.utilizador_id = u.id ORDER BY u.nome ASC"
+        );
+        res.json(formandos.rows);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send("Erro no servidor");
     }
 });
 

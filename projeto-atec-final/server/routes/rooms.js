@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const pool = require('../db');
 const authorization = require('../middleware/authorization');
+const verifyAdmin = require('../middleware/verifyAdmin');
 
 //get
 router.get('/', authorization, async (req, res) => {
@@ -27,7 +28,7 @@ router.get('/available', authorization, async (req, res) => {
 });
 
 //post
-router.post('/create', authorization, async (req, res) => {
+router.post('/create', authorization, verifyAdmin, async (req, res) => {
 
     try {
         const { area_id, nome, capacidade, recursos, estado } = req.body;
@@ -43,7 +44,7 @@ router.post('/create', authorization, async (req, res) => {
 });
 
 //put
-router.put('/update/:id', authorization, async (req, res) => {
+router.put('/update/:id', authorization, verifyAdmin, async (req, res) => {
     try {
         const { id } = req.params;
         const { area_id, nome, capacidade, recursos, estado } = req.body;
@@ -58,7 +59,7 @@ router.put('/update/:id', authorization, async (req, res) => {
 });
 
 //delete
-router.delete('/delete/:id', authorization, async (req, res) => {
+router.delete('/delete/:id', authorization, verifyAdmin, async (req, res) => {
     try {
         const { id } = req.params;
         const deleteRoom = await pool.query("DELETE FROM salas WHERE id = $1 RETURNING *", [id]);
