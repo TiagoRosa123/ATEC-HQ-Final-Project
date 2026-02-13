@@ -1,29 +1,52 @@
 -- 1. LIMPEZA TOTAL
 DROP TABLE IF EXISTS ficheiros CASCADE;
+
 DROP TABLE IF EXISTS avaliacoes CASCADE;
+
 DROP TABLE IF EXISTS horarios CASCADE;
+
 DROP TABLE IF EXISTS inscricoes CASCADE;
+
 DROP TABLE IF EXISTS turmas_modulos CASCADE;
+
 DROP TABLE IF EXISTS turmas CASCADE;
+
 DROP TABLE IF EXISTS disponibilidades CASCADE;
+
 DROP TABLE IF EXISTS competencias_formador CASCADE;
+
 DROP TABLE IF EXISTS funcionarios CASCADE;
+
 DROP TABLE IF EXISTS formandos CASCADE;
+
 DROP TABLE IF EXISTS formadores CASCADE;
+
 DROP TABLE IF EXISTS curso_modulos CASCADE;
+
 DROP TABLE IF EXISTS modulos CASCADE;
+
 DROP TABLE IF EXISTS cursos CASCADE;
+
 DROP TABLE IF EXISTS salas CASCADE;
+
 DROP TABLE IF EXISTS areas CASCADE;
+
 DROP TABLE IF EXISTS utilizadores CASCADE;
 
 DROP TYPE IF EXISTS role_enum CASCADE;
+
 DROP TYPE IF EXISTS departamento_enum CASCADE;
+
 DROP TYPE IF EXISTS cargo_enum CASCADE;
+
 DROP TYPE IF EXISTS tipo_avaliacao_enum CASCADE;
+
 DROP TYPE IF EXISTS tipo_ficheiro_enum CASCADE;
+
 DROP TYPE IF EXISTS estado_turma_enum CASCADE;
+
 DROP TYPE IF EXISTS estado_inscricao_enum CASCADE;
+
 DROP TYPE IF EXISTS estado_salas_enum CASCADE;
 
 CREATE EXTENSION IF NOT EXISTS btree_gist;
@@ -71,7 +94,7 @@ CREATE TABLE salas (
     nome VARCHAR(40) NOT NULL,
     capacidade INT NOT NULL,
     recursos TEXT NOT NULL,
-	estado estado_salas_enum NOT NULL
+    estado estado_salas_enum NOT NULL
 );
 
 -- 4 Cursos
@@ -200,7 +223,7 @@ CREATE TABLE inscricoes (
     turma_id INT REFERENCES turmas (id) ON DELETE CASCADE,
     formando_id INT REFERENCES formandos (id) ON DELETE CASCADE,
     data_inscricao DATE DEFAULT CURRENT_DATE,
-    estado estado_inscricao_enum,
+    estado estado_inscricao_enum DEFAULT 'ativa',
     UNIQUE (turma_id, formando_id)
 );
 
