@@ -86,6 +86,12 @@ router.put('/editar/:id', authorization, verifyAdmin, async (req, res) => {
         await pool.query("INSERT INTO formadores (utilizador_id, nome) VALUES ($1, $2)", [id, nome]);
       }
     }
+    else if (role === 'secretaria') {
+      const check = await pool.query("SELECT id FROM funcionarios WHERE utilizador_id = $1", [id]);
+      if (check.rows.length === 0) {
+        await pool.query("INSERT INTO funcionarios (utilizador_id, nome, departamento, cargo) VALUES ($1, $2, 'Secretaria', 'Assistente')", [id, nome]);
+      }
+    }
 
     res.json("Utilizador atualizado e perfil sincronizado!");
   } catch (err) {
@@ -126,6 +132,9 @@ router.post('/criar', authorization, verifyAdmin, async (req, res) => {
     }
     else if (role === 'formador') {
       await pool.query("INSERT INTO formadores (utilizador_id, nome) VALUES ($1, $2)", [newUserId, nome]);
+    }
+    else if (role === 'secretaria') {
+      await pool.query("INSERT INTO funcionarios (utilizador_id, nome, departamento, cargo) VALUES ($1, $2, 'Secretaria', 'Assistente')", [newUserId, nome]);
     }
 
     res.json(newUser.rows[0]);

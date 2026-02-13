@@ -1,6 +1,7 @@
 const router = require("express").Router();
 const pool = require("../db");
 const authorization = require("../middleware/authorization");
+const verifyScheduleManager = require("../middleware/verifyScheduleManager");
 const autoScheduleRouter = require("./autoSchedule");
 
 // Montar sub-rota de geração automática
@@ -103,7 +104,7 @@ router.get("/", authorization, async (req, res) => {
 });
 
 // POST /api/schedules
-router.post("/", authorization, async (req, res) => {
+router.post("/", authorization, verifyScheduleManager, async (req, res) => {
   try {
     const { turma_id, modulo_id, formador_id, sala_id, data_aula, hora_inicio, hora_fim } = req.body;
 
@@ -167,7 +168,7 @@ router.post("/", authorization, async (req, res) => {
 });
 
 // PUT /api/schedules/:id
-router.put("/:id", authorization, async (req, res) => {
+router.put("/:id", authorization, verifyScheduleManager, async (req, res) => {
   try {
     const { id } = req.params;
     const { turma_id, modulo_id, formador_id, sala_id, data_aula, hora_inicio, hora_fim } = req.body;
@@ -227,7 +228,7 @@ router.put("/:id", authorization, async (req, res) => {
 });
 
 // DELETE /api/schedules/:id
-router.delete("/:id", authorization, async (req, res) => {
+router.delete("/:id", authorization, verifyScheduleManager, async (req, res) => {
   try {
     const { id } = req.params;
     const deleteSchedule = await pool.query("DELETE FROM horarios WHERE id = $1 RETURNING *", [id]);

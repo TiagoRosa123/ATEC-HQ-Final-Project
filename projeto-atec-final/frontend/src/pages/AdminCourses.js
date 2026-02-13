@@ -4,6 +4,7 @@ import { Table, Button, Form, Card, Row, Col, Alert, Spinner, Modal } from 'reac
 import { FaEdit, FaTrash, FaPlus, FaSave, FaBook } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import api from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 function AdminCourses() {
     const [courses, setCourses] = useState([]);
@@ -18,6 +19,9 @@ function AdminCourses() {
     const [allModules, setAllModules] = useState([]); //guarda todos os módulos
     const [selectedModuleId, setSelectedModuleId] = useState(''); //guarda o ID do módulo selecionado
     const [selectedCourseId, setSelectedCourseId] = useState(null); // Para saber qual curso está aberto
+
+    const { user } = useAuth();
+    const canEdit = user && user.is_admin;
 
     //GET - Areas
     const loadAreas = async () => {
@@ -123,6 +127,7 @@ function AdminCourses() {
             <h2 className="mb-4">Gestão de Cursos</h2>
 
             {/* FORMULÁRIO */}
+            {canEdit && (
             <Card className="mb-4 border-0 shadow-sm">
                 <Card.Body>
                     <Form onSubmit={handleSubmit} className="d-flex gap-2 align-items-end">
@@ -182,6 +187,7 @@ function AdminCourses() {
                     </Form>
                 </Card.Body>
             </Card>
+            )}
 
             {/* TABELA */}
             <Card className="border-0 shadow-sm">
@@ -191,7 +197,7 @@ function AdminCourses() {
                             <tr>
                                 <th>Sigla</th>
                                 <th>Nome</th>
-                                <th>Ações</th>
+                                {canEdit ? <th>Ações</th> : <th>Módulos</th>}
                             </tr>
                         </thead>
                         <tbody>
@@ -201,19 +207,21 @@ function AdminCourses() {
                                     <td>{course.nome}</td>
                                     <td>
                                         {/* Btn Editar */}
+                                        {canEdit && (
                                         <Button variant="link" onClick={() => {
                                             setEditId(course.id);
                                             setFormData({
                                                 nome: course.nome,
                                                 sigla: course.sigla,
                                                 descricao: course.descricao,
-                                                area_id: course.area_id, // Ensure area_id is also set
+                                                area_id: course.area_id,
                                                 imagem: course.imagem || '',
                                                 duracao_horas: course.duracao_horas || ''
                                             });
                                         }}>
                                             <FaEdit />
                                         </Button>
+                                        )}
 
                                         {/* Btn Modulos */}
                                         <Button variant="link" className="text-info" onClick={() => handleOpenModules(course.id)}>
@@ -221,9 +229,11 @@ function AdminCourses() {
                                         </Button>
 
                                         {/* Btn Apagar */}
+                                        {canEdit && (
                                         <Button variant="link" className="text-danger" onClick={() => handleDelete(course.id)}>
                                             <FaTrash />
                                         </Button>
+                                        )}
                                     </td>
                                 </tr>
                             ))}
@@ -238,6 +248,7 @@ function AdminCourses() {
                     <Modal.Title>Módulos do Curso</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
+                    {canEdit && (
                     <div className="d-flex gap-2 mb-4">
                         <Form.Select
                             value={selectedModuleId}
@@ -254,6 +265,7 @@ function AdminCourses() {
                             <FaPlus />
                         </Button>
                     </div>
+                    )}
                     {/* Lista de módulos do curso */}
                     {courseModules.length === 0 ? (
                         <p className="text-muted text-center py-3">Este curso ainda não tem módulos.</p>
@@ -264,7 +276,7 @@ function AdminCourses() {
                                     <th>Código</th>
                                     <th>Nome</th>
                                     <th>Horas</th>
-                                    <th style={{ width: '50px' }}></th>
+                                    {canEdit && <th style={{ width: '50px' }}></th>}
                                 </tr>
                             </thead>
                             <tbody>
@@ -273,11 +285,13 @@ function AdminCourses() {
                                         <td>{mod.codigo}</td>
                                         <td>{mod.nome}</td>
                                         <td>{mod.horas_totais} h</td>
+                                        {canEdit && (
                                         <td>
                                             <Button variant="link" className="text-danger p-0" onClick={() => handleRemoveModule(mod.id)}>
                                                 <FaTrash />
                                             </Button>
                                         </td>
+                                        )}
                                     </tr>
                                 ))}
                             </tbody>

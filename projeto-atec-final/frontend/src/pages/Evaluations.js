@@ -3,6 +3,7 @@ import Navbar from '../components/Navbar';
 import { Table, Button, Form, Card, Alert } from 'react-bootstrap';
 import toast from 'react-hot-toast';
 import api from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 function Evaluations() {
     const [classes, setClasses] = useState([]);
@@ -15,6 +16,9 @@ function Evaluations() {
         tipo_avaliacao: '',
         observacao: ''
     });
+
+    const { user } = useAuth();
+    const canEdit = user && (user.is_admin || user.role === 'formador');
 
     //Obj. guarda notas temporariamente
     const [grades, setGrades] = useState({});
@@ -150,6 +154,7 @@ function Evaluations() {
                     </Form.Select>
                 </div>
 
+                {canEdit && (
                 <div className="d-flex gap-3 mt-3">
                     <Form.Select value={formData.tipo_avaliacao} onChange={e => setFormData({ ...formData, tipo_avaliacao: e.target.value })}>
                         <option value="Teste">Teste</option>
@@ -161,6 +166,7 @@ function Evaluations() {
                     </Form.Select>
                     <Form.Control type="date" value={formData.data_avaliacao} onChange={e => setFormData({ ...formData, data_avaliacao: e.target.value })} />
                 </div>
+                )}
             </Card>
             {selectedClassId && (
                 <Table striped bordered>
@@ -172,6 +178,7 @@ function Evaluations() {
                             <tr key={student.formando_id}>
                                 <td>{student.nome}</td>
                                 <td>
+                                    {canEdit ? (
                                     <Form.Control
                                         type="number"
                                         style={{ width: '100px' }}
@@ -179,13 +186,18 @@ function Evaluations() {
                                         value={grades[student.formando_id] || ''}
                                         onChange={e => setGrades({ ...grades, [student.formando_id]: e.target.value })}
                                     />
+                                    ) : (
+                                        <span>{grades[student.formando_id] !== undefined ? grades[student.formando_id] : '—'}</span>
+                                    )}
                                 </td>
                             </tr>
                         ))}
                     </tbody>
                 </Table>
             )}
+            {canEdit && (
             <Button size="lg" className="btn-primary-custom" onClick={handleSubmit}>Lançar Notas</Button>
+            )}
         </Navbar>
     );
 }
