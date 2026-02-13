@@ -19,7 +19,6 @@ import pt.atec.atec_hq_mobile.ui.theme.*
 
 @Composable
 fun DashboardScreen(navController: NavController, userName: String, modifier: Modifier = Modifier) {
-    
     // Dados para os cartões (Titulo, Icone, Rota)
     val menuItems = listOf(
         MenuItem("Cursos", Icons.Default.List, "courses"),
@@ -62,7 +61,7 @@ fun DashboardScreen(navController: NavController, userName: String, modifier: Mo
                 DashboardCard(item) { navController.navigate(item.route) }
             }
         }
-        
+
         // Botão Sair
         Button(
             onClick = { navController.navigate("login") },
@@ -95,8 +94,8 @@ fun DashboardCard(item: MenuItem, onClick: () -> Unit) {
             verticalArrangement = Arrangement.Center
         ) {
             Icon(
-                imageVector = item.icon, 
-                contentDescription = null, 
+                imageVector = item.icon,
+                contentDescription = null,
                 tint = AtecBlue, // Ícone Azul ATEC
                 modifier = Modifier.size(40.dp)
             )

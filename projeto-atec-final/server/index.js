@@ -33,7 +33,7 @@ app.get('/teste-db', async (req, res) => {
     // Tenta ir buscar a data atual e as salas
     const resultado = await pool.query('SELECT NOW()');
     res.json({
-      status: 'Sucesso!',
+      status: 'Sucesso',
       mensagem: 'Ligação à Base de Dados efetuada.',
       hora_servidor: resultado.rows[0].now
     });
