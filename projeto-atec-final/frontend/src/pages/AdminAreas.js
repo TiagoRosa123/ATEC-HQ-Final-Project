@@ -76,7 +76,7 @@ function AdminAreas() {
                             value={formData.descricao}
                             onChange={e => setFormData({ ...formData, descricao: e.target.value })}
                         />
-                        <Button type="submit" variant="primary">
+                        <Button type="submit" className="btn-primary-custom px-4">
                             {editId ? <FaSave /> : <FaPlus />}
                         </Button>
                     </Form>

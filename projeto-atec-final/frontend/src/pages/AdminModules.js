@@ -95,7 +95,7 @@ function AdminModules() {
                             value={formData.codigo}
                             onChange={e => setFormData({ ...formData, codigo: e.target.value })}
                         />
-                        <Button type="submit" variant="primary">
+                        <Button type="submit" className="btn-primary-custom px-4">
                             {editandoId ? <FaSave /> : <FaPlus />}
                         </Button>
                     </Form>

@@ -68,7 +68,7 @@ const LandingPage = () => {
             {/* Hero Section */}
             <div className="py-5 mb-5 text-center text-white" style={{ backgroundColor: 'var(--primary-blue)' }}>
                 <Container>
-                    <h1 className="display-4 fw-bold mb-3">Bem-vindo à ATEC.HQ</h1>
+                    <h1 className="display-4 fw-bold mb-3">Bem-vindo à <b>ATEC HeadQuarter</b></h1>
                     <p className="lead mb-4">Descobre o teu futuro com os nossos cursos.</p>
                 </Container>
             </div>
@@ -85,7 +85,7 @@ const LandingPage = () => {
                             type="switch"
                             id="upcoming-switch"
                             label="A iniciar em breve"
-                            className="me-3 fw-bold text-primary"
+                            className="me-3 fw-bold text-secondary upcoming-label"
                             checked={showUpcoming}
                             onChange={(e) => setShowUpcoming(e.target.checked)}
                         />
@@ -129,10 +129,6 @@ const LandingPage = () => {
                                                 : <FaGraduationCap size={40} opacity={0.3} />
                                             }
                                         </div>
-                                        <Badge bg="primary" className="position-absolute top-0 end-0 m-3 shadow-sm">
-                                            {course.area_nome || "Geral"}
-                                        </Badge>
-
                                         {/* Badge de Próxima Data */}
                                         {course.proxima_data_inicio && (
                                             <Badge bg="success" className="position-absolute bottom-0 start-0 m-3 shadow-sm">
@@ -141,7 +137,7 @@ const LandingPage = () => {
                                         )}
                                     </div>
                                     <Card.Body className="d-flex flex-column">
-                                        <Card.Title className="fw-bold text-truncate" title={course.nome}>{course.nome}</Card.Title>
+                                        <Card.Title className="fw-bold text-truncate course-title" title={course.nome}>{course.nome}</Card.Title>
                                         <Card.Text className="text-muted small flex-grow-1">
                                             {course.descricao ?
                                                 (course.descricao.length > 100 ? course.descricao.substring(0, 100) + "..." : course.descricao)

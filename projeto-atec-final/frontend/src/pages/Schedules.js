@@ -132,8 +132,8 @@ const Schedules = () => {
                 <div className="d-flex justify-content-between align-items-center mb-4">
                     <h2 className="mb-0">Consultas de Horários</h2>
                     <div className="d-flex gap-2">
-                        <button className="btn btn-primary" onClick={() => setShowAutoModal(true)}>
-                            ⚡ Gerar Horário
+                        <button className="btn btn-primary-custom" onClick={() => setShowAutoModal(true)}>
+                            Horário Automático
                         </button>
                         <button className="btn btn-success" onClick={() => {
                             setSelectedSlot(null);

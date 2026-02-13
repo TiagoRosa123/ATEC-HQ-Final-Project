@@ -130,12 +130,14 @@ code {
 
 /* Buttons */
 .btn-primary-custom {
-  background-color: var(--primary-blue);
-  border: none;
-  color: white;
+  background-color: #0069B4 !important;
+  border-color: #0069B4 !important;
+  color: white !important;
   padding: 10px 20px;
   border-radius: 6px;
   font-weight: 600;
+  box-shadow: none !important;
+  background-image: none !important;
 }
 
 .btn-primary-custom:hover {
@@ -208,4 +210,32 @@ code {
   background-color: var(--primary-blue);
   color: white;
   border-color: var(--primary-blue);
+}
+
+/* Nav Pills Override for Brand Blue */
+.nav-pills .nav-link.active,
+.nav-pills .show>.nav-link {
+  background-color: #0069B4 !important;
+  color: white !important;
+}
+
+/* Dark Mode Text Overrides requested by User */
+[data-bs-theme="dark"] .brand-atec {
+  color: #ffffff !important;
+}
+
+.dashboard-welcome-text {
+  color: var(--primary-blue);
+}
+
+[data-bs-theme="dark"] .dashboard-welcome-text {
+  color: #ffffff !important;
+}
+
+[data-bs-theme="dark"] .upcoming-label {
+  color: #ffffff !important;
+}
+
+.course-title {
+  color: #0069B4 !important;
 }

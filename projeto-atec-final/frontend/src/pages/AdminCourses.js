@@ -13,7 +13,7 @@ function AdminCourses() {
 
     const [areas, setAreas] = useState([]); //guarda as areas
 
-    const [showModulesModal, setShowModulesModal] = useState(false); 
+    const [showModulesModal, setShowModulesModal] = useState(false);
     const [courseModules, setCoursesModules] = useState([]); //guarda os módulos do curso
     const [allModules, setAllModules] = useState([]); //guarda todos os módulos
     const [selectedModuleId, setSelectedModuleId] = useState(''); //guarda o ID do módulo selecionado
@@ -162,7 +162,7 @@ function AdminCourses() {
                                 </Form.Select>
                             </div>
                             {/* Linha 2 */}
-                             <div className="d-flex gap-2">
+                            <div className="d-flex gap-2">
                                 <Form.Control
                                     placeholder="URL da Imagem (https://...)"
                                     value={formData.imagem}
@@ -173,10 +173,10 @@ function AdminCourses() {
                                     value={formData.descricao}
                                     onChange={e => setFormData({ ...formData, descricao: e.target.value })}
                                 />
-                             </div>
+                            </div>
                         </div>
 
-                        <Button type="submit" variant="primary" className="px-4" style={{ height: 'fit-content', alignSelf: 'center' }}>
+                        <Button type="submit" className="btn-primary-custom px-4" style={{ height: 'fit-content', alignSelf: 'center' }}>
                             {editId ? <FaSave /> : <FaPlus />}
                         </Button>
                     </Form>
@@ -203,13 +203,13 @@ function AdminCourses() {
                                         {/* Btn Editar */}
                                         <Button variant="link" onClick={() => {
                                             setEditId(course.id);
-                                            setFormData({ 
-                                                nome: course.nome, 
-                                                sigla: course.sigla, 
-                                                descricao: course.descricao, 
+                                            setFormData({
+                                                nome: course.nome,
+                                                sigla: course.sigla,
+                                                descricao: course.descricao,
                                                 area_id: course.area_id, // Ensure area_id is also set
-                                                imagem: course.imagem || '', 
-                                                duracao_horas: course.duracao_horas || '' 
+                                                imagem: course.imagem || '',
+                                                duracao_horas: course.duracao_horas || ''
                                             });
                                         }}>
                                             <FaEdit />
@@ -238,9 +238,9 @@ function AdminCourses() {
                     <Modal.Title>Módulos do Curso</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                     <div className="d-flex gap-2 mb-4">
-                        <Form.Select 
-                            value={selectedModuleId} 
+                    <div className="d-flex gap-2 mb-4">
+                        <Form.Select
+                            value={selectedModuleId}
                             onChange={e => setSelectedModuleId(e.target.value)}
                         >
                             <option value="">Escolher módulo para adicionar...</option>
@@ -264,7 +264,7 @@ function AdminCourses() {
                                     <th>Código</th>
                                     <th>Nome</th>
                                     <th>Horas</th>
-                                    <th style={{width: '50px'}}></th>
+                                    <th style={{ width: '50px' }}></th>
                                 </tr>
                             </thead>
                             <tbody>

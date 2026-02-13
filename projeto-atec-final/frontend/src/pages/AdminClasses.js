@@ -157,7 +157,7 @@ function AdminClasses() {
                             </Form.Select>
                         </div>
                         <div className="col-md-1">
-                            <Button type="submit" variant="primary" className="w-100">
+                            <Button type="submit" className="btn-primary-custom w-100">
                                 {editId ? <FaSave /> : <FaPlus />}
                             </Button>
                         </div>

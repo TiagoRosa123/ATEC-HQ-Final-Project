@@ -95,8 +95,8 @@ function Login() {
 
         <Card className="card-modern border-0 shadow-lg">
           <Card.Body className="p-4">
-            <h5 className="fw-bold text-dark-blue mb-4 text-center">
-              {pedir2fa ? 'Verificação de Segurança' : 'Iniciar Sessão'}
+            <h5 className="fw-bold text-primary-blue mb-4 text-center">
+              {pedir2fa ? 'Verificação de Segurança' : <span style={{ color: 'var(--primary-blue)' }}>Iniciar Sessão</span>}
             </h5>
 
             {!pedir2fa ? (
@@ -136,7 +136,7 @@ function Login() {
                   </div>
                 </Form.Group>
 
-                <Button type="submit" className="btn-secondary w-100 py-2 mb-3" disabled={loading}>
+                <Button type="submit" className="btn-primary-custom w-100 py-2 mb-3" disabled={loading}>
                   {loading ? <Spinner animation="border" size="sm" /> : "Entrar"}
                 </Button>
               </Form>
@@ -205,7 +205,7 @@ function Login() {
         </Card>
 
         <div className="text-center mt-4">
-          <span className="text-muted small opacity-50">© 2026 ATEC.HQ Academia de Formação</span>
+          <span className="text-muted small opacity-50">© 2026 ATECHQ Academia de Formação</span>
         </div>
       </div>
     </div>

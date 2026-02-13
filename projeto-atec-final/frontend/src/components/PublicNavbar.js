@@ -2,6 +2,7 @@ import React from 'react';
 import { Navbar, Container, Nav, Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { FaSignInAlt } from 'react-icons/fa';
+import ThemeToggle from './ThemeToggle';
 
 
 const PublicNavbar = () => {
@@ -10,7 +11,7 @@ const PublicNavbar = () => {
             <Container>
                 <Navbar.Brand as={Link} to="/" className="d-flex align-items-center fw-bold">
                     <div className="fs-3 fw-bold tracking-wide">
-                        <span className="text-secondary">ATEC</span><span style={{ color: 'var(--primary-blue)' }}>HQ</span>
+                        <span className="text-secondary brand-atec">ATEC</span><span style={{ color: 'var(--primary-blue)' }}>HQ</span>
                     </div>
                 </Navbar.Brand>
 
@@ -18,6 +19,7 @@ const PublicNavbar = () => {
 
                 <Navbar.Collapse id="public-navbar-nav">
                     <Nav className="ms-auto align-items-center">
+                        <ThemeToggle />
                         <Button
                             as={Link}
                             to="/login"

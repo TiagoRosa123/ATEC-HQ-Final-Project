@@ -23,16 +23,14 @@ function Navbar({ children }) {
             <BsNavbar expand="lg" className="shadow-sm py-3 mb-4 bg-body-tertiary">
                 <Container>
                     <BsNavbar.Brand as={Link} to="/dashboard" className="d-flex align-items-center fw-bold">
-                        <span className="text-secondary">ATEC</span><span style={{ color: 'var(--primary-blue)' }}>HQ</span>
+                        <span className="text-secondary brand-atec">ATEC</span><span style={{ color: 'var(--primary-blue)' }}>HQ</span>
                     </BsNavbar.Brand>
 
                     <BsNavbar.Toggle aria-controls="private-navbar-nav" />
 
                     <BsNavbar.Collapse id="private-navbar-nav">
                         <Nav className="me-auto">
-                            <Nav.Link as={Link} to="/dashboard" className={isActive('/dashboard')}>
-                                Dashboard
-                            </Nav.Link>
+                            <Nav.Link as={Link} to="/dashboard" className={isActive('/dashboard')}></Nav.Link>
 
                             {/* Menu Administrativo */}
                             {user && user.is_admin && (
@@ -114,7 +112,7 @@ function Navbar({ children }) {
             </div>
 
             <footer className="py-4 text-center text-muted small bg-body-tertiary mt-auto">
-                © 2026 ATEC.HQ Academia de Formação
+                © 2026 ATECHQ Academia de Formação
             </footer>
         </div>
     );

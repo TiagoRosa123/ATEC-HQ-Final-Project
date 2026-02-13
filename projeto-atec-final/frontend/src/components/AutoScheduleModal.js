@@ -65,7 +65,7 @@ const AutoScheduleModal = ({ show, handleClose, onSuccess }) => {
     return (
         <Modal show={show} onHide={handleClose} size="lg" centered>
             <Modal.Header closeButton className="bg-primary text-white">
-                <Modal.Title>⚡ Geração Automática de Horários</Modal.Title>
+                <Modal.Title>Geração Automática de Horários</Modal.Title>
             </Modal.Header>
             <Modal.Body>
                 <Form onSubmit={handleGenerate}>

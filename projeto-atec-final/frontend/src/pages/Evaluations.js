@@ -185,7 +185,7 @@ function Evaluations() {
                     </tbody>
                 </Table>
             )}
-            <Button size="lg" onClick={handleSubmit}>Lançar Notas</Button>
+            <Button size="lg" className="btn-primary-custom" onClick={handleSubmit}>Lançar Notas</Button>
         </Navbar>
     );
 }

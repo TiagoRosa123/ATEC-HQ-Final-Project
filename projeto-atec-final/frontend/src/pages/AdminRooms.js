@@ -119,7 +119,7 @@ function AdminRooms() {
                             value={formData.recursos}
                             onChange={e => setFormData({ ...formData, recursos: e.target.value })}
                         />
-                        <Button type="submit" variant="primary">
+                        <Button type="submit" className="btn-primary-custom px-4">
                             {editId ? <FaSave /> : <FaPlus />}
                         </Button>
                     </Form>
