@@ -27,6 +27,25 @@ router.get('/public', async (req, res) => {
     }
 });
 
+// GET active/running courses (with active classes)
+router.get('/running', authorization, async (req, res) => {
+    try {
+        // Seleciona cursos que tem pelo menos uma turma com estado 'ativa'
+        const query = `
+            SELECT DISTINCT c.* 
+            FROM cursos c
+            JOIN turmas t ON c.id = t.curso_id
+            WHERE t.estado = 'ativa'
+            ORDER BY c.nome ASC
+        `;
+        const courses = await pool.query(query);
+        res.json(courses.rows);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send("Erro no servidor");
+    }
+});
+
 //get protected
 router.get('/', authorization, async (req, res) => {
     try {
@@ -44,7 +63,7 @@ router.post('/create', authorization, async (req, res) => {
     try {
         const { nome, sigla, descricao, area_id, imagem, duracao_horas } = req.body;
         const newCourse = await pool.query(
-            "INSERT INTO cursos (nome, sigla, descricao, area_id, imagem, duracao_horas) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *", 
+            "INSERT INTO cursos (nome, sigla, descricao, area_id, imagem, duracao_horas) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
             [nome, sigla, descricao, area_id, imagem, duracao_horas]
         );
         res.json(newCourse.rows[0]);
@@ -61,7 +80,7 @@ router.put('/update/:id', authorization, async (req, res) => {
         const { id } = req.params;
         const { nome, sigla, descricao, area_id, imagem, duracao_horas } = req.body;
         const updateCourse = await pool.query(
-            "UPDATE cursos SET nome = $1, sigla = $2, descricao = $3, area_id = $4, imagem = $5, duracao_horas = $6 WHERE id = $7 RETURNING *", 
+            "UPDATE cursos SET nome = $1, sigla = $2, descricao = $3, area_id = $4, imagem = $5, duracao_horas = $6 WHERE id = $7 RETURNING *",
             [nome, sigla, descricao, area_id, imagem, duracao_horas, id]
         );
         res.json(updateCourse.rows[0]);
@@ -102,7 +121,7 @@ router.get('/:id/modules', authorization, async (req, res) => {
 
 //post
 router.post('/:id/modules', authorization, async (req, res) => {
-    try{
+    try {
         const { id } = req.params;
         const { modulo_id } = req.body;
         const newModule = await pool.query("INSERT INTO curso_modulos (curso_id, modulo_id) VALUES ($1, $2) RETURNING *", [id, modulo_id]);
@@ -116,7 +135,7 @@ router.post('/:id/modules', authorization, async (req, res) => {
 
 //delete
 router.delete('/:id/modules/:modulo_id', authorization, async (req, res) => {
-    try{
+    try {
         const { id } = req.params;
         const { modulo_id } = req.params;
         const deleteModule = await pool.query("DELETE FROM curso_modulos WHERE curso_id = $1 AND modulo_id = $2 RETURNING *", [id, modulo_id]);
@@ -125,7 +144,7 @@ router.delete('/:id/modules/:modulo_id', authorization, async (req, res) => {
     catch (err) {
         console.error(err.message);
         res.status(500).send("Erro no servidor")
-    }   
+    }
 });
 
 module.exports = router;

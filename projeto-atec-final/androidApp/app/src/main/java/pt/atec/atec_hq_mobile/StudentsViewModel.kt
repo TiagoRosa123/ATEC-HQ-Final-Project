@@ -10,8 +10,8 @@ import retrofit2.Callback
 import retrofit2.Response
 
 class StudentsViewModel (application: Application) : AndroidViewModel(application){
-    // guardar uma LISTA de Cursos
-    var studentsList by mutableStateOf(emptyList<Students>())
+    // guardar uma LISTA de Cursos (agrupados por turma)
+    var studentsList by mutableStateOf(emptyList<ClassWithStudents>())
     var isLoading by mutableStateOf(false)
 
     //buscar os dados
@@ -20,8 +20,8 @@ class StudentsViewModel (application: Application) : AndroidViewModel(applicatio
 
         val context = getApplication<Application>().applicationContext
 
-        RetrofitClient.getInstance(context).getStudents().enqueue(object : Callback<List<Students>> {
-            override fun onResponse(call: Call<List<Students>>, response: Response<List<Students>>) {
+        RetrofitClient.getInstance(context).getStudentsByClass().enqueue(object : Callback<List<ClassWithStudents>> {
+            override fun onResponse(call: Call<List<ClassWithStudents>>, response: Response<List<ClassWithStudents>>) {
 
                 isLoading = false
 
@@ -31,7 +31,7 @@ class StudentsViewModel (application: Application) : AndroidViewModel(applicatio
                     println ("Erro: ${response.code()}")
                 }
             }
-            override fun onFailure(call: Call<List<Students>>, t: Throwable) {
+            override fun onFailure(call: Call<List<ClassWithStudents>>, t: Throwable) {
                 isLoading = false
                 println("Erro Rede: ${t.message}")
             }

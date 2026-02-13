@@ -45,6 +45,8 @@ class MainActivity : ComponentActivity() {
             ATEC_HQ_MobileTheme {
                 val navController = rememberNavController()
                 val viewModel: LoginViewModel = viewModel()
+                // Scope da ViewModel partilhado para navegação de estudantes
+                val studentsViewModel: StudentsViewModel = viewModel()
 
                 // Define ecrãs da app
                 NavHost(navController = navController, startDestination = "login") {
@@ -78,8 +80,12 @@ class MainActivity : ComponentActivity() {
                     }
                     
                     composable("students") {
-                        val studentsViewModel: StudentsViewModel = viewModel()
-                        StudentsScreen(navController = navController, viewModel = studentsViewModel)
+                        StudentsClassesScreen(navController = navController, viewModel = studentsViewModel)
+                    }
+                    
+                    composable("class_details/{className}") { backStackEntry ->
+                        val className = backStackEntry.arguments?.getString("className")
+                        ClassDetailsScreen(navController = navController, viewModel = studentsViewModel, className = className)
                     }
                     
                     composable("teachers") {
@@ -211,7 +217,7 @@ fun LoginScreen(
 
             // FOOTER
             Text(
-                text = "© 2026 ATEC.HQ Academia de Formação",
+                text = "© 2026 ATECHQ Academia de Formação",
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.Gray.copy(alpha = 0.6f)
             )

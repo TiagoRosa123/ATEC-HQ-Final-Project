@@ -17,10 +17,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.compose.ui.platform.LocalContext
+import android.widget.Toast
+import androidx.compose.ui.unit.sp
 import pt.atec.atec_hq_mobile.ui.theme.*
 
 @Composable
 fun RoomsScreen(navController: NavController, viewModel: RoomsViewModel = viewModel()) {
+    val context = LocalContext.current
     LaunchedEffect(Unit) { viewModel.fetchRooms() }
     
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
@@ -50,16 +54,6 @@ fun RoomsScreen(navController: NavController, viewModel: RoomsViewModel = viewMo
         }
 
         Spacer(modifier = Modifier.height(16.dp))
-
-        // Botão Voltar
-        Button(
-            onClick = { navController.popBackStack() },
-            modifier = Modifier.fillMaxWidth().height(50.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = AtecBlue),
-            shape = RoundedCornerShape(8.dp)
-        ) {
-            Text("Voltar", fontSize = MaterialTheme.typography.bodyLarge.fontSize, fontWeight = FontWeight.Bold)
-        }
     }
 }
 

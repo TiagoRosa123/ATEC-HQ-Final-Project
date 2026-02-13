@@ -20,7 +20,7 @@ class CoursesViewModel(application: Application) : AndroidViewModel(application)
 
         val context = getApplication<Application>().applicationContext
 
-        RetrofitClient.getInstance(context).getCourses().enqueue(object : Callback<List<Courses>> {
+        RetrofitClient.getInstance(context).getRunningCourses().enqueue(object : Callback<List<Courses>> {
             override fun onResponse(call: Call<List<Courses>>, response: Response<List<Courses>>) {
 
                 isLoading = false

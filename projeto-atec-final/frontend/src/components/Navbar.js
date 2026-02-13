@@ -79,8 +79,12 @@ function Navbar({ children }) {
                             <NavDropdown
                                 title={
                                     <div className="d-inline-flex align-items-center">
-                                        <div className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style={{ width: '32px', height: '32px' }}>
-                                            {user?.nome?.charAt(0).toUpperCase() || <FaUser />}
+                                        <div className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2 overflow-hidden" style={{ width: '32px', height: '32px' }}>
+                                            {user?.foto ? (
+                                                <img src={user.foto} alt="User" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                            ) : (
+                                                user?.nome?.charAt(0).toUpperCase() || <FaUser />
+                                            )}
                                         </div>
                                         <span>{user?.nome?.split(' ')[0]}</span>
                                     </div>

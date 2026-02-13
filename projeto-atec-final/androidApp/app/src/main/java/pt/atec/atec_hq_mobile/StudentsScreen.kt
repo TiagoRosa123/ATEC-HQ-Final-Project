@@ -8,9 +8,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.foundation.clickable
+import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.activity.compose.BackHandler
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -20,20 +22,19 @@ import androidx.navigation.NavController
 import pt.atec.atec_hq_mobile.ui.theme.*
 
 @Composable
-fun StudentsScreen(navController: NavController, viewModel: StudentsViewModel = viewModel()) {
+fun StudentsClassesScreen(navController: NavController, viewModel: StudentsViewModel) {
     LaunchedEffect(Unit) { viewModel.fetchStudents() }
-    
+
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Spacer(modifier = Modifier.height(35.dp))
-        // Título
+        
         Text(
-            text = "Formandos",
+            text = "Turmas Ativas",
             style = MaterialTheme.typography.headlineMedium,
             color = AtecText,
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
-        // Conteúdo
         if (viewModel.isLoading) {
             Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = AtecOrange)
@@ -41,24 +42,85 @@ fun StudentsScreen(navController: NavController, viewModel: StudentsViewModel = 
         } else {
             LazyColumn(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                items(viewModel.studentsList) { student ->
-                    StudentCard(student)
+                items(viewModel.studentsList) { classGroup ->
+                    ClassCard(classGroup) {
+                        // Navigate using standard NavController
+                        navController.navigate("class_details/${classGroup.turma}")
+                    }
                 }
             }
         }
-
         Spacer(modifier = Modifier.height(16.dp))
+    }
+}
 
-        // Botão Voltar
-        Button(
-            onClick = { navController.popBackStack() },
-            modifier = Modifier.fillMaxWidth().height(50.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = AtecBlue),
-            shape = RoundedCornerShape(8.dp)
+@Composable
+fun ClassDetailsScreen(navController: NavController, viewModel: StudentsViewModel, className: String?) {
+    // Filter locally from the shared ViewModel list
+    val selectedClass = viewModel.studentsList.find { it.turma == className }
+
+    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+        Spacer(modifier = Modifier.height(35.dp))
+
+        Text(
+            text = "Turma: ${className ?: "N/A"}",
+            style = MaterialTheme.typography.headlineMedium,
+            color = AtecText,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+
+        if (selectedClass != null) {
+            LazyColumn(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(selectedClass.students) { student ->
+                    StudentCard(student)
+                }
+            }
+        } else {
+             Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                Text("Turma não encontrada.", color = Color.Gray)
+            }
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+    }
+}
+
+@Composable
+fun ClassCard(classGroup: ClassWithStudents, onClick: () -> Unit) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = AtecCard),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+    ) {
+        Row(
+             modifier = Modifier.padding(24.dp).fillMaxWidth(),
+             verticalAlignment = Alignment.CenterVertically,
+             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text("Voltar", fontSize = MaterialTheme.typography.bodyLarge.fontSize, fontWeight = FontWeight.Bold)
+            Column {
+                Text(
+                    text = classGroup.turma,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = AtecText
+                )
+                Text(
+                    text = "${classGroup.students.size} Formandos",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Gray
+                )
+            }
+            Icon(
+                imageVector = Icons.Default.ArrowForward,
+                contentDescription = "Ver Detalhes",
+                tint = AtecOrange
+            )
         }
     }
 }
@@ -66,8 +128,8 @@ fun StudentsScreen(navController: NavController, viewModel: StudentsViewModel = 
 @Composable
 fun StudentCard(student: Students) {
     Card(
-        colors = CardDefaults.cardColors(containerColor = AtecCard),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(containerColor = AtecCard), // Tom mais claro se quiser diferenciar
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
         modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
     ) {
         Row(

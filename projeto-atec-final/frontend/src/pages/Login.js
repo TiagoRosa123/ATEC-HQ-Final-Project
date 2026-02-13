@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 import axios from 'axios'; // Import standard axios for external call
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
+import ThemeToggle from '../components/ThemeToggle';
 
 function Login() {
   const [email, setEmail] = useState('');
@@ -83,12 +84,15 @@ function Login() {
   });
 
   return (
-    <div className="d-flex align-items-center justify-content-center min-vh-100">
+    <div className="d-flex align-items-center justify-content-center min-vh-100 position-relative">
+      <div className="position-absolute top-0 end-0 m-3">
+        <ThemeToggle />
+      </div>
       <div style={{ width: '100%', maxWidth: '400px' }}>
 
         <div className="text-center mb-4">
           <div className="fs-3 fw-bold text-dark-blue tracking-wide">
-            <span className="text-secondary">ATEC</span><span style={{ color: 'var(--primary-blue)' }}>HQ</span>
+            <span className="text-secondary brand-atec">ATEC</span><span style={{ color: 'var(--primary-blue)' }}>HQ</span>
           </div>
           <p className="text-secondary small mt-2">Plataforma de Gestão de Formação</p>
         </div>

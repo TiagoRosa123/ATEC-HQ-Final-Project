@@ -30,6 +30,12 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                 if (response.isSuccessful) {
                     val loginResponse = response.body()
                     if (loginResponse != null) {
+                        // VERIFICAÇÃO DE ROLE
+                        if (loginResponse.user.role != "formador") {
+                            mensagemStatus = "Acesso restrito a formadores."
+                            return
+                        }
+
                         //guardar o Token no SharedPreferences
                         TokenManager.saveToken(context, loginResponse.token)
 

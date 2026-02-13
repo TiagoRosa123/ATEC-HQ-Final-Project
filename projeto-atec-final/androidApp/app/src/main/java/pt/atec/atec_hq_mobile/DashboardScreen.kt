@@ -14,6 +14,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavController
 import pt.atec.atec_hq_mobile.ui.theme.*
 
@@ -42,7 +46,13 @@ fun DashboardScreen(navController: NavController, userName: String, modifier: Mo
         )
         Spacer(modifier = Modifier.height(5.dp))
         Text(
-            text = "Bem-vindo à ATEC HQ",
+            text = buildAnnotatedString {
+                append("Bem-vindo à ")
+                withStyle(style = SpanStyle(color = Color(0xFF6c757d))) {
+                    append("ATEC")
+                }
+                append("HQ")
+            },
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.primary
         )
