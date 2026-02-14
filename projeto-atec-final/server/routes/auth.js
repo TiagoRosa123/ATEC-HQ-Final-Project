@@ -36,18 +36,30 @@ router.post("/register", async (req, res) => {
     );
 
     // Envia Email
-    const url = `http://localhost:3000/activate/${activationToken}`;
+    // Como estamos em Docker, o frontend está na porta 80 (localhost), não 3000
+    const url = `http://localhost/activate/${activationToken}`;
 
-    await sendEmail({
-      email: cleanEmail,
-      subject: 'Bem-vindo à ATEC.HQ! Ativa a tua conta',
-      message: `Olá ${nome}, clica aqui: ${url}`,
-      html: `
-            <h1>Bem-vindo, ${nome}!</h1>
-            <p>Por favor ativa a tua conta para entrar:</p>
-            <a href="${url}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Ativar Conta</a>
-        `
-    });
+    // Envia Email (com fallback para consola se falhar)
+    try {
+      await sendEmail({
+        email: cleanEmail,
+        subject: 'Bem-vindo à ATEC.HQ! Ativa a tua conta',
+        message: `Olá ${nome}, clica aqui: ${url}`,
+        html: `
+                <h1>Bem-vindo, ${nome}!</h1>
+                <p>Por favor ativa a tua conta para entrar:</p>
+                <a href="${url}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Ativar Conta</a>
+            `
+      });
+      console.log("Email enviado para: " + cleanEmail);
+    } catch (emailError) {
+      console.error("ERRO AO ENVIAR EMAIL:", emailError.message);
+      console.log("**************************************************");
+      console.log("ATIVAR CONTA MANUALMENTE (LINK):");
+      console.log(url);
+      console.log("**************************************************");
+      // Não fazemos return erro, deixamos o registo concluir com sucesso
+    }
 
     res.json({ message: "Registo efetuado! Verifica o email." });
 
@@ -165,7 +177,8 @@ router.post('/esqueci-Pw', async (req, res) => {
       { expiresIn: "1h" }
     );
 
-    const url = `http://localhost:3000/reset-password/${resetToken}`;
+    // Frontend em Docker = Porta 80
+    const url = `http://localhost/reset-password/${resetToken}`;
 
     await sendEmail({
       email: cleanEmail,
