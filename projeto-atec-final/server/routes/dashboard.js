@@ -144,6 +144,8 @@ router.get('/students', authorization, async (req, res) => {
 router.get('/students-by-class', authorization, async (req, res) => {
     try {
         // Buscar formandos c/ inscrição ativa + código da turma
+        // Buscar formandos c/ inscrição ativa + código da turma
+        // LEFT JOIN para incluir turmas sem alunos
         const query = `
             SELECT 
                 t.codigo as turma_codigo,
@@ -151,33 +153,34 @@ router.get('/students-by-class', authorization, async (req, res) => {
                 f.id as formando_id,
                 f.nome as formando_nome,
                 u.email as formando_email
-            FROM inscricoes i
-            JOIN turmas t ON i.turma_id = t.id
-            JOIN formandos f ON i.formando_id = f.id
-            JOIN utilizadores u ON f.utilizador_id = u.id
-            WHERE i.estado = 'ativa' AND t.estado = 'ativa'
+            FROM turmas t
+            LEFT JOIN inscricoes i ON t.id = i.turma_id AND i.estado = 'ativa'
+            LEFT JOIN formandos f ON i.formando_id = f.id
+            LEFT JOIN utilizadores u ON f.utilizador_id = u.id
+            WHERE t.estado = 'ativa'
             ORDER BY t.codigo ASC, f.nome ASC
         `;
 
         const result = await pool.query(query);
 
-        // Agrupar por Turma no Backend (ou enviar flat e agrupar no Android)
-        // Vamos enviar agrupado para facilitar
+        // Agrupar por Turma no Backend
         const grouped = {};
 
         result.rows.forEach(row => {
             if (!grouped[row.turma_codigo]) {
                 grouped[row.turma_codigo] = [];
             }
-            grouped[row.turma_codigo].push({
-                id: row.formando_id,
-                nome: row.formando_nome,
-                email: row.formando_email
-            });
+            // Só adiciona se tiver aluno (formando_id não nulo)
+            if (row.formando_id) {
+                grouped[row.turma_codigo].push({
+                    id: row.formando_id,
+                    nome: row.formando_nome,
+                    email: row.formando_email
+                });
+            }
         });
 
         // Converter para array para o Android
-        // Formato: [ { turma: "TPSI 1024", students: [...] }, ... ]
         const response = Object.keys(grouped).map(key => ({
             turma: key,
             students: grouped[key]
