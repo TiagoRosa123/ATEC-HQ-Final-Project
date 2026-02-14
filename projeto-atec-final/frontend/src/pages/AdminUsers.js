@@ -10,7 +10,8 @@ function AdminUsers() {
     const [users, setUsers] = useState([]);
     const [erro, setErro] = useState("");
     const [loading, setLoading] = useState(false);
-    const [formData, setFormData] = useState({ nome: '', email: '', password: '', role: 'user', is_admin: false });
+    const [formData, setFormData] = useState({ nome: '', email: '', password: '', role: 'user', is_admin: false, foto: '' });
+    const [avatarFile, setAvatarFile] = useState(null); // Estado para o ficheiro de avatar
     const [searchTerm, setSearchTerm] = useState("");
     const [editandoId, setEditandoId] = useState(null);
 
@@ -63,31 +64,46 @@ function AdminUsers() {
     };
 
     //POST - Criar/Editar Utilizador
+    //POST - Criar/Editar Utilizador
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
+            let targetId = editandoId;
+
             if (editandoId) {
                 // EDITAR
                 await api.put(`/admin/editar/${editandoId}`, {
                     nome: formData.nome,
                     email: formData.email,
                     is_admin: formData.is_admin,
-                    role: formData.role // ADICIONADO: Envia o role
+                    role: formData.role,
+                    foto: formData.foto
                 });
-                toast.success('Utilizador atualizado com sucesso!');
             } else {
                 // CRIAR
-                await api.post('/admin/criar', formData);
-                toast.success('Utilizador criado com sucesso!');
+                const res = await api.post('/admin/criar', formData);
+                targetId = res.data.id;
             }
 
+            // SE HOUVER FICHEIRO SELECIONADO, FAZ UPLOAD
+            if (avatarFile && targetId) {
+                const uploadData = new FormData();
+                uploadData.append('file', avatarFile);
+                await api.post(`/files/avatar/${targetId}`, uploadData);
+            }
+
+            toast.success(editandoId ? 'Utilizador atualizado!' : 'Utilizador criado!');
+
             // Limpar form e recarregar
-            setFormData({ nome: '', email: '', password: '', role: 'user', is_admin: false });
+            setFormData({ nome: '', email: '', password: '', role: 'user', is_admin: false, foto: '' });
+            setAvatarFile(null);
             setEditandoId(null);
+            if (document.getElementById('avatarInput')) document.getElementById('avatarInput').value = ""; // Limpa visualmente o input
             loadUsers();
 
         } catch (error) {
-            toast.error(error.response?.data || 'Erro ao guardar dados.');
+            console.error(error);
+            toast.error(error.response?.data?.message || error.response?.data || 'Erro ao guardar dados.');
         }
     };
 
@@ -99,15 +115,21 @@ function AdminUsers() {
             email: user.email,
             password: '', // Não preenchemos a password por segurança
             is_admin: user.is_admin,
-            role: user.role // ADICIONADO: Define o role atual
+            is_admin: user.is_admin,
+            role: user.role, // ADICIONADO: Define o role atual
+            foto: user.foto || ''
         });
         // Scroll para o topo para ver o formulário
+        setAvatarFile(null); // Reseta o ficheiro seleccionado
+        if (document.getElementById('avatarInput')) document.getElementById('avatarInput').value = "";
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const handleCancel = () => {
         setEditandoId(null);
-        setFormData({ nome: '', email: '', password: '', role: 'user', is_admin: false });
+        setFormData({ nome: '', email: '', password: '', role: 'user', is_admin: false, foto: '' });
+        setAvatarFile(null);
+        if (document.getElementById('avatarInput')) document.getElementById('avatarInput').value = "";
     };
 
     // Filtragem - Pesquisa
@@ -240,6 +262,24 @@ function AdminUsers() {
                                         />
                                     </Form.Group>
                                 )}
+
+                                <Form.Group className="mb-3">
+                                    <Form.Label className="small text-secondary fw-bold">Foto de Perfil ({editandoId ? 'Alterar' : 'Opcional'})</Form.Label>
+                                    <div className="d-flex gap-2 align-items-center">
+                                        {/* Preview se existir URL */}
+                                        {formData.foto && !avatarFile && (
+                                            <img src={formData.foto} alt="Preview" className="rounded-circle border" style={{ width: '40px', height: '40px', objectFit: 'cover' }} />
+                                        )}
+                                        <Form.Control
+                                            type="file"
+                                            id="avatarInput"
+                                            accept="image/*"
+                                            onChange={e => setAvatarFile(e.target.files[0])}
+                                            className="shadow-sm"
+                                        />
+                                    </div>
+                                    <Form.Text className="text-muted small">Carrega uma imagem do teu computador (.jpg, .png)</Form.Text>
+                                </Form.Group>
 
                                 <Form.Group className="mb-4">
                                     <Form.Label className="small text-secondary fw-bold">Cargo / Perfil</Form.Label>

@@ -118,6 +118,33 @@ router.post('/admin/upload/:userId', authorization, upload.single('file'), async
     }
 });
 
+// UPLOAD AVATAR (Admin ou o próprio user)
+router.post('/avatar/:userId', authorization, upload.single('file'), async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const file = req.file;
+
+        if (!file) return res.status(400).json({ message: "Nenhum ficheiro enviado." });
+
+        // Permitir que o Admin ou o próprio user faça upload
+        const adminCheck = await pool.query("SELECT is_admin FROM utilizadores WHERE id = $1", [req.user.id]);
+        if (req.user.id !== userId && !adminCheck.rows[0].is_admin) {
+            return res.status(403).json("Acesso negado.");
+        }
+
+        // URL do ficheiro
+        const fileUrl = `http://localhost:5000/uploads/${file.filename}`;
+
+        // Atualizar user na BD
+        await pool.query("UPDATE utilizadores SET foto = $1 WHERE id = $2", [fileUrl, userId]);
+
+        res.json({ url: fileUrl });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send("Erro no upload do avatar");
+    }
+});
+
 // LISTAR os meus ficheiros
 router.get('/my-files', authorization, async (req, res) => {
     try {

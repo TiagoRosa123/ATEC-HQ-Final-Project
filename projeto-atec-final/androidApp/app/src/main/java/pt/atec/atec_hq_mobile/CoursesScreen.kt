@@ -27,7 +27,7 @@ fun CoursesScreen(navController: NavController, viewModel: CoursesViewModel = vi
         Spacer(modifier = Modifier.height(35.dp))
         // Título
         Text(
-            text = "Cursos",
+            text = "Cursos Disponíveis",
             style = MaterialTheme.typography.headlineMedium,
             color = AtecText,
             modifier = Modifier.padding(bottom = 16.dp)
@@ -50,16 +50,6 @@ fun CoursesScreen(navController: NavController, viewModel: CoursesViewModel = vi
         }
 
         Spacer(modifier = Modifier.height(16.dp))
-
-        // Botão Voltar
-        Button(
-            onClick = { navController.popBackStack() },
-            modifier = Modifier.fillMaxWidth().height(50.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = AtecBlue),
-            shape = RoundedCornerShape(8.dp)
-        ) {
-            Text("Voltar", fontSize = MaterialTheme.typography.bodyLarge.fontSize, fontWeight = FontWeight.Bold)
-        }
     }
 }
 

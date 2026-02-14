@@ -27,6 +27,33 @@ router.get('/available', authorization, async (req, res) => {
     }
 });
 
+// RESERVAR SALA
+router.post('/reserve', authorization, async (req, res) => {
+    try {
+        const { sala_id, data_inicio, data_fim, motivo } = req.body;
+        // req.user.id vem do middleware authorization
+        const formador_id = req.user.id;
+
+        // Verificar sobreposição (Query complexa com TSRANGE ou verificação manual)
+        // Usamos a CONSTRAINT no DB (no schema novo), então o INSERT falha se houver overlap
+        // Mas podemos checkar antes para mensagem amigável
+
+        const newReservation = await pool.query(
+            "INSERT INTO reservas_salas (sala_id, formador_id, data_inicio, data_fim, motivo) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+            [sala_id, formador_id, data_inicio, data_fim, motivo]
+        );
+
+        res.json(newReservation.rows[0]);
+
+    } catch (err) {
+        console.error(err.message);
+        if (err.constraint === 'no_overlap') {
+            return res.status(409).json("Sala já ocupada nesse horário.");
+        }
+        res.status(500).send("Erro no servidor");
+    }
+});
+
 //post
 router.post('/create', authorization, verifyAdmin, async (req, res) => {
 

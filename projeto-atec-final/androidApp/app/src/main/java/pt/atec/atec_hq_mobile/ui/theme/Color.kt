@@ -3,8 +3,8 @@ package pt.atec.atec_hq_mobile.ui.theme
 import androidx.compose.ui.graphics.Color
 
 // Cores Oficiais ATEC
-val AtecBlue      = Color(0xFF0069B4) // Azul Principal
-val AtecDarkBlue  = Color(0xFF004275) // Azul Escuro
+val AtecBlue      = Color(0xFF005a9e) // Azul Principal
+val AtecDarkBlue  = Color(0xFF005a9e) // Azul Escuro
 val AtecOrange    = Color(0xFFF58025) // Laranja de destaque
 val AtecBg        = Color(0xFFF8F9FA) // Fundo cinza claro
 val AtecCard      = Color(0xFFFFFFFF) // Branco cartões

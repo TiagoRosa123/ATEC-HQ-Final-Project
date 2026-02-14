@@ -50,16 +50,6 @@ fun TeachersScreen(navController: NavController, viewModel: TeachersViewModel = 
         }
 
         Spacer(modifier = Modifier.height(16.dp))
-
-        // Botão Voltar (Igual ao Sair)
-        Button(
-            onClick = { navController.popBackStack() },
-            modifier = Modifier.fillMaxWidth().height(50.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = AtecBlue),
-            shape = RoundedCornerShape(8.dp)
-        ) {
-            Text("Voltar", fontSize = MaterialTheme.typography.bodyLarge.fontSize, fontWeight = FontWeight.Bold)
-        }
     }
 }
 

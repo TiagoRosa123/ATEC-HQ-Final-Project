@@ -11,24 +11,34 @@ import okhttp3.OkHttpClient
 
 data class LoginRequest(val email: String, val password: String)
 data class LoginResponse(val token: String, val user: UserData)
-data class UserData(val id: Int, val nome: String)
+data class UserData(val id: Int, val nome: String, val role: String)
 data class Courses(val id: Int, val nome: String, val area: String, val duracao_horas: Int)
 data class Students(val id: Int, val nome: String, val email: String)
 data class Teachers(val id: Int, val nome: String, val email: String)
 data class Rooms(val id: Int, val nome: String, val capacidade: Int, val recursos: String)
 
+data class ReservationRequest(val sala_id: Int, val data_inicio: String, val data_fim: String, val motivo: String)
+data class ClassWithStudents(val turma: String, val students: List<Students>)
+
 // endpoints
 interface ApiService {
     @POST("/auth/login")
     fun login(@Body request: LoginRequest): Call<LoginResponse>
-    @GET("/api/public/courses")
-    fun getCourses(): Call<List<Courses>>
-    @GET("/dashboard/students")
-    fun getStudents(): Call<List<Students>>
+    
+    // Antes /api/public/courses, agr /courses/running
+    @GET("/courses/running") 
+    fun getRunningCourses(): Call<List<Courses>>
+
+    @GET("/dashboard/students-by-class")
+    fun getStudentsByClass(): Call<List<ClassWithStudents>>
+
     @GET("/dashboard/teachers")
     fun getTeachers(): Call<List<Teachers>>
     @GET("/rooms/available")
     fun getRooms(): Call<List<Rooms>>
+    
+    @POST("/rooms/reserve")
+    fun reserveRoom(@Body request: ReservationRequest): Call<Rooms> // ou void/response simples
 }
 
 //Comun. API

@@ -7,7 +7,7 @@ const bcrypt = require("bcrypt");
 // ROTA 1: lista todos users - Read
 router.get('/todos', authorization, verifyAdmin, async (req, res) => {
   try {
-    const users = await pool.query("SELECT id, nome, email, ativado, is_admin, role FROM utilizadores");
+    const users = await pool.query("SELECT id, nome, email, ativado, is_admin, role, foto FROM utilizadores");
     res.json(users.rows);
   } catch (err) {
     console.error(err.message);
@@ -54,8 +54,8 @@ router.put('/editar/:id', authorization, verifyAdmin, async (req, res) => {
 
     // 1. Atualizar Utilizador Geral
     await pool.query(
-      "UPDATE utilizadores SET nome = $1, email = $2, role = $3, is_admin = $4 WHERE id = $5",
-      [nome, cleanEmail, role, is_admin, id]
+      "UPDATE utilizadores SET nome = $1, email = $2, role = $3, is_admin = $4, foto = $5 WHERE id = $6",
+      [nome, cleanEmail, role, is_admin, req.body.foto, id]
     );
 
     // 2. Verificar e criar registo na tabela específica, se não existir
@@ -108,8 +108,8 @@ router.post('/criar', authorization, verifyAdmin, async (req, res) => {
 
     // Insere na BD
     const newUser = await pool.query(
-      "INSERT INTO utilizadores (nome, email, password_hash, role, is_admin, ativado) VALUES ($1, $2, $3, $4, $5, true) RETURNING *",
-      [nome, cleanEmail, bcryptPassword, role, is_admin]
+      "INSERT INTO utilizadores (nome, email, password_hash, role, is_admin, ativado, foto) VALUES ($1, $2, $3, $4, $5, true, $6) RETURNING *",
+      [nome, cleanEmail, bcryptPassword, role, is_admin, req.body.foto]
     );
 
     const newUserId = newUser.rows[0].id;

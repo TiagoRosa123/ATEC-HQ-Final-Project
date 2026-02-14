@@ -9,6 +9,7 @@ app.use(cors({
   exposedHeaders: ['Content-Disposition']
 }));
 app.use(express.json());
+app.use('/uploads', express.static('uploads')); // Serve uploaded files
 
 // Rotas de autenticação
 app.use('/auth', require('./routes/auth'));
