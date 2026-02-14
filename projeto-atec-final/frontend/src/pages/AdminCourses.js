@@ -11,6 +11,7 @@ function AdminCourses() {
     const [courses, setCourses] = useState([]);
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({ nome: '', sigla: '', descricao: '', area_id: '', imagem: '', duracao_horas: '' }); //guarda o que o user esta a escrever
+    const [selectedFile, setSelectedFile] = useState(null); // Para o ficheiro de imagem
     const [editId, setEditId] = useState(null); //guarda o ID do curso que esta a ser editado
 
     const [areas, setAreas] = useState([]); //guarda as areas
@@ -68,15 +69,32 @@ function AdminCourses() {
         if (formData.duracao_horas && (isNaN(formData.duracao_horas) || Number(formData.duracao_horas) <= 0)) {
             return toast.error('Duração deve ser um número positivo de horas.');
         }
+
+        const dataToSend = new FormData();
+        dataToSend.append('nome', formData.nome);
+        dataToSend.append('sigla', formData.sigla);
+        dataToSend.append('descricao', formData.descricao);
+        dataToSend.append('area_id', formData.area_id);
+        dataToSend.append('duracao_horas', formData.duracao_horas);
+        // Se houver imagem URL (string) e não houver ficheiro, enviamos a string
+        if (formData.imagem) dataToSend.append('imagem', formData.imagem);
+        // Se houver ficheiro, enviamos o ficheiro (que terá prioridade no backend)
+        if (selectedFile) dataToSend.append('file', selectedFile);
+
         try {
             if (editId) {
-                await api.put(`/courses/update/${editId}`, formData);
+                await api.put(`/courses/update/${editId}`, dataToSend, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
                 toast.success('Curso atualizado!');
             } else {
-                await api.post('/courses/create', formData);
+                await api.post('/courses/create', dataToSend, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
                 toast.success('Curso criado!');
             }
             setFormData({ nome: '', sigla: '', descricao: '', area_id: '', imagem: '', duracao_horas: '' });
+            setSelectedFile(null); // Limpar ficheiro
             setEditId(null);
             loadCourses();
         } catch (error) {
@@ -135,65 +153,73 @@ function AdminCourses() {
 
             {/* FORMULÁRIO */}
             {canEdit && (
-            <Card className="mb-4 border-0 shadow-sm">
-                <Card.Body>
-                    <Form onSubmit={handleSubmit} className="d-flex gap-2 align-items-end">
-                        <div className="d-flex flex-column gap-2 flex-grow-1">
-                            {/* Linha 1 */}
-                            <div className="d-flex gap-2">
-                                <Form.Control
-                                    placeholder="Nome do Curso"
-                                    value={formData.nome}
-                                    onChange={e => setFormData({ ...formData, nome: e.target.value })}
-                                    required
-                                />
-                                <Form.Control
-                                    placeholder="Sigla"
-                                    value={formData.sigla}
-                                    onChange={e => setFormData({ ...formData, sigla: e.target.value })}
-                                    required
-                                    style={{ maxWidth: '100px' }}
-                                />
-                                <Form.Control
-                                    type="number"
-                                    placeholder="Horas"
-                                    value={formData.duracao_horas}
-                                    onChange={e => setFormData({ ...formData, duracao_horas: e.target.value })}
-                                    style={{ maxWidth: '100px' }}
-                                />
-                                <Form.Select
-                                    value={formData.area_id}
-                                    onChange={e => setFormData({ ...formData, area_id: e.target.value })}
-                                    required
-                                    style={{ maxWidth: '200px' }}
-                                >
-                                    <option value="">Área...</option>
-                                    {areas.map(area => (
-                                        <option key={area.id} value={area.id}>{area.nome}</option>
-                                    ))}
-                                </Form.Select>
+                <Card className="mb-4 border-0 shadow-sm">
+                    <Card.Body>
+                        <Form onSubmit={handleSubmit} className="d-flex gap-2 align-items-end">
+                            <div className="d-flex flex-column gap-2 flex-grow-1">
+                                {/* Linha 1 */}
+                                <div className="d-flex gap-2">
+                                    <Form.Control
+                                        placeholder="Nome do Curso"
+                                        value={formData.nome}
+                                        onChange={e => setFormData({ ...formData, nome: e.target.value })}
+                                        required
+                                    />
+                                    <Form.Control
+                                        placeholder="Sigla"
+                                        value={formData.sigla}
+                                        onChange={e => setFormData({ ...formData, sigla: e.target.value })}
+                                        required
+                                        style={{ maxWidth: '100px' }}
+                                    />
+                                    <Form.Control
+                                        type="number"
+                                        placeholder="Horas"
+                                        value={formData.duracao_horas}
+                                        onChange={e => setFormData({ ...formData, duracao_horas: e.target.value })}
+                                        style={{ maxWidth: '100px' }}
+                                    />
+                                    <Form.Select
+                                        value={formData.area_id}
+                                        onChange={e => setFormData({ ...formData, area_id: e.target.value })}
+                                        required
+                                        style={{ maxWidth: '200px' }}
+                                    >
+                                        <option value="">Área...</option>
+                                        {areas.map(area => (
+                                            <option key={area.id} value={area.id}>{area.nome}</option>
+                                        ))}
+                                    </Form.Select>
+                                </div>
+                                {/* Linha 2 */}
+                                <div className="d-flex gap-2">
+                                    <Form.Group className="flex-grow-1">
+                                        <Form.Label className="small text-muted mb-1">Imagem do Curso</Form.Label>
+                                        <Form.Control
+                                            type="file"
+                                            onChange={e => setSelectedFile(e.target.files[0])}
+                                        />
+                                        {/* Preview ou URL atual se existir */}
+                                        {formData.imagem && !selectedFile && (
+                                            <div className="mt-1 small text-truncate" style={{ maxWidth: '200px' }}>
+                                                Atual: <a href={formData.imagem} target="_blank" rel="noreferrer">Ver Imagem</a>
+                                            </div>
+                                        )}
+                                    </Form.Group>
+                                    <Form.Control
+                                        placeholder="Descrição Curta"
+                                        value={formData.descricao}
+                                        onChange={e => setFormData({ ...formData, descricao: e.target.value })}
+                                    />
+                                </div>
                             </div>
-                            {/* Linha 2 */}
-                            <div className="d-flex gap-2">
-                                <Form.Control
-                                    placeholder="URL da Imagem (https://...)"
-                                    value={formData.imagem}
-                                    onChange={e => setFormData({ ...formData, imagem: e.target.value })}
-                                />
-                                <Form.Control
-                                    placeholder="Descrição Curta"
-                                    value={formData.descricao}
-                                    onChange={e => setFormData({ ...formData, descricao: e.target.value })}
-                                />
-                            </div>
-                        </div>
 
-                        <Button type="submit" className="btn-primary-custom px-4" style={{ height: 'fit-content', alignSelf: 'center' }}>
-                            {editId ? <FaSave /> : <FaPlus />}
-                        </Button>
-                    </Form>
-                </Card.Body>
-            </Card>
+                            <Button type="submit" className="btn-primary-custom px-4" style={{ height: 'fit-content', alignSelf: 'center' }}>
+                                {editId ? <FaSave /> : <FaPlus />}
+                            </Button>
+                        </Form>
+                    </Card.Body>
+                </Card>
             )}
 
             {/* TABELA */}
@@ -213,55 +239,56 @@ function AdminCourses() {
                         );
                         const { paginatedItems, totalPages } = paginate(filtered, currentPage);
                         return (<>
-                    <Table hover>
-                        <thead>
-                            <tr>
-                                <th>Sigla</th>
-                                <th>Nome</th>
-                                {canEdit ? <th>Ações</th> : <th>Módulos</th>}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {paginatedItems.map(course => (
-                                <tr key={course.id}>
-                                    <td><strong>{course.sigla}</strong></td>
-                                    <td>{course.nome}</td>
-                                    <td>
-                                        {/* Btn Editar */}
-                                        {canEdit && (
-                                        <Button variant="link" onClick={() => {
-                                            setEditId(course.id);
-                                            setFormData({
-                                                nome: course.nome,
-                                                sigla: course.sigla,
-                                                descricao: course.descricao,
-                                                area_id: course.area_id,
-                                                imagem: course.imagem || '',
-                                                duracao_horas: course.duracao_horas || ''
-                                            });
-                                        }}>
-                                            <FaEdit />
-                                        </Button>
-                                        )}
+                            <Table hover>
+                                <thead>
+                                    <tr>
+                                        <th>Sigla</th>
+                                        <th>Nome</th>
+                                        {canEdit ? <th>Ações</th> : <th>Módulos</th>}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {paginatedItems.map(course => (
+                                        <tr key={course.id}>
+                                            <td><strong>{course.sigla}</strong></td>
+                                            <td>{course.nome}</td>
+                                            <td>
+                                                {/* Btn Editar */}
+                                                {canEdit && (
+                                                    <Button variant="link" onClick={() => {
+                                                        setEditId(course.id);
+                                                        setFormData({
+                                                            nome: course.nome,
+                                                            sigla: course.sigla,
+                                                            descricao: course.descricao,
+                                                            area_id: course.area_id,
+                                                            imagem: course.imagem || '',
+                                                            duracao_horas: course.duracao_horas || ''
+                                                        });
+                                                        setSelectedFile(null); // Reset file selection
+                                                    }}>
+                                                        <FaEdit />
+                                                    </Button>
+                                                )}
 
-                                        {/* Btn Modulos */}
-                                        <Button variant="link" className="text-info" onClick={() => handleOpenModules(course.id)}>
-                                            <FaBook />
-                                        </Button>
+                                                {/* Btn Modulos */}
+                                                <Button variant="link" className="text-info" onClick={() => handleOpenModules(course.id)}>
+                                                    <FaBook />
+                                                </Button>
 
-                                        {/* Btn Apagar */}
-                                        {canEdit && (
-                                        <Button variant="link" className="text-danger" onClick={() => handleDelete(course.id)}>
-                                            <FaTrash />
-                                        </Button>
-                                        )}
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </Table>
-                    <TablePagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
-                    </>);
+                                                {/* Btn Apagar */}
+                                                {canEdit && (
+                                                    <Button variant="link" className="text-danger" onClick={() => handleDelete(course.id)}>
+                                                        <FaTrash />
+                                                    </Button>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </Table>
+                            <TablePagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+                        </>);
                     })()}
                 </Card.Body>
             </Card>
@@ -273,22 +300,22 @@ function AdminCourses() {
                 </Modal.Header>
                 <Modal.Body>
                     {canEdit && (
-                    <div className="d-flex gap-2 mb-4">
-                        <Form.Select
-                            value={selectedModuleId}
-                            onChange={e => setSelectedModuleId(e.target.value)}
-                        >
-                            <option value="">Escolher módulo para adicionar...</option>
-                            {allModules.map(mod => (
-                                <option key={mod.id} value={mod.id}>
-                                    {mod.nome} ({mod.codigo})
-                                </option>
-                            ))}
-                        </Form.Select>
-                        <Button variant="success" onClick={handleAddModule} disabled={!selectedModuleId}>
-                            <FaPlus />
-                        </Button>
-                    </div>
+                        <div className="d-flex gap-2 mb-4">
+                            <Form.Select
+                                value={selectedModuleId}
+                                onChange={e => setSelectedModuleId(e.target.value)}
+                            >
+                                <option value="">Escolher módulo para adicionar...</option>
+                                {allModules.map(mod => (
+                                    <option key={mod.id} value={mod.id}>
+                                        {mod.nome} ({mod.codigo})
+                                    </option>
+                                ))}
+                            </Form.Select>
+                            <Button variant="success" onClick={handleAddModule} disabled={!selectedModuleId}>
+                                <FaPlus />
+                            </Button>
+                        </div>
                     )}
                     {/* Lista de módulos do curso */}
                     {courseModules.length === 0 ? (
@@ -310,11 +337,11 @@ function AdminCourses() {
                                         <td>{mod.nome}</td>
                                         <td>{mod.horas_totais} h</td>
                                         {canEdit && (
-                                        <td>
-                                            <Button variant="link" className="text-danger p-0" onClick={() => handleRemoveModule(mod.id)}>
-                                                <FaTrash />
-                                            </Button>
-                                        </td>
+                                            <td>
+                                                <Button variant="link" className="text-danger p-0" onClick={() => handleRemoveModule(mod.id)}>
+                                                    <FaTrash />
+                                                </Button>
+                                            </td>
                                         )}
                                     </tr>
                                 ))}
