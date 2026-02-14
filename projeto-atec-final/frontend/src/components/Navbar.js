@@ -36,9 +36,9 @@ function Navbar({ children }) {
                             {user && (user.is_admin || user.role === 'secretaria') && (
                                 <NavDropdown title={<span><FaTools className="me-1" /> Administração</span>} id="admin-nav-dropdown">
                                     {user.is_admin && (
-                                    <NavDropdown.Item as={Link} to="/admin" className={location.pathname === '/admin' ? 'active' : ''}>
-                                        <FaUsers className="me-2" /> Utilizadores
-                                    </NavDropdown.Item>
+                                        <NavDropdown.Item as={Link} to="/admin" className={location.pathname === '/admin' ? 'active' : ''}>
+                                            <FaUsers className="me-2" /> Utilizadores
+                                        </NavDropdown.Item>
                                     )}
                                     <NavDropdown.Item as={Link} to="/admin/courses">
                                         <FaBook className="me-2" /> Cursos
@@ -65,7 +65,7 @@ function Navbar({ children }) {
                                 </Nav.Link>
                             )}
 
-                            {user && (user.is_admin || user.role === 'formador' || user.role === 'formando' || user.role === 'user' || user.role === 'secretaria') && (
+                            {user && (user.is_admin || user.role === 'formador' || user.role === 'formando' || user.role === 'secretaria') && (
                                 <Nav.Link as={Link} to="/schedules" className={isActive('/schedules')}>
                                     <FaCalendarAlt className="me-1" /> Horários
                                 </Nav.Link>

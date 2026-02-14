@@ -280,8 +280,7 @@ function Dashboard() {
             <Card className="card-modern border-0 text-center p-5">
               <Card.Body>
                 <FaUserGraduate className="text-primary display-4 mb-3" />
-                <h4 className="fw-bold">Bem-vindo à plataforma ATEC HQ</h4>
-                <p className="text-muted">Utilize o menu de navegação para aceder às suas funcionalidades.</p>
+                <h4 className="fw-bold">Bem-vindo à plataforma <span className="text-secondary brand-atec">ATEC</span><span style={{ color: 'var(--primary-blue)' }}>HQ</span></h4>
               </Card.Body>
             </Card>
           </Col>

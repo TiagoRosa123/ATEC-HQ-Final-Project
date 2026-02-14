@@ -239,3 +239,16 @@ code {
 .course-title {
   color: #0069B4 !important;
 }
+
+/* User Request: White border for specific navbar buttons in dark mode */
+[data-bs-theme="dark"] .navbar .btn-outline-secondary,
+[data-bs-theme="dark"] .navbar .btn-primary {
+  border-color: #ffffff !important;
+  color: #ffffff !important;
+}
+
+[data-bs-theme="dark"] .navbar .btn-outline-secondary:hover,
+[data-bs-theme="dark"] .navbar .btn-primary:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  border-color: #ffffff !important;
+}

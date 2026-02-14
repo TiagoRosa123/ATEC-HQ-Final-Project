@@ -24,6 +24,7 @@ app.use('/evaluations', require('./routes/evaluations'));
 app.use('/files', require('./routes/files'));
 app.use('/schedules', require('./routes/schedules'));
 app.use('/dashboard', require('./routes/dashboard'));
+app.use('/api/contact', require('./routes/contact')); // Rota de Contacto/Candidatura
 app.use('/api/public', require('./routes/public')); // Rotas Públicas
 
 
