@@ -252,4 +252,24 @@ router.put("/update", async (req, res) => {
   }
 });
 
+// REFRESH TOKEN - Gera novo token se o atual ainda for válido
+router.post("/refresh-token", async (req, res) => {
+  try {
+    const jwtToken = req.header("token");
+    if (!jwtToken) return res.status(403).json("Sem token");
+
+    const payload = jwt.verify(jwtToken, process.env.JWT_SECRET);
+    const newToken = jwt.sign(
+      { user: { id: payload.user.id } },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    res.json({ token: newToken });
+  } catch (err) {
+    // Token expirado ou inválido — não é possível refresh
+    return res.status(403).json("Token expirado. Por favor faça login novamente.");
+  }
+});
+
 module.exports = router;

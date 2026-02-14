@@ -5,6 +5,7 @@ import { FaEdit, FaTrash, FaPlus, FaSave, FaUsers } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import TablePagination, { paginate } from '../components/TablePagination';
 
 function AdminClasses() {
     const [classes, setClasses] = useState([]);
@@ -25,6 +26,8 @@ function AdminClasses() {
 
     const { user } = useAuth();
     const canEdit = user && user.is_admin;
+    const [searchTerm, setSearchTerm] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
 
     // LOGICA DE ALUNOS
     const handleOpenStudents = async (cls) => {
@@ -83,6 +86,10 @@ function AdminClasses() {
     // POST - Add turma
     const handleSubmit = async (e) => {
         e.preventDefault();
+        // Validação: data_fim >= data_inicio
+        if (formData.data_fim && formData.data_inicio && formData.data_fim < formData.data_inicio) {
+            return toast.error('Data de fim não pode ser anterior à data de início.');
+        }
         try {
             if (editId) {
                 await api.put(`/classes/update/${editId}`, formData);
@@ -94,7 +101,9 @@ function AdminClasses() {
             setFormData({ codigo: '', curso_id: '', data_inicio: '', data_fim: '', estado: 'pendente' });
             setEditId(null);
             loadData();
-        } catch (error) { toast.error('Erro ao guardar.'); }
+        } catch (error) {
+            toast.error(error.response?.data || 'Erro ao guardar.');
+        }
     };
 
     // DELETE - Remover turma
@@ -104,7 +113,7 @@ function AdminClasses() {
             await api.delete(`/classes/delete/${id}`);
             toast.success('Turma apagada.');
             loadData();
-        } catch (error) { toast.error('Erro ao apagar.'); }
+        } catch (error) { toast.error(error.response?.data || 'Erro ao apagar.'); }
     };
     //Ajuda para formatar a data que vem da BD para o input type="date"
     const formatDateForInput = (dateString) => {
@@ -178,6 +187,20 @@ function AdminClasses() {
             )}
             <Card className="border-0 shadow-sm">
                 <Card.Body>
+                    <div className="mb-3">
+                        <Form.Control
+                            placeholder="🔍 Pesquisar turmas..."
+                            value={searchTerm}
+                            onChange={e => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+                        />
+                    </div>
+                    {(() => {
+                        const filtered = classes.filter(c =>
+                            c.codigo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            getCourseName(c.curso_id).toLowerCase().includes(searchTerm.toLowerCase())
+                        );
+                        const { paginatedItems, totalPages } = paginate(filtered, currentPage);
+                        return (<>
                     <Table hover>
                         <thead>
                             <tr>
@@ -190,7 +213,7 @@ function AdminClasses() {
                             </tr>
                         </thead>
                         <tbody>
-                            {classes.map(cls => (
+                            {paginatedItems.map(cls => (
                                 <tr key={cls.id}>
                                     <td><strong>{cls.codigo}</strong></td>
                                     <td>{getCourseName(cls.curso_id)}</td>
@@ -226,6 +249,9 @@ function AdminClasses() {
                             ))}
                         </tbody>
                     </Table>
+                    <TablePagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+                    </>);
+                    })()}
                 </Card.Body>
             </Card>
 

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Row, Col, Table } from 'react-bootstrap';
-import { FaCalendarAlt, FaClock, FaBook, FaUserGraduate, FaChalkboardTeacher } from 'react-icons/fa';
+import { Card, Row, Col, Table, Badge } from 'react-bootstrap';
+import { FaCalendarAlt, FaClock, FaBook, FaUserGraduate, FaChalkboardTeacher, FaUsers } from 'react-icons/fa';
 import { Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, Treemap } from 'recharts';
-import axios from 'axios';
+import api from '../services/api';
 
 import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
@@ -33,7 +33,7 @@ const CustomizedContent = (props) => {
           fill="#fff"
           fontSize={14}
         >
-          {name.split(' ')[0]} {/* Show only first name to avoid clutter */}
+          {name.split(' ')[0]}
         </text>
       ) : null}
       {depth === 1 ? (
@@ -54,58 +54,54 @@ const CustomizedContent = (props) => {
 function Dashboard() {
   const { user } = useAuth();
   const [stats, setStats] = useState(null);
+  const [formadorStats, setFormadorStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // MOCK DATA - To be replaced by proper API calls later
-  const [schedule] = useState([
-    { dia: 'Segunda', hora: '09:00 - 13:00', disciplina: 'Matemática', sala: 'B201' },
-    { dia: 'Terça', hora: '14:00 - 17:00', disciplina: 'Programação Java', sala: 'Lab 3' },
-  ]);
-
-  const [absences] = useState({
-    total: 12,
-    justified: 10,
-    unjustified: 2,
-    limit: 30, // Example limit
-    subjectBreakdown: [
-      { subject: 'Matemática', count: 4, limit: 10 },
-      { subject: 'Programação Java', count: 2, limit: 15 },
-      { subject: 'Inglês Técnico', count: 6, limit: 10 },
-    ]
-  });
-
   useEffect(() => {
-    if (user && user.is_admin) {
-      fetchStats();
-    } else {
-      setLoading(false);
-    }
+    const loadData = async () => {
+      try {
+        if (user.is_admin || user.role === 'secretaria') {
+          const res = await api.get('/dashboard/stats');
+          setStats(res.data);
+        } else if (user.role === 'formador') {
+          try {
+            const res = await api.get('/dashboard/stats/formador');
+            setFormadorStats(res.data);
+          } catch (err) {
+            console.error("Erro ao carregar stats formador", err);
+            // Mostrar layout formador mesmo sem dados
+            setFormadorStats({ proximasAulas: [], turmasAtivas: 0, aulasEstaSemana: 0, totalAlunos: 0 });
+          }
+        }
+      } catch (err) {
+        console.error("Erro ao carregar dashboard", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (user) loadData();
   }, [user]);
 
-  const fetchStats = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:5000/dashboard/stats', {
-        headers: { token: token }
-      });
-      setStats(res.data);
-    } catch (err) {
-      console.error("Erro estatisticas", err);
-    } finally {
-      setLoading(false);
-    }
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
+
+  // Subtítulo por role
+  const getSubtitle = () => {
+    if (user.is_admin) return 'Visão geral do sistema';
+    if (user.role === 'secretaria') return 'Visão geral do sistema';
+    if (user.role === 'formador') return 'As suas turmas e aulas';
+    return 'Bem-vindo à plataforma ATEC HQ';
   };
 
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
+  const formatDate = (dateStr) => {
+    return new Date(dateStr).toLocaleDateString('pt-PT', { weekday: 'short', day: 'numeric', month: 'short' });
+  };
 
   return (
     <Navbar>
       <div className="d-flex justify-content-between align-items-end mb-5">
         <div>
           <h2 className="fw-bold dashboard-welcome-text">Olá, {user.nome?.split(' ')[0]}</h2>
-          <p className="text-secondary mb-0">
-            {user.is_admin ? 'Visão geral do sistema' : 'Horário e assiduidade.'}
-          </p>
+          <p className="text-secondary mb-0">{getSubtitle()}</p>
         </div>
         <div className="d-none d-md-block text-end">
           <span className="badge bg-light text-secondary border px-3 py-2 fw-normal">
@@ -117,10 +113,9 @@ function Dashboard() {
 
       {loading ? (
         <p>A carregar...</p>
-      ) : user.is_admin && stats ? (
-        /* DASHBOARD ADMIN */
+      ) : (user.is_admin || user.role === 'secretaria') && stats ? (
+        /* DASHBOARD ADMIN / SECRETÁRIA */
         <Row className="g-4">
-          {/* Totais Cards */}
           <Col md={3}>
             <Card className="card-modern border-0 p-3 h-100 text-center">
               <Card.Body>
@@ -210,53 +205,83 @@ function Dashboard() {
             </Card>
           </Col>
         </Row>
-      ) : (
-        /* DASHBOARD FORMANDO/FORMADOR (Mantém o original) */
+      ) : user.role === 'formador' && formadorStats ? (
+        /* DASHBOARD FORMADOR */
         <Row className="g-4">
-          {/* ... (código original para tabela de horário e faltas) ... */}
-          <Col lg={12}>
-            <Card className="card-modern border-0 h-100">
-              <Card.Header className="border-0 pt-4 pb-0 d-flex justify-content-between align-items-center">
-                <div className="d-flex align-items-center">
-                  <FaClock className="text-secondary me-2" />
-                  <h6 className="fw-bold mb-0 text-uppercase ls-1 small">Horário Semanal</h6>
-                </div>
-              </Card.Header>
+          <Col md={4}>
+            <Card className="card-modern border-0 p-3 h-100 text-center">
               <Card.Body>
-                <Table hover responsive className="align-middle mb-0">
-                  <thead className="text-secondary">
-                    <tr>
-                      <th className="border-0 small fw-bold ps-3">DIA</th>
-                      <th className="border-0 small fw-bold">HORÁRIO</th>
-                      <th className="border-0 small fw-bold">DISCIPLINA</th>
-                      <th className="border-0 small fw-bold text-end pe-3">SALA</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {schedule.map((aula, idx) => (
-                      <tr key={idx}>
-                        <td className="ps-3 fw-bold text-dark-blue">{aula.dia}</td>
-                        <td className="text-muted small">{aula.hora}</td>
-                        <td>
-                          <div className="fw-bold">{aula.disciplina}</div>
-                        </td>
-                        <td className="text-end pe-3 text-muted">{aula.sala}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
+                <FaUsers className="text-primary mb-2 display-6" />
+                <h3 className="fw-bold">{formadorStats.turmasAtivas}</h3>
+                <span className="text-muted small">Turmas Ativas</span>
+              </Card.Body>
+            </Card>
+          </Col>
+          <Col md={4}>
+            <Card className="card-modern border-0 p-3 h-100 text-center">
+              <Card.Body>
+                <FaClock className="text-success mb-2 display-6" />
+                <h3 className="fw-bold">{formadorStats.aulasEstaSemana}</h3>
+                <span className="text-muted small">Aulas esta Semana</span>
+              </Card.Body>
+            </Card>
+          </Col>
+          <Col md={4}>
+            <Card className="card-modern border-0 p-3 h-100 text-center">
+              <Card.Body>
+                <FaUserGraduate className="text-warning mb-2 display-6" />
+                <h3 className="fw-bold">{formadorStats.totalAlunos}</h3>
+                <span className="text-muted small">Alunos nas suas Turmas</span>
               </Card.Body>
             </Card>
           </Col>
 
           <Col lg={12}>
-            <Card className="card-modern border-0 mb-4 text-white" style={{ background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)' }}>
-              <Card.Body className="p-4 text-center">
-                <h6 className="text-white-50 text-uppercase small ls-1 mb-3">Total de Faltas</h6>
-                <div className="display-4 fw-bold mb-2">{absences.total}</div>
-                <p className="small text-white-50 mb-0">
-                  <span className="text-warning fw-bold">{absences.unjustified}</span> Injustificadas • <span className="text-success fw-bold">{absences.justified}</span> Justificadas
-                </p>
+            <Card className="card-modern border-0 h-100">
+              <Card.Header className="border-0 pt-4 pb-0 d-flex align-items-center">
+                <FaClock className="text-secondary me-2" />
+                <h6 className="fw-bold mb-0 text-uppercase ls-1 small">Próximas Aulas</h6>
+              </Card.Header>
+              <Card.Body>
+                {formadorStats.proximasAulas.length > 0 ? (
+                <Table hover responsive className="align-middle mb-0">
+                  <thead className="text-secondary">
+                    <tr>
+                      <th className="border-0 small fw-bold ps-3">DATA</th>
+                      <th className="border-0 small fw-bold">HORÁRIO</th>
+                      <th className="border-0 small fw-bold">MÓDULO</th>
+                      <th className="border-0 small fw-bold">TURMA</th>
+                      <th className="border-0 small fw-bold text-end pe-3">SALA</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {formadorStats.proximasAulas.map((aula, idx) => (
+                      <tr key={idx}>
+                        <td className="ps-3 fw-bold">{formatDate(aula.data)}</td>
+                        <td className="text-muted small">{aula.hora_inicio?.slice(0, 5)} - {aula.hora_fim?.slice(0, 5)}</td>
+                        <td><div className="fw-bold">{aula.modulo}</div></td>
+                        <td><Badge bg="info">{aula.turma}</Badge></td>
+                        <td className="text-end pe-3 text-muted">{aula.sala || '—'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+                ) : (
+                  <p className="text-muted text-center py-4">Sem aulas agendadas.</p>
+                )}
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+      ) : (
+        /* DASHBOARD FORMANDO / GENÉRICO */
+        <Row className="g-4">
+          <Col lg={12}>
+            <Card className="card-modern border-0 text-center p-5">
+              <Card.Body>
+                <FaUserGraduate className="text-primary display-4 mb-3" />
+                <h4 className="fw-bold">Bem-vindo à plataforma ATEC HQ</h4>
+                <p className="text-muted">Utilize o menu de navegação para aceder às suas funcionalidades.</p>
               </Card.Body>
             </Card>
           </Col>

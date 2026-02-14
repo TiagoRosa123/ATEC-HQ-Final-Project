@@ -154,7 +154,11 @@ function PersonalData() {
                                         <div className="text-dark-blue">
                                             {user.is_admin
                                                 ? "Acesso total à gestão de utilizadores, cursos e configurações do sistema."
-                                                : "Acesso à área de estudante, curso inscrito e materiais didáticos."
+                                                : user.role === 'secretaria'
+                                                    ? "Acesso à gestão de inscrições, turmas e consulta de dados do sistema."
+                                                    : user.role === 'formador'
+                                                        ? "Acesso à gestão de avaliações, horários e acompanhamento de turmas."
+                                                        : "Acesso à área de estudante, curso inscrito e materiais didáticos."
                                             }
                                         </div>
                                     </div>

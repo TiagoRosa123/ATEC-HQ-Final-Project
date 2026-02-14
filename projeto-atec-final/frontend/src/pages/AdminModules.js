@@ -5,6 +5,7 @@ import { FaEdit, FaTrash, FaPlus, FaSave } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import TablePagination, { paginate } from '../components/TablePagination';
 
 function AdminModules() {
     const [modules, setModules] = useState([]);
@@ -14,6 +15,8 @@ function AdminModules() {
 
     const { user } = useAuth();
     const canEdit = user && user.is_admin;
+    const [searchTerm, setSearchTerm] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
 
 
     //GET Modulos
@@ -34,6 +37,10 @@ function AdminModules() {
     //POST / PUT modules
     const handleSubmit = async (e) => {
         e.preventDefault();
+        // Validação: horas_totais deve ser número positivo
+        if (formData.horas_totais && (isNaN(formData.horas_totais) || Number(formData.horas_totais) <= 0)) {
+            return toast.error('Horas totais deve ser um número positivo.');
+        }
         try {
             if (editandoId) {
                 await api.put(`/modules/update/${editandoId}`, formData);
@@ -46,7 +53,7 @@ function AdminModules() {
             setEditandoId(null);
             loadModules();
         } catch (error) {
-            toast.error('Erro ao guardar.');
+            toast.error(error.response?.data || 'Erro ao guardar.');
         }
     };
 
@@ -58,7 +65,7 @@ function AdminModules() {
             toast.success('Modulo apagado.');
             loadModules();
         } catch (error) {
-            toast.error('Erro ao apagar.');
+            toast.error(error.response?.data || 'Erro ao apagar.');
         }
     };
 
@@ -99,6 +106,20 @@ function AdminModules() {
             {/* TABELA */}
             <Card className="border-0 shadow-sm">
                 <Card.Body>
+                    <div className="mb-3">
+                        <Form.Control
+                            placeholder="🔍 Pesquisar módulos..."
+                            value={searchTerm}
+                            onChange={e => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+                        />
+                    </div>
+                    {(() => {
+                        const filtered = modules.filter(m =>
+                            m.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            (m.codigo && m.codigo.toLowerCase().includes(searchTerm.toLowerCase()))
+                        );
+                        const { paginatedItems, totalPages } = paginate(filtered, currentPage);
+                        return (<>
                     <Table hover>
                         <thead>
                             <tr>
@@ -109,7 +130,7 @@ function AdminModules() {
                             </tr>
                         </thead>
                         <tbody>
-                            {modules.map(module => (
+                            {paginatedItems.map(module => (
                                 <tr key={module.id}>
                                     <td><strong>{module.nome}</strong></td>
                                     <td>{module.horas_totais}</td>
@@ -131,6 +152,9 @@ function AdminModules() {
                             ))}
                         </tbody>
                     </Table>
+                    <TablePagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+                    </>);
+                    })()}
                 </Card.Body>
             </Card>
         </Navbar>

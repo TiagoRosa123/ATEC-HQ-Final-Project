@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
 import { Table, Button, Form, Card, Row, Col, Alert, Spinner } from 'react-bootstrap';
-import { FaEdit, FaTrash, FaPlus, FaSave } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaPlus, FaSave, FaSearch } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import TablePagination, { paginate } from '../components/TablePagination';
 
 function AdminAreas() {
     const [areas, setAreas] = useState([]); //area
@@ -14,6 +15,8 @@ function AdminAreas() {
 
     const { user } = useAuth();
     const canEdit = user && user.is_admin;
+    const [searchTerm, setSearchTerm] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
 
     //GET - Listar Areas
     const loadAreas = async () => {
@@ -45,7 +48,7 @@ function AdminAreas() {
             setEditId(null);
             loadAreas();
         } catch (error) {
-            toast.error('Erro ao guardar.');
+            toast.error(error.response?.data || 'Erro ao guardar.');
         }
     };
 
@@ -57,7 +60,7 @@ function AdminAreas() {
             toast.success('Area apagada.');
             loadAreas();
         } catch (error) {
-            toast.error('Erro ao apagar.');
+            toast.error(error.response?.data || 'Erro ao apagar.');
         }
     };
 
@@ -92,6 +95,17 @@ function AdminAreas() {
             {/* TABELA */}
             <Card className="border-0 shadow-sm">
                 <Card.Body>
+                    <div className="mb-3">
+                        <Form.Control
+                            placeholder="🔍 Pesquisar áreas..."
+                            value={searchTerm}
+                            onChange={e => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+                        />
+                    </div>
+                    {(() => {
+                        const filtered = areas.filter(a => a.nome.toLowerCase().includes(searchTerm.toLowerCase()));
+                        const { paginatedItems, totalPages } = paginate(filtered, currentPage);
+                        return (<>
                     <Table hover>
                         <thead>
                             <tr>
@@ -101,7 +115,7 @@ function AdminAreas() {
                             </tr>
                         </thead>
                         <tbody>
-                            {areas.map(area => (
+                            {paginatedItems.map(area => (
                                 <tr key={area.id}>
                                     <td>{area.nome}</td>
                                     <td>{area.descricao}</td>
@@ -122,6 +136,9 @@ function AdminAreas() {
                             ))}
                         </tbody>
                     </Table>
+                    <TablePagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+                    </>);
+                    })()}
                 </Card.Body>
             </Card>
         </Navbar>

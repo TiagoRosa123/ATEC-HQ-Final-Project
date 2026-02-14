@@ -5,6 +5,7 @@ import { FaEdit, FaTrash, FaPlus, FaSave, FaBook } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import TablePagination, { paginate } from '../components/TablePagination';
 
 function AdminCourses() {
     const [courses, setCourses] = useState([]);
@@ -22,6 +23,8 @@ function AdminCourses() {
 
     const { user } = useAuth();
     const canEdit = user && user.is_admin;
+    const [searchTerm, setSearchTerm] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
 
     //GET - Areas
     const loadAreas = async () => {
@@ -61,6 +64,10 @@ function AdminCourses() {
     //POST / PUT - Cursos
     const handleSubmit = async (e) => {
         e.preventDefault();
+        // Validação: duração deve ser número positivo
+        if (formData.duracao_horas && (isNaN(formData.duracao_horas) || Number(formData.duracao_horas) <= 0)) {
+            return toast.error('Duração deve ser um número positivo de horas.');
+        }
         try {
             if (editId) {
                 await api.put(`/courses/update/${editId}`, formData);
@@ -73,7 +80,7 @@ function AdminCourses() {
             setEditId(null);
             loadCourses();
         } catch (error) {
-            toast.error('Erro ao guardar.');
+            toast.error(error.response?.data || 'Erro ao guardar.');
         }
     };
 
@@ -85,7 +92,7 @@ function AdminCourses() {
             toast.success('Curso apagado.');
             loadCourses();
         } catch (error) {
-            toast.error('Erro ao apagar.');
+            toast.error(error.response?.data || 'Erro ao apagar.');
         }
     };
 
@@ -192,6 +199,20 @@ function AdminCourses() {
             {/* TABELA */}
             <Card className="border-0 shadow-sm">
                 <Card.Body>
+                    <div className="mb-3">
+                        <Form.Control
+                            placeholder="🔍 Pesquisar cursos..."
+                            value={searchTerm}
+                            onChange={e => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+                        />
+                    </div>
+                    {(() => {
+                        const filtered = courses.filter(c =>
+                            c.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            (c.sigla && c.sigla.toLowerCase().includes(searchTerm.toLowerCase()))
+                        );
+                        const { paginatedItems, totalPages } = paginate(filtered, currentPage);
+                        return (<>
                     <Table hover>
                         <thead>
                             <tr>
@@ -201,7 +222,7 @@ function AdminCourses() {
                             </tr>
                         </thead>
                         <tbody>
-                            {courses.map(course => (
+                            {paginatedItems.map(course => (
                                 <tr key={course.id}>
                                     <td><strong>{course.sigla}</strong></td>
                                     <td>{course.nome}</td>
@@ -239,6 +260,9 @@ function AdminCourses() {
                             ))}
                         </tbody>
                     </Table>
+                    <TablePagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+                    </>);
+                    })()}
                 </Card.Body>
             </Card>
 

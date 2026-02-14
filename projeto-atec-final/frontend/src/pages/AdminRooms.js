@@ -5,6 +5,7 @@ import { FaEdit, FaTrash, FaPlus, FaSave } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import TablePagination, { paginate } from '../components/TablePagination';
 
 function AdminRooms() {
     const [rooms, setRooms] = useState([]);
@@ -16,6 +17,8 @@ function AdminRooms() {
 
     const { user } = useAuth();
     const canEdit = user && user.is_admin;
+    const [searchTerm, setSearchTerm] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
 
     //GET - Salas e Areas
     const loadData = async () => {
@@ -39,6 +42,10 @@ function AdminRooms() {
     //POST / PUT - Salas
     const handleSubmit = async (e) => {
         e.preventDefault();
+        // Validação: capacidade deve ser número positivo
+        if (formData.capacidade && (isNaN(formData.capacidade) || Number(formData.capacidade) <= 0)) {
+            return toast.error('Capacidade deve ser um número positivo.');
+        }
         try {
             if (editId) {
                 await api.put(`/rooms/update/${editId}`, formData);
@@ -47,12 +54,11 @@ function AdminRooms() {
                 await api.post('/rooms/create', formData);
                 toast.success('Sala criada!');
             }
-            // Reset form
             setFormData({ area_id: '', nome: '', capacidade: '', recursos: '', estado: 'disponivel' });
             setEditId(null);
             loadData();
         } catch (error) {
-            toast.error('Erro ao guardar.');
+            toast.error(error.response?.data || 'Erro ao guardar.');
         }
     };
 
@@ -64,7 +70,7 @@ function AdminRooms() {
             toast.success('Sala apagada.');
             loadData();
         } catch (error) {
-            toast.error('Erro ao apagar.');
+            toast.error(error.response?.data || 'Erro ao apagar.');
         }
     };
 
@@ -135,10 +141,23 @@ function AdminRooms() {
             {/* TABELA */}
             <Card className="border-0 shadow-sm">
                 <Card.Body>
+                    <div className="mb-3">
+                        <Form.Control
+                            placeholder="🔍 Pesquisar salas..."
+                            value={searchTerm}
+                            onChange={e => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+                        />
+                    </div>
+                    {(() => {
+                        const filtered = rooms.filter(r =>
+                            r.nome.toLowerCase().includes(searchTerm.toLowerCase())
+                        );
+                        const { paginatedItems, totalPages } = paginate(filtered, currentPage);
+                        return (<>
                     <Table hover>
                         <thead>
                             <tr>
-                                <th>Estado</th> {/* NOVO */}
+                                <th>Estado</th>
                                 <th>Nome</th>
                                 <th>Área</th>
                                 <th>Capacidade</th>
@@ -147,7 +166,7 @@ function AdminRooms() {
                             </tr>
                         </thead>
                         <tbody>
-                            {rooms.map(room => (
+                            {paginatedItems.map(room => (
                                 <tr key={room.id}>
                                     <td>
                                         <span className={`badge ${room.estado === 'disponivel' ? 'bg-success' : 'bg-danger'}`}>
@@ -184,6 +203,9 @@ function AdminRooms() {
                             }
                         </tbody>
                     </Table>
+                    <TablePagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+                    </>);
+                    })()}
                 </Card.Body>
             </Card>
         </Navbar>
