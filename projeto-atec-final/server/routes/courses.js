@@ -2,6 +2,25 @@ const router = require('express').Router();
 const pool = require('../db');
 const authorization = require('../middleware/authorization');
 const verifyAdmin = require('../middleware/verifyAdmin');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+
+// Configuração do Multer (Igual ao files.js)
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        const uploadPath = path.join(__dirname, '../uploads');
+        if (!fs.existsSync(uploadPath)) {
+            fs.mkdirSync(uploadPath, { recursive: true });
+        }
+        cb(null, uploadPath);
+    },
+    filename: (req, file, cb) => {
+        // Prevenir sobreposição com timestamp
+        cb(null, 'course-' + Date.now() + path.extname(file.originalname));
+    }
+});
+const upload = multer({ storage: storage });
 
 //get public (LIVRE DE TOKEN)
 router.get('/public', async (req, res) => {
@@ -60,9 +79,19 @@ router.get('/', authorization, async (req, res) => {
 });
 
 //post
-router.post('/create', authorization, verifyAdmin, async (req, res) => {
+//post
+router.post('/create', authorization, verifyAdmin, upload.single('file'), async (req, res) => {
     try {
-        const { nome, sigla, descricao, area_id, imagem, duracao_horas } = req.body;
+        const { nome, sigla, descricao, area_id, duracao_horas } = req.body;
+        let imagem = req.body.imagem; // Caso venha URL manual (fallback)
+
+        if (req.file) {
+            // Se veio ficheiro, construímos o URL
+            const protocol = req.protocol;
+            const host = req.get('host');
+            imagem = `${protocol}://${host}/uploads/${req.file.filename}`;
+        }
+
         const newCourse = await pool.query(
             "INSERT INTO cursos (nome, sigla, descricao, area_id, imagem, duracao_horas) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
             [nome, sigla, descricao, area_id, imagem, duracao_horas]
@@ -76,10 +105,28 @@ router.post('/create', authorization, verifyAdmin, async (req, res) => {
 });
 
 //put
-router.put('/update/:id', authorization, verifyAdmin, async (req, res) => {
+//put
+router.put('/update/:id', authorization, verifyAdmin, upload.single('file'), async (req, res) => {
     try {
         const { id } = req.params;
-        const { nome, sigla, descricao, area_id, imagem, duracao_horas } = req.body;
+        const { nome, sigla, descricao, area_id, duracao_horas } = req.body;
+        let imagem = req.body.imagem; // URL antiga ou nova manual
+
+        if (req.file) {
+            const protocol = req.protocol;
+            const host = req.get('host');
+            imagem = `${protocol}://${host}/uploads/${req.file.filename}`;
+        }
+
+        // Se não houver nova imagem (nem file nem string), mantemos a antiga na query?
+        // A query SQL faz update de TUDO. Se imagem for undefined, vai dar asneira ou NULL.
+        // O frontend deve enviar a imagem antiga se não mudou, ou lidamos com isso aqui.
+        // Simplificação: O frontend envia sempre os dados todos. Se mudou imagem, envia ficheiro.
+        // Se nao mudou, envia a string que ja la estava.
+
+        // Pequena proteção: se imagem for undefined e não houver file, se calhar não devíamos fazer update a esse campo?
+        // Mas o SQL em baixo espera 6 argumentos. Vamos assumir que o frontend envia o URL antigo em 'imagem' se nao fizer upload.
+
         const updateCourse = await pool.query(
             "UPDATE cursos SET nome = $1, sigla = $2, descricao = $3, area_id = $4, imagem = $5, duracao_horas = $6 WHERE id = $7 RETURNING *",
             [nome, sigla, descricao, area_id, imagem, duracao_horas, id]
