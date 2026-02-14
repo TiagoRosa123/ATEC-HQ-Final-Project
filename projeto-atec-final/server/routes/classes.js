@@ -4,9 +4,17 @@ const authorization = require('../middleware/authorization');
 const verifyAdmin = require('../middleware/verifyAdmin');
 
 //get
+//get all classes with names
 router.get('/', authorization, async (req, res) => {
     try {
-        const classes = await pool.query("SELECT * FROM turmas");
+        const query = `
+            SELECT t.*, c.nome as curso_nome, f.nome as coordenador_nome 
+            FROM turmas t 
+            LEFT JOIN cursos c ON t.curso_id = c.id 
+            LEFT JOIN formadores f ON t.coordenador_id = f.id
+            ORDER BY t.data_inicio DESC
+        `;
+        const classes = await pool.query(query);
         res.json(classes.rows);
     }
     catch (err) {
@@ -17,10 +25,24 @@ router.get('/', authorization, async (req, res) => {
 
 //post
 router.post('/create', authorization, verifyAdmin, async (req, res) => {
-
     try {
-        const { codigo, curso_id, data_inicio, data_fim, estado } = req.body;
-        const newClass = await pool.query("INSERT INTO turmas (codigo, curso_id, data_inicio, data_fim, estado) VALUES ($1, $2, $3, $4, $5) RETURNING *", [codigo, curso_id, data_inicio, data_fim, estado]);
+        const { codigo, curso_id, data_inicio, data_fim, estado, coordenador_id } = req.body;
+
+        // Validation: Coordinator max 3 active classes
+        if (coordenador_id && estado === 'ativa') {
+            const activeClasses = await pool.query(
+                "SELECT COUNT(*) FROM turmas WHERE coordenador_id = $1 AND estado = 'ativa'",
+                [coordenador_id]
+            );
+            if (parseInt(activeClasses.rows[0].count) >= 3) {
+                return res.status(400).json("O formador já se encontra a coordenar 3 turmas ativas.");
+            }
+        }
+
+        const newClass = await pool.query(
+            "INSERT INTO turmas (codigo, curso_id, data_inicio, data_fim, estado, coordenador_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
+            [codigo, curso_id, data_inicio, data_fim, estado, coordenador_id]
+        );
         res.json(newClass.rows[0]);
     } catch (err) {
         console.error(err.message);
@@ -32,8 +54,23 @@ router.post('/create', authorization, verifyAdmin, async (req, res) => {
 router.put('/update/:id', authorization, verifyAdmin, async (req, res) => {
     try {
         const { id } = req.params;
-        const { codigo, curso_id, data_inicio, data_fim, estado } = req.body;
-        const updateClass = await pool.query("UPDATE turmas SET codigo = $1, curso_id = $2, data_inicio = $3, data_fim = $4, estado = $5 WHERE id = $6 RETURNING *", [codigo, curso_id, data_inicio, data_fim, estado, id]);
+        const { codigo, curso_id, data_inicio, data_fim, estado, coordenador_id } = req.body;
+
+        // Validation: Coordinator max 3 active classes
+        if (coordenador_id && estado === 'ativa') {
+            const activeClasses = await pool.query(
+                "SELECT COUNT(*) FROM turmas WHERE coordenador_id = $1 AND estado = 'ativa' AND id != $2",
+                [coordenador_id, id]
+            );
+            if (parseInt(activeClasses.rows[0].count) >= 3) {
+                return res.status(400).json("O formador já se encontra a coordenar 3 turmas ativas.");
+            }
+        }
+
+        const updateClass = await pool.query(
+            "UPDATE turmas SET codigo = $1, curso_id = $2, data_inicio = $3, data_fim = $4, estado = $5, coordenador_id = $6 WHERE id = $7 RETURNING *",
+            [codigo, curso_id, data_inicio, data_fim, estado, coordenador_id, id]
+        );
         res.json(updateClass.rows[0]);
     }
     catch (err) {
@@ -104,6 +141,18 @@ router.get('/formandos', authorization, async (req, res) => {
             "SELECT f.id, u.nome, u.email FROM formandos f JOIN utilizadores u ON f.utilizador_id = u.id ORDER BY u.nome ASC"
         );
         res.json(formandos.rows);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send("Erro no servidor");
+    }
+});
+
+//get - listar todos os formadores (para dropdown de coordenador)
+router.get('/formadores', authorization, async (req, res) => {
+    try {
+        // Formadores table already has the name
+        const formadores = await pool.query("SELECT id, nome FROM formadores ORDER BY nome ASC");
+        res.json(formadores.rows);
     } catch (err) {
         console.error(err.message);
         res.status(500).send("Erro no servidor");

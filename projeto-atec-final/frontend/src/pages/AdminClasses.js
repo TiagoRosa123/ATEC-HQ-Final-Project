@@ -10,12 +10,15 @@ import TablePagination, { paginate } from '../components/TablePagination';
 function AdminClasses() {
     const [classes, setClasses] = useState([]);
     const [courses, setCourses] = useState([]); // Para cursos 
+    const [trainers, setTrainers] = useState([]); // Para formadores/coordenadores
     const [formData, setFormData] = useState({ // Para dados da turma
+
         codigo: '',
         curso_id: '',
         data_inicio: '',
         data_fim: '',
-        estado: 'planeamento'
+        estado: 'planeamento',
+        coordenador_id: ''
     });
     const [editId, setEditId] = useState(null); // Para editar uma turma
     const [showStudentsModal, setShowStudentsModal] = useState(false); // Para mostrar os alunos de uma turma
@@ -73,12 +76,14 @@ function AdminClasses() {
     // Carregar Turmas e Cursos (para poder escolher o curso)
     const loadData = async () => {
         try {
-            const [resClasses, resCourses] = await Promise.all([
+            const [resClasses, resCourses, resTrainers] = await Promise.all([
                 api.get('/classes'),
-                api.get('/courses')
+                api.get('/courses'),
+                api.get('/classes/formadores')
             ]);
             setClasses(resClasses.data);
             setCourses(resCourses.data);
+            setTrainers(resTrainers.data);
         } catch (error) { toast.error('Erro ao carregar dados'); }
     };
     useEffect(() => { loadData(); }, []);
@@ -98,7 +103,7 @@ function AdminClasses() {
                 await api.post('/classes/create', formData);
                 toast.success('Turma criada!');
             }
-            setFormData({ codigo: '', curso_id: '', data_inicio: '', data_fim: '', estado: 'pendente' });
+            setFormData({ codigo: '', curso_id: '', data_inicio: '', data_fim: '', estado: 'pendente', coordenador_id: '' });
             setEditId(null);
             loadData();
         } catch (error) {
@@ -129,61 +134,72 @@ function AdminClasses() {
         <Navbar>
             <h2 className="mb-4">Gestão de Turmas</h2>
             {canEdit && (
-            <Card className="mb-4 border-0 shadow-sm">
-                <Card.Body>
-                    <Form onSubmit={handleSubmit} className="row g-3">
-                        <div className="col-md-2">
-                            <Form.Control
-                                placeholder="Código"
-                                value={formData.codigo}
-                                onChange={e => setFormData({ ...formData, codigo: e.target.value })}
-                                required
-                            />
-                        </div>
-                        <div className="col-md-3">
-                            <Form.Select
-                                value={formData.curso_id}
-                                onChange={e => setFormData({ ...formData, curso_id: e.target.value })}
-                                required
-                            >
-                                <option value="">Selecionar Curso...</option>
-                                {courses.map(c => (
-                                    <option key={c.id} value={c.id}>{c.nome} ({c.sigla})</option>
-                                ))}
-                            </Form.Select>
-                        </div>
-                        <div className="col-md-2">
-                            <Form.Control type="date"
-                                value={formatDateForInput(formData.data_inicio)}
-                                onChange={e => setFormData({ ...formData, data_inicio: e.target.value })}
-                                required
-                            />
-                        </div>
-                        <div className="col-md-2">
-                            <Form.Control type="date"
-                                value={formatDateForInput(formData.data_fim)}
-                                onChange={e => setFormData({ ...formData, data_fim: e.target.value })}
-                            />
-                        </div>
-                        <div className="col-md-2">
-                            <Form.Select
-                                value={formData.estado}
-                                onChange={e => setFormData({ ...formData, estado: e.target.value })}
-                            >
-                                <option value="pendente">Pendente</option>
-                                <option value="ativa">Ativa</option>
-                                <option value="concluida">Concluída</option>
-                                <option value="cancelada">Cancelada</option>
-                            </Form.Select>
-                        </div>
-                        <div className="col-md-1">
-                            <Button type="submit" className="btn-primary-custom w-100">
-                                {editId ? <FaSave /> : <FaPlus />}
-                            </Button>
-                        </div>
-                    </Form>
-                </Card.Body>
-            </Card>
+                <Card className="mb-4 border-0 shadow-sm">
+                    <Card.Body>
+                        <Form onSubmit={handleSubmit} className="row g-3">
+                            <div className="col-md-2">
+                                <Form.Control
+                                    placeholder="Código"
+                                    value={formData.codigo}
+                                    onChange={e => setFormData({ ...formData, codigo: e.target.value })}
+                                    required
+                                />
+                            </div>
+                            <div className="col-md-3">
+                                <Form.Select
+                                    value={formData.curso_id}
+                                    onChange={e => setFormData({ ...formData, curso_id: e.target.value })}
+                                    required
+                                >
+                                    <option value="">Selecionar Curso...</option>
+                                    {courses.map(c => (
+                                        <option key={c.id} value={c.id}>{c.nome} ({c.sigla})</option>
+                                    ))}
+                                </Form.Select>
+                            </div>
+                            <div className="col-md-2">
+                                <Form.Control type="date"
+                                    value={formatDateForInput(formData.data_inicio)}
+                                    onChange={e => setFormData({ ...formData, data_inicio: e.target.value })}
+                                    required
+                                />
+                            </div>
+                            <div className="col-md-2">
+                                <Form.Control type="date"
+                                    value={formatDateForInput(formData.data_fim)}
+                                    onChange={e => setFormData({ ...formData, data_fim: e.target.value })}
+                                />
+                            </div>
+                            <div className="col-md-2">
+                                <Form.Select
+                                    value={formData.estado}
+                                    onChange={e => setFormData({ ...formData, estado: e.target.value })}
+                                >
+                                    <option value="pendente">Pendente</option>
+                                    <option value="ativa">Ativa</option>
+                                    <option value="concluida">Concluída</option>
+                                    <option value="cancelada">Cancelada</option>
+                                </Form.Select>
+                            </div>
+                            <div className="col-md-3">
+                                <Form.Select
+                                    value={formData.coordenador_id || ""}
+                                    onChange={e => setFormData({ ...formData, coordenador_id: e.target.value })}
+                                >
+                                    <option value="">Sem Coordenador...</option>
+                                    {trainers.map(t => (
+                                        <option key={t.id} value={t.id}>{t.nome}</option>
+                                    ))}
+                                </Form.Select>
+                            </div>
+                            <div className="col-md-1">
+                                <Button type="submit" className="btn-primary-custom w-100">
+                                    {editId ? <FaSave /> : <FaPlus />}
+                                </Button>
+                            </div>
+                        </Form>
+                    </Card.Body>
+                </Card>
             )}
             <Card className="border-0 shadow-sm">
                 <Card.Body>
@@ -201,56 +217,58 @@ function AdminClasses() {
                         );
                         const { paginatedItems, totalPages } = paginate(filtered, currentPage);
                         return (<>
-                    <Table hover>
-                        <thead>
-                            <tr>
-                                <th>Código</th>
-                                <th>Curso</th>
-                                <th>Data Início</th>
-                                <th>Estado</th>
-                                <th>Alunos</th>
-                                {canEdit && <th>Ações</th>}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {paginatedItems.map(cls => (
-                                <tr key={cls.id}>
-                                    <td><strong>{cls.codigo}</strong></td>
-                                    <td>{getCourseName(cls.curso_id)}</td>
-                                    <td>{new Date(cls.data_inicio).toLocaleDateString()}</td>
-                                    <td>
-                                        <Badge bg={
-                                            cls.estado === 'ativa' ? 'success' :
-                                                cls.estado === 'concluida' ? 'secondary' :
-                                                    cls.estado === 'cancelada' ? 'danger' : 'warning'
-                                        }>
-                                            {cls.estado.toUpperCase()}
-                                        </Badge>
-                                    </td>
-                                    <td>
-                                        <Button variant="outline-info" size="sm" onClick={() => handleOpenStudents(cls)}>
-                                            <FaUsers className="me-2" />Ver
-                                        </Button>
-                                    </td>
-                                    {canEdit && (
-                                    <td>
-                                        <Button variant="link" onClick={() => {
-                                            setEditId(cls.id);
-                                            setFormData(cls);
-                                        }}>
-                                            <FaEdit />
-                                        </Button>
-                                        <Button variant="link" className="text-danger" onClick={() => handleDelete(cls.id)}>
-                                            <FaTrash />
-                                        </Button>
-                                    </td>
-                                    )}
-                                </tr>
-                            ))}
-                        </tbody>
-                    </Table>
-                    <TablePagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
-                    </>);
+                            <Table hover>
+                                <thead>
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Curso</th>
+                                        <th>Coordenador</th>
+                                        <th>Data Início</th>
+                                        <th>Estado</th>
+                                        <th>Alunos</th>
+                                        {canEdit && <th>Ações</th>}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {paginatedItems.map(cls => (
+                                        <tr key={cls.id}>
+                                            <td><strong>{cls.codigo}</strong></td>
+                                            <td>{getCourseName(cls.curso_id)}</td>
+                                            <td>{cls.coordenador_nome || '-'}</td>
+                                            <td>{new Date(cls.data_inicio).toLocaleDateString()}</td>
+                                            <td>
+                                                <Badge bg={
+                                                    cls.estado === 'ativa' ? 'success' :
+                                                        cls.estado === 'concluida' ? 'secondary' :
+                                                            cls.estado === 'cancelada' ? 'danger' : 'warning'
+                                                }>
+                                                    {cls.estado.toUpperCase()}
+                                                </Badge>
+                                            </td>
+                                            <td>
+                                                <Button variant="outline-info" size="sm" onClick={() => handleOpenStudents(cls)}>
+                                                    <FaUsers className="me-2" />Ver
+                                                </Button>
+                                            </td>
+                                            {canEdit && (
+                                                <td>
+                                                    <Button variant="link" onClick={() => {
+                                                        setEditId(cls.id);
+                                                        setFormData(cls);
+                                                    }}>
+                                                        <FaEdit />
+                                                    </Button>
+                                                    <Button variant="link" className="text-danger" onClick={() => handleDelete(cls.id)}>
+                                                        <FaTrash />
+                                                    </Button>
+                                                </td>
+                                            )}
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </Table>
+                            <TablePagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+                        </>);
                     })()}
                 </Card.Body>
             </Card>
@@ -262,21 +280,21 @@ function AdminClasses() {
                 </Modal.Header>
                 <Modal.Body>
                     {canEdit && (
-                    <Form onSubmit={handleAddStudent} className="d-flex gap-2 mb-4 p-3 bg-light rounded">
-                        <Form.Select
-                            value={newStudentId}
-                            onChange={e => setNewStudentId(e.target.value)}
-                            required
-                        >
-                            <option value="">Selecionar Formando...</option>
-                            {allFormandos
-                                .filter(f => !studentsList.some(s => s.formando_id === f.id))
-                                .map(f => (
-                                    <option key={f.id} value={f.id}>{f.nome} ({f.email})</option>
-                                ))}
-                        </Form.Select>
-                        <Button type="submit" variant="success"><FaPlus /> Inscrever</Button>
-                    </Form>
+                        <Form onSubmit={handleAddStudent} className="d-flex gap-2 mb-4 p-3 bg-light rounded">
+                            <Form.Select
+                                value={newStudentId}
+                                onChange={e => setNewStudentId(e.target.value)}
+                                required
+                            >
+                                <option value="">Selecionar Formando...</option>
+                                {allFormandos
+                                    .filter(f => !studentsList.some(s => s.formando_id === f.id))
+                                    .map(f => (
+                                        <option key={f.id} value={f.id}>{f.nome} ({f.email})</option>
+                                    ))}
+                            </Form.Select>
+                            <Button type="submit" variant="success"><FaPlus /> Inscrever</Button>
+                        </Form>
                     )}
 
                     <h6 className="text-secondary fw-bold mb-3">Inscritos ({studentsList.length})</h6>
@@ -288,9 +306,9 @@ function AdminClasses() {
                                     <div className="small text-muted">{stud.email}</div>
                                 </div>
                                 {canEdit && (
-                                <Button variant="outline-danger" size="sm" onClick={() => handleRemoveStudent(stud.formando_id)}>
-                                    <FaTrash />
-                                </Button>
+                                    <Button variant="outline-danger" size="sm" onClick={() => handleRemoveStudent(stud.formando_id)}>
+                                        <FaTrash />
+                                    </Button>
                                 )}
                             </ListGroup.Item>
                         ))}
