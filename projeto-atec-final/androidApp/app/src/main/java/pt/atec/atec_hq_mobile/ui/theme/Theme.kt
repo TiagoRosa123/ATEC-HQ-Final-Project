@@ -14,16 +14,14 @@ import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
     primary = AtecBlue,
-    secondary = AtecOrange,
     tertiary = AtecDarkBlue
 )
 
 private val LightColorScheme = lightColorScheme(
     primary = AtecBlue,       // Botões e Títulos
-    secondary = AtecOrange,   // Destaques
     tertiary = AtecDarkBlue,
     background = AtecBg,      // Fundo
-    surface = AtecCard,       // Cartões
+    surface = AtecCard,       // Cards
     onPrimary = Color.White,
     onSecondary = Color.White,
     onBackground = AtecText,
@@ -33,7 +31,7 @@ private val LightColorScheme = lightColorScheme(
 @Composable
 fun ATEC_HQ_MobileTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Desligamos Dynamic Color para forçar as cores da ATEC
+    // Desligar Dynamic Color para forçar as cores da ATEC
     dynamicColor: Boolean = false, 
     content: @Composable () -> Unit
 ) {

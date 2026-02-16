@@ -9,15 +9,12 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 class RoomsViewModel (application: Application) : AndroidViewModel(application){
-
-    // guardar uma LISTA de Cursos
-    var roomsList by mutableStateOf(emptyList<Rooms>())
+    var roomsList by mutableStateOf(emptyList<Rooms>()) // guardar uma LISTA de Cursos
     var isLoading by mutableStateOf(false)
 
     //buscar os dados
     fun fetchRooms() {
         isLoading = true
-
         val context = getApplication<Application>().applicationContext
 
         RetrofitClient.getInstance(context).getRooms().enqueue(object : Callback<List<Rooms>> {

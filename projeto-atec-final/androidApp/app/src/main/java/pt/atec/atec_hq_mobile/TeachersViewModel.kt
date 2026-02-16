@@ -10,16 +10,12 @@ import retrofit2.Callback
 import retrofit2.Response
 
 class TeachersViewModel(application: Application) : AndroidViewModel(application) {
-
-    // Lista de Formadores
-    var teachersList by mutableStateOf(emptyList<Teachers>()) 
+    var teachersList by mutableStateOf(emptyList<Teachers>()) // Lista de Formadores
     var isLoading by mutableStateOf(false)
     var messageStatus by mutableStateOf("")
     fun fetchTeachers() {
-        isLoading = true 
-
-        // Obte Contexto
-        val context = getApplication<Application>().applicationContext
+        isLoading = true
+        val context = getApplication<Application>().applicationContext // Obte Contexto
 
         //Chamar o serviço
         RetrofitClient.getInstance(context).getTeachers().enqueue(object : Callback<List<Teachers>> {

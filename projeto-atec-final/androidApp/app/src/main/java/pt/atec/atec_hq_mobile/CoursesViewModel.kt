@@ -13,7 +13,6 @@ class CoursesViewModel(application: Application) : AndroidViewModel(application)
     // guardar uma LISTA de Cursos
     var coursesList by mutableStateOf(emptyList<Courses>())
     var isLoading by mutableStateOf(false)
-
     //buscar os dados
     fun fetchCourses() {
         isLoading = true

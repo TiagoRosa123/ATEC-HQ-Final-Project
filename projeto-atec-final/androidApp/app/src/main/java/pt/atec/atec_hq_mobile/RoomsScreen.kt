@@ -52,7 +52,6 @@ fun RoomsScreen(navController: NavController, viewModel: RoomsViewModel = viewMo
                 }
             }
         }
-
         Spacer(modifier = Modifier.height(16.dp))
     }
 }

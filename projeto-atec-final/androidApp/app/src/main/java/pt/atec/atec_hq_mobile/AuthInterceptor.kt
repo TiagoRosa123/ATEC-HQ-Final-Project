@@ -4,23 +4,24 @@ import android.content.Context
 import okhttp3.Interceptor
 import okhttp3.Response
 
-//"cola" o Token
+// Injetar automaticamente o Token JWT em todos os pedidos HTTP
 class AuthInterceptor(private val context: Context) : Interceptor {
-
+     //Intercepta o pedido, adiciona header se o token existir e prossegue.
     override fun intercept(chain: Interceptor.Chain): Response {
 
-        // agarrar no pedido original
+        //Obter pedido original
         val pedidoOriginal = chain.request()
         val construtorDoPedido = pedidoOriginal.newBuilder()
         
-        // buscar o token
+        //recuperar token guardado
         val token = TokenManager.getToken(context)
 
-        //caso haja token, add ao header
+        //se existe token, injetar no header "token"
         if (token != null) {
             construtorDoPedido.addHeader("token", token)
         }
 
+        //envia pedido
         return chain.proceed(construtorDoPedido.build())
     }
 }

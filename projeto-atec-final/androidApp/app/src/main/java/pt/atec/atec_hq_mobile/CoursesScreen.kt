@@ -32,7 +32,6 @@ fun CoursesScreen(navController: NavController, viewModel: CoursesViewModel = vi
             color = AtecText,
             modifier = Modifier.padding(bottom = 16.dp)
         )
-
         // Conteúdo
         if (viewModel.isLoading) {
             Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
@@ -48,7 +47,6 @@ fun CoursesScreen(navController: NavController, viewModel: CoursesViewModel = vi
                 }
             }
         }
-
         Spacer(modifier = Modifier.height(16.dp))
     }
 }

@@ -45,54 +45,52 @@ class MainActivity : ComponentActivity() {
             ATEC_HQ_MobileTheme {
                 val navController = rememberNavController()
                 val viewModel: LoginViewModel = viewModel()
-                // Scope da ViewModel partilhado para navegação de estudantes
+                // Shared ViewModel para manter dados entre lista e detalhes de alunos
                 val studentsViewModel: StudentsViewModel = viewModel()
 
-                // Define ecrãs da app
+                // NavHost:gestão de navegação - 6 rotas
                 NavHost(navController = navController, startDestination = "login") {
 
                     //Login
                     composable("login") {
 
-                        //loginSuccess = true
+                        //Navegar quando loginSuccess for true
                         LaunchedEffect(viewModel.loginSuccess) {
                             if (viewModel.loginSuccess) {
-                                // vai p/ dashboard
                                 navController.navigate("dashboard") {
-                                    // "popUpTo": Remove o Login da pilha (botão voltar fecha a app)
+                                    // Remove Login da stack para não voltar
                                     popUpTo("login") { inclusive = true }
                                 }
-                                viewModel.loginSuccess = false //"reset"
+                                viewModel.loginSuccess = false
                             }
                         }
-
                         LoginScreen(viewModel = viewModel)
                     }
-                    
-                    //Dashboard
+                    //Dashboard Principal
                     composable("dashboard") {
                         DashboardScreen(navController = navController, userName = viewModel.userName)
                     }
-                    
+                    //Cursos
                     composable("courses") {
+                        // ViewModel escopado a este ecrã
                         val coursesViewModel: CoursesViewModel = viewModel()
                         CoursesScreen(navController = navController, viewModel = coursesViewModel)
                     }
-                    
+                    //Turmas
                     composable("students") {
                         StudentsClassesScreen(navController = navController, viewModel = studentsViewModel)
                     }
-                    
+                    //Detalhes da Turma
                     composable("class_details/{className}") { backStackEntry ->
                         val className = backStackEntry.arguments?.getString("className")
                         ClassDetailsScreen(navController = navController, viewModel = studentsViewModel, className = className)
                     }
-                    
+                    //Formadores
                     composable("teachers") {
                         val teachersViewModel: TeachersViewModel = viewModel()
                         TeachersScreen(navController = navController, viewModel = teachersViewModel)
                     }
-                    
+                    //Salas
                     composable("rooms") {
                         val roomsViewModel: RoomsViewModel = viewModel()
                         RoomsScreen(navController = navController, viewModel = roomsViewModel)
@@ -126,13 +124,13 @@ fun LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.fillMaxWidth()
         ) {
-            // LOGO: ATEC (Cinza) HQ (Azul)
+            //logo com cores certas ATEC (Cinza) HQ (Azul)
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = "ATEC",
                     style = MaterialTheme.typography.headlineLarge,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Gray // AtecText ou Secondary
+                    color = Color.Gray
                 )
                 Text(
                     text = "HQ",
@@ -146,10 +144,8 @@ fun LoginScreen(
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.Gray
             )
-
             Spacer(modifier = Modifier.height(32.dp))
-
-            // CARD DO FORMULÁRIO
+            //card form.
             Card(
                 colors = CardDefaults.cardColors(containerColor = AtecCard),
                 elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
@@ -165,10 +161,8 @@ fun LoginScreen(
                         color = AtecDarkBlue,
                         fontWeight = FontWeight.Bold
                     )
-                    
                     Spacer(modifier = Modifier.height(24.dp))
-
-                    // EMAIL
+                    //email
                     OutlinedTextField(
                         value = viewModel.email,
                         onValueChange = { viewModel.email = it },
@@ -181,10 +175,8 @@ fun LoginScreen(
                             unfocusedBorderColor = Color.LightGray
                         )
                     )
-
                     Spacer(modifier = Modifier.height(16.dp))
-
-                    // PASSWORD
+                    //password
                     OutlinedTextField(
                         value = viewModel.password,
                         onValueChange = { viewModel.password = it },
@@ -200,8 +192,7 @@ fun LoginScreen(
                     )
 
                     Spacer(modifier = Modifier.height(24.dp))
-
-                    // BOTÃO ENTRAR
+                    //btn entrar
                     Button(
                         onClick = { viewModel.fazerLogin() },
                         modifier = Modifier.fillMaxWidth().height(50.dp),
@@ -212,10 +203,8 @@ fun LoginScreen(
                     }
                 }
             }
-
             Spacer(modifier = Modifier.height(32.dp))
-
-            // FOOTER
+            //footer
             Text(
                 text = "© 2026 ATECHQ Academia de Formação",
                 style = MaterialTheme.typography.bodySmall,

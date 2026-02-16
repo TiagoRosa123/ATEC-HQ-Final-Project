@@ -37,7 +37,7 @@ fun StudentsClassesScreen(navController: NavController, viewModel: StudentsViewM
 
         if (viewModel.isLoading) {
             Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = AtecOrange)
+                CircularProgressIndicator(color = AtecDarkBlue)
             }
         } else {
             LazyColumn(
@@ -58,12 +58,10 @@ fun StudentsClassesScreen(navController: NavController, viewModel: StudentsViewM
 
 @Composable
 fun ClassDetailsScreen(navController: NavController, viewModel: StudentsViewModel, className: String?) {
-    // Filter locally from the shared ViewModel list
     val selectedClass = viewModel.studentsList.find { it.turma == className }
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Spacer(modifier = Modifier.height(35.dp))
-
         Text(
             text = "Turma: ${className ?: "N/A"}",
             style = MaterialTheme.typography.headlineMedium,
@@ -119,7 +117,7 @@ fun ClassCard(classGroup: ClassWithStudents, onClick: () -> Unit) {
             Icon(
                 imageVector = Icons.Default.ArrowForward,
                 contentDescription = "Ver Detalhes",
-                tint = AtecOrange
+                tint = AtecDarkBlue
             )
         }
     }
@@ -128,7 +126,7 @@ fun ClassCard(classGroup: ClassWithStudents, onClick: () -> Unit) {
 @Composable
 fun StudentCard(student: Students) {
     Card(
-        colors = CardDefaults.cardColors(containerColor = AtecCard), // Tom mais claro se quiser diferenciar
+        colors = CardDefaults.cardColors(containerColor = AtecCard),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
         modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
     ) {

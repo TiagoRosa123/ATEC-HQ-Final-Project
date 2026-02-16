@@ -22,7 +22,6 @@ import pt.atec.atec_hq_mobile.ui.theme.*
 @Composable
 fun TeachersScreen(navController: NavController, viewModel: TeachersViewModel = viewModel()) {
     LaunchedEffect(Unit) { viewModel.fetchTeachers() }
-    
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Spacer(modifier = Modifier.height(35.dp))
         // Título ou Espaço
@@ -33,7 +32,7 @@ fun TeachersScreen(navController: NavController, viewModel: TeachersViewModel = 
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
-        // Conteúdo (ocupa o espaço todo disponível)
+        // Conteúdo
         if (viewModel.isLoading) {
             Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = AtecBlue)

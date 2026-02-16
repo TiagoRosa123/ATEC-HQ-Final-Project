@@ -30,7 +30,6 @@ fun DashboardScreen(navController: NavController, userName: String, modifier: Mo
         MenuItem("Formadores", Icons.Default.Face, "teachers"),
         MenuItem("Salas", Icons.Default.Home, "rooms")
     )
-
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -59,10 +58,9 @@ fun DashboardScreen(navController: NavController, userName: String, modifier: Mo
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // GRELHA (Isto é o Ponto 3! 🧱)
-        // GridCells.Fixed(2) = 2 Colunas
+        //grelha
         LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
+            columns = GridCells.Fixed(2), //2 colunas
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier.weight(1f) // Ocupa o espaço restante
@@ -71,8 +69,7 @@ fun DashboardScreen(navController: NavController, userName: String, modifier: Mo
                 DashboardCard(item) { navController.navigate(item.route) }
             }
         }
-
-        // Botão Sair
+        // Btn Sair
         Button(
             onClick = { navController.navigate("login") },
             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
@@ -84,10 +81,9 @@ fun DashboardScreen(navController: NavController, userName: String, modifier: Mo
     }
 }
 
-// Classe de dados simples para a lista
-data class MenuItem(val title: String, val icon: ImageVector, val route: String)
+data class MenuItem(val title: String, val icon: ImageVector, val route: String) // Classe de dados simples para a lista
 
-// O COMPONENTE "CARTÃO"
+//Card
 @Composable
 fun DashboardCard(item: MenuItem, onClick: () -> Unit) {
     Card(
@@ -96,7 +92,7 @@ fun DashboardCard(item: MenuItem, onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .height(130.dp) // Altura fixa
-            .clickable { onClick() } // Clique
+            .clickable { onClick() } // Clicavel
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),

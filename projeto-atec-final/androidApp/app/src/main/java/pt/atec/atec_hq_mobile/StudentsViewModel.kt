@@ -10,8 +10,7 @@ import retrofit2.Callback
 import retrofit2.Response
 
 class StudentsViewModel (application: Application) : AndroidViewModel(application){
-    // guardar uma LISTA de Cursos (agrupados por turma)
-    var studentsList by mutableStateOf(emptyList<ClassWithStudents>())
+    var studentsList by mutableStateOf(emptyList<ClassWithStudents>()) // guardar  LISTA de Cursos agrupados por turma
     var isLoading by mutableStateOf(false)
 
     //buscar os dados
