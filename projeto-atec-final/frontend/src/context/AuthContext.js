@@ -8,7 +8,7 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null); // Guarda dados do user
+    const [user, setUser] = useState(null); // Guarda dados do utilizador autenticado
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }) => {
         const storedUser = localStorage.getItem('user');
 
         if (token && storedUser) {
-            setUser(JSON.parse(storedUser)); //Repõe a sessão do utilizador
+            setUser(JSON.parse(storedUser)); // Repõe a sessão do utilizador
         }
         setLoading(false); //Terminou de carregar
     }, []);
@@ -35,6 +35,7 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
     };
 
+    // Valores exportados pelo Contexto
     const value = {
         user,
         login,

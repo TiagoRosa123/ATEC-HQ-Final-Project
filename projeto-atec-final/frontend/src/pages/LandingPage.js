@@ -16,27 +16,31 @@ const LandingPage = () => {
         fetchCourses();
     }, []);
 
+    // Fetch de cursos públicos (sem autenticação)
     const fetchCourses = async () => {
         try {
             const res = await axios.get('http://localhost:5000/api/public/courses');
             setCourses(res.data);
             setFilteredCourses(res.data);
 
-            // Extrair áreas únicas
-            const uniqueAreas = ["Todas", ...new Set(res.data.map(c => c.area_nome).filter(Boolean))]; // Use area_nome from backend
+            // Extrair áreas únicas para o filtro
+            const uniqueAreas = ["Todas", ...new Set(res.data.map(c => c.area_nome).filter(Boolean))];
             setAreas(uniqueAreas);
         } catch (err) {
             console.error("Erro ao carregar cursos:", err);
         }
     };
 
+    // Lógica de Filtragem (Pesquisa texto + Área + Data)
     useEffect(() => {
         let result = courses;
 
+        // Filtro por Área
         if (selectedArea !== "Todas") {
             result = result.filter(c => c.area_nome === selectedArea);
         }
 
+        // Filtro por Texto (Nome ou Descrição)
         if (searchTerm) {
             result = result.filter(c =>
                 c.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||

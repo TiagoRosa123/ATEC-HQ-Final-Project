@@ -43,12 +43,15 @@ function AdminModules() {
         }
         try {
             if (editandoId) {
+                // Update
                 await api.put(`/modules/update/${editandoId}`, formData);
                 toast.success('Modulo atualizado!');
             } else {
+                // Create
                 await api.post('/modules/create', formData);
                 toast.success('Modulo criado!');
             }
+            // Reset form
             setFormData({ nome: '', horas_totais: '', codigo: '' });
             setEditandoId(null);
             loadModules();
@@ -74,33 +77,33 @@ function AdminModules() {
             <h2 className="mb-4">Gestão de Módulos</h2>
 
             {canEdit && (
-            <Card className="mb-4 border-0 shadow-sm">
-                <Card.Body>
-                    <Form onSubmit={handleSubmit} className="d-flex gap-2">
-                        <Form.Control
-                            placeholder="Nome do Módulo"
-                            value={formData.nome}
-                            onChange={e => setFormData({ ...formData, nome: e.target.value })}
-                            required
-                        />
-                        <Form.Control
-                            placeholder="Horas totais"
-                            value={formData.horas_totais}
-                            onChange={e => setFormData({ ...formData, horas_totais: e.target.value })}
-                            required
-                            style={{ maxWidth: '150px' }}
-                        />
-                        <Form.Control
-                            placeholder="Código"
-                            value={formData.codigo}
-                            onChange={e => setFormData({ ...formData, codigo: e.target.value })}
-                        />
-                        <Button type="submit" className="btn-primary-custom px-4">
-                            {editandoId ? <FaSave /> : <FaPlus />}
-                        </Button>
-                    </Form>
-                </Card.Body>
-            </Card>
+                <Card className="mb-4 border-0 shadow-sm">
+                    <Card.Body>
+                        <Form onSubmit={handleSubmit} className="d-flex gap-2">
+                            <Form.Control
+                                placeholder="Nome do Módulo"
+                                value={formData.nome}
+                                onChange={e => setFormData({ ...formData, nome: e.target.value })}
+                                required
+                            />
+                            <Form.Control
+                                placeholder="Horas totais"
+                                value={formData.horas_totais}
+                                onChange={e => setFormData({ ...formData, horas_totais: e.target.value })}
+                                required
+                                style={{ maxWidth: '150px' }}
+                            />
+                            <Form.Control
+                                placeholder="Código"
+                                value={formData.codigo}
+                                onChange={e => setFormData({ ...formData, codigo: e.target.value })}
+                            />
+                            <Button type="submit" className="btn-primary-custom px-4">
+                                {editandoId ? <FaSave /> : <FaPlus />}
+                            </Button>
+                        </Form>
+                    </Card.Body>
+                </Card>
             )}
 
             {/* TABELA */}
@@ -120,40 +123,40 @@ function AdminModules() {
                         );
                         const { paginatedItems, totalPages } = paginate(filtered, currentPage);
                         return (<>
-                    <Table hover>
-                        <thead>
-                            <tr>
-                                <th>Nome</th>
-                                <th>Horas totais</th>
-                                <th>Código</th>
-                                {canEdit && <th>Ações</th>}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {paginatedItems.map(module => (
-                                <tr key={module.id}>
-                                    <td><strong>{module.nome}</strong></td>
-                                    <td>{module.horas_totais}</td>
-                                    <td>{module.codigo}</td>
-                                    {canEdit && (
-                                    <td>
-                                        <Button variant="link" onClick={() => {
-                                            setEditandoId(module.id);
-                                            setFormData({ nome: module.nome, horas_totais: module.horas_totais, codigo: module.codigo });
-                                        }}>
-                                            <FaEdit />
-                                        </Button>
-                                        <Button variant="link" className="text-danger" onClick={() => handleDelete(module.id)}>
-                                            <FaTrash />
-                                        </Button>
-                                    </td>
-                                    )}
-                                </tr>
-                            ))}
-                        </tbody>
-                    </Table>
-                    <TablePagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
-                    </>);
+                            <Table hover>
+                                <thead>
+                                    <tr>
+                                        <th>Nome</th>
+                                        <th>Horas totais</th>
+                                        <th>Código</th>
+                                        {canEdit && <th>Ações</th>}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {paginatedItems.map(module => (
+                                        <tr key={module.id}>
+                                            <td><strong>{module.nome}</strong></td>
+                                            <td>{module.horas_totais}</td>
+                                            <td>{module.codigo}</td>
+                                            {canEdit && (
+                                                <td>
+                                                    <Button variant="link" onClick={() => {
+                                                        setEditandoId(module.id);
+                                                        setFormData({ nome: module.nome, horas_totais: module.horas_totais, codigo: module.codigo });
+                                                    }}>
+                                                        <FaEdit />
+                                                    </Button>
+                                                    <Button variant="link" className="text-danger" onClick={() => handleDelete(module.id)}>
+                                                        <FaTrash />
+                                                    </Button>
+                                                </td>
+                                            )}
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </Table>
+                            <TablePagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+                        </>);
                     })()}
                 </Card.Body>
             </Card>

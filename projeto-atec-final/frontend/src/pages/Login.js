@@ -19,12 +19,14 @@ function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
 
+  // Submissão do Formulário de Login
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     const bodyData = { email, password };
 
+    // Se o backend pedir 2FA, enviamos o token inserido pelo user
     if (pedir2fa && token2fa) {
       bodyData.token2fa = token2fa;
     }
@@ -33,6 +35,7 @@ function Login() {
       const response = await api.post('/auth/login', bodyData);
       const data = response.data;
 
+      // Sucesso: Guarda sessão e redireciona
       login(data.token, data.user);
       toast.success(`Bem-vindo, ${data.user.nome.split(' ')[0]}!`);
       navigate('/dashboard');
@@ -41,8 +44,9 @@ function Login() {
       const status = error.response?.status;
       const data = error.response?.data;
 
+      // Se o backend retornar que precisa de 2FA
       if (status === 400 && data?.require2fa) {
-        setPedir2fa(true);
+        setPedir2fa(true); // Mostra o input de 2FA
         toast('Autenticação de 2 fatores necessária.', { icon: '🔐' });
       } else {
         const msg = typeof data === 'string' ? data : data?.msg || 'Email ou password incorretos.';
@@ -53,17 +57,17 @@ function Login() {
     }
   };
 
-  // --- Custom Google Login Hook ---
+  //Custom Google Login Hook
   const loginGoogleCustom = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       try {
-        // 1. Fetch Google User Info
+        // Fetch Google User Info com o token recebido
         const res = await axios.get('https://www.googleapis.com/oauth2/v3/userinfo', {
           headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
         });
         const profile = res.data;
 
-        // 2. Send to Backend
+        // Envia para o Backend para criar/autenticar o user
         const response = await api.post('/auth/google', {
           email: profile.email,
           nome: profile.name,

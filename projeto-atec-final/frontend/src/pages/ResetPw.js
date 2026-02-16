@@ -11,6 +11,7 @@ function ResetPw() {
   const { token } = useParams();
   const navigate = useNavigate();
 
+  // Submete a nova password com o token presente no URL
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);

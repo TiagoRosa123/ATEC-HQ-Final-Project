@@ -77,6 +77,7 @@ function Settings() {
         }
     };
 
+    // Confirmar Setup: Validar o código gerado pela App do utilizador
     const confirmar2FA = async () => {
         try {
             const res = await fetch('http://localhost:5000/auth/2fa/verify', {
@@ -89,6 +90,7 @@ function Settings() {
                 setMsg2FA("Autenticação 2FA ativada com sucesso!");
                 setMsgType2FA("success");
                 setModoSetup2FA(false);
+                // Atualizar estado local do user
                 const updatedUser = { ...user, two_fa_ativado: true };
                 setUser(updatedUser);
                 localStorage.setItem('user', JSON.stringify(updatedUser));

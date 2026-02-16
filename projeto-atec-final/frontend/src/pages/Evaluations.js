@@ -60,6 +60,7 @@ function Evaluations() {
         }
     }, [selectedClassId, selectedModuleId]);
 
+    // Buscar notas que existem
     const fetchExistingGrades = async () => {
         try {
             console.log("Fetching grades for:", selectedClassId, selectedModuleId);
@@ -80,13 +81,11 @@ function Evaluations() {
             setGrades(newGrades);
             setExistingEvaluations(newExistingIds);
 
-            // Opcional: Se quiseres pré-preencher a data/tipo da primeira avaliação encontrada (para não ter de meter tudo de novo)
             if (data.length > 0) {
                 setFormData({
                     ...formData,
                     tipo_avaliacao: data[0].tipo_avaliacao,
                     data_avaliacao: data[0].data_avaliacao ? data[0].data_avaliacao.split('T')[0] : ''
-                    // observacao: ... (se quiseres)
                 });
             }
 
@@ -95,6 +94,7 @@ function Evaluations() {
             toast.error("Erro ao carregar histórico de notas.");
         }
     };
+    
     //Submeter Notas
     const handleSubmit = async () => {
         if (!selectedModuleId || !selectedClassId) return toast.error("Escolhe Turma e Módulo!");
@@ -104,7 +104,7 @@ function Evaluations() {
                 const nota = grades[studentId];
                 const existingId = existingEvaluations[studentId];
 
-                // Só envia se houver valor
+                // Só envia se houver valor válido
                 if (nota !== "" && nota !== undefined && nota !== null) {
                     const payload = {
                         turma_id: selectedClassId,
@@ -117,10 +117,10 @@ function Evaluations() {
                     };
 
                     if (existingId) {
-                        // UPDATE
+                        // UPDATE (PUT)
                         await api.put(`/evaluations/update/${existingId}`, payload);
                     } else {
-                        // CREATE
+                        // CREATE (POST)
                         await api.post('/evaluations/create', payload);
                     }
                 }
@@ -128,7 +128,7 @@ function Evaluations() {
             await Promise.all(promises);
             toast.success("Notas lançadas/atualizadas com sucesso!");
 
-            // Recarregar para garantir consistência
+            // Recarregar para garantir consistência visual
             fetchExistingGrades();
 
         } catch (error) {
@@ -151,17 +151,17 @@ function Evaluations() {
                 </div>
 
                 {canEdit && (
-                <div className="d-flex gap-3 mt-3">
-                    <Form.Select value={formData.tipo_avaliacao} onChange={e => setFormData({ ...formData, tipo_avaliacao: e.target.value })}>
-                        <option value="Teste">Teste</option>
-                        <option value="Projeto Final">Projeto Final</option>
-                        <option value="Apresentação Oral">Apresentação Oral</option>
-                        <option value="Recuperacao">Recuperação</option>
-                        <option value="Estagio">Estágio</option>
+                    <div className="d-flex gap-3 mt-3">
+                        <Form.Select value={formData.tipo_avaliacao} onChange={e => setFormData({ ...formData, tipo_avaliacao: e.target.value })}>
+                            <option value="Teste">Teste</option>
+                            <option value="Projeto Final">Projeto Final</option>
+                            <option value="Apresentação Oral">Apresentação Oral</option>
+                            <option value="Recuperacao">Recuperação</option>
+                            <option value="Estagio">Estágio</option>
 
-                    </Form.Select>
-                    <Form.Control type="date" value={formData.data_avaliacao} onChange={e => setFormData({ ...formData, data_avaliacao: e.target.value })} />
-                </div>
+                        </Form.Select>
+                        <Form.Control type="date" value={formData.data_avaliacao} onChange={e => setFormData({ ...formData, data_avaliacao: e.target.value })} />
+                    </div>
                 )}
             </Card>
             {selectedClassId && (
@@ -175,13 +175,13 @@ function Evaluations() {
                                 <td>{student.nome}</td>
                                 <td>
                                     {canEdit ? (
-                                    <Form.Control
-                                        type="number"
-                                        style={{ width: '100px' }}
-                                        min="0" max="20"
-                                        value={grades[student.formando_id] || ''}
-                                        onChange={e => setGrades({ ...grades, [student.formando_id]: e.target.value })}
-                                    />
+                                        <Form.Control
+                                            type="number"
+                                            style={{ width: '100px' }}
+                                            min="0" max="20"
+                                            value={grades[student.formando_id] || ''}
+                                            onChange={e => setGrades({ ...grades, [student.formando_id]: e.target.value })}
+                                        />
                                     ) : (
                                         <span>{grades[student.formando_id] !== undefined ? grades[student.formando_id] : '—'}</span>
                                     )}
@@ -192,7 +192,7 @@ function Evaluations() {
                 </Table>
             )}
             {canEdit && (
-            <Button size="lg" className="btn-primary-custom" onClick={handleSubmit}>Lançar Notas</Button>
+                <Button size="lg" className="btn-primary-custom" onClick={handleSubmit}>Lançar Notas</Button>
             )}
         </Navbar>
     );

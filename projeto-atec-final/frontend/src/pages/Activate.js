@@ -8,8 +8,10 @@ function Activate() {
     const [erro, setErro] = useState(false);
 
     useEffect(() => {
+        // Função para ativar a conta via API
         const ativarConta = async () => {
             try {
+                // Envia o token para o backend verificar e ativar o utilizador
                 const response = await fetch('http://localhost:5000/auth/activate-account', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -20,7 +22,7 @@ function Activate() {
 
                 if (response.ok) {
                     setMensagem(data);
-                    // 2 seg e manda para o login
+                    // Sucesso: aguarda 2 seg e redireciona para o login
                     setTimeout(() => {
                         navigate('/login');
                     }, 2000);

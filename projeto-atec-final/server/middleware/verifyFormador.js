@@ -14,6 +14,7 @@ module.exports = async (req, res, next) => {
 
     const { role, is_admin } = user.rows[0];
 
+    // Permite se for Admin OU se a role for 'formador'
     if (!is_admin && role !== 'formador') {
       return res.status(403).json("Acesso negado. Apenas para Administradores ou Formadores.");
     }

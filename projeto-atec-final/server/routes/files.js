@@ -10,8 +10,6 @@ const PdfPrinter = require('pdfmake/js/Printer').default;
 let printer = null;
 try {
     const fontPath = path.join(__dirname, '../node_modules/pdfmake/fonts/Roboto');
-    console.log("Fontes do pdf OK");
-
     const fonts = {
         Roboto: {
             normal: path.join(fontPath, 'Roboto-Regular.ttf'),
@@ -21,7 +19,6 @@ try {
         }
     };
     printer = new PdfPrinter(fonts);
-    console.log("PDFmaker a funcionar");
 } catch (error) {
     console.error("ERRO AO INICIAR PDFMAKER:", error.message);
 }
@@ -45,7 +42,7 @@ const upload = multer({ storage: storage });
 // LISTAR (Admin vê ficheiros de um user específico)
 router.get('/admin/list/:userId', authorization, async (req, res) => {
     try {
-        // 1. Verifica se quem pede é Admin
+        //Verifica se quem pede é Admin
         const adminCheck = await pool.query("SELECT is_admin FROM utilizadores WHERE id = $1", [req.user.id]);
         if (!adminCheck.rows[0].is_admin) {
             return res.status(403).json("Acesso negado.");
@@ -53,7 +50,7 @@ router.get('/admin/list/:userId', authorization, async (req, res) => {
 
         const { userId } = req.params;
 
-        // 2. Descobre se o alvo é formando ou formador
+        // Descobre se é formando ou formador
         const targetUser = await pool.query("SELECT role FROM utilizadores WHERE id = $1", [userId]);
         if (targetUser.rows.length === 0) return res.status(404).json("User não encontrado");
 
@@ -78,7 +75,7 @@ router.get('/admin/list/:userId', authorization, async (req, res) => {
 // UPLOAD (Admin envia para um user)
 router.post('/admin/upload/:userId', authorization, upload.single('file'), async (req, res) => {
     try {
-        // 1. Verifica Admin
+        // Verifica Admin
         const adminCheck = await pool.query("SELECT is_admin FROM utilizadores WHERE id = $1", [req.user.id]);
         if (!adminCheck.rows[0].is_admin) return res.status(403).json("Acesso negado.");
 
@@ -88,7 +85,7 @@ router.post('/admin/upload/:userId', authorization, upload.single('file'), async
 
         if (!file) return res.status(400).json({ message: "Nenhum ficheiro enviado." });
 
-        // 2. Descobre IDs internos do alvo
+        // Descobre IDs internos do alvo
         let formingId = null;
         let teacherId = null;
 

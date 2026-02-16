@@ -58,12 +58,15 @@ function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Carrega dados específicos baseados no Role do utilizador
     const loadData = async () => {
       try {
         if (user.is_admin || user.role === 'secretaria') {
+          // Admin/Secretaria: Estatísticas globais
           const res = await api.get('/dashboard/stats');
           setStats(res.data);
         } else if (user.role === 'formador') {
+          // Formador: Estatísticas pessoais
           try {
             const res = await api.get('/dashboard/stats/formador');
             setFormadorStats(res.data);
@@ -244,28 +247,28 @@ function Dashboard() {
               </Card.Header>
               <Card.Body>
                 {formadorStats.proximasAulas.length > 0 ? (
-                <Table hover responsive className="align-middle mb-0">
-                  <thead className="text-secondary">
-                    <tr>
-                      <th className="border-0 small fw-bold ps-3">DATA</th>
-                      <th className="border-0 small fw-bold">HORÁRIO</th>
-                      <th className="border-0 small fw-bold">MÓDULO</th>
-                      <th className="border-0 small fw-bold">TURMA</th>
-                      <th className="border-0 small fw-bold text-end pe-3">SALA</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {formadorStats.proximasAulas.map((aula, idx) => (
-                      <tr key={idx}>
-                        <td className="ps-3 fw-bold">{formatDate(aula.data)}</td>
-                        <td className="text-muted small">{aula.hora_inicio?.slice(0, 5)} - {aula.hora_fim?.slice(0, 5)}</td>
-                        <td><div className="fw-bold">{aula.modulo}</div></td>
-                        <td><Badge bg="info">{aula.turma}</Badge></td>
-                        <td className="text-end pe-3 text-muted">{aula.sala || '—'}</td>
+                  <Table hover responsive className="align-middle mb-0">
+                    <thead className="text-secondary">
+                      <tr>
+                        <th className="border-0 small fw-bold ps-3">DATA</th>
+                        <th className="border-0 small fw-bold">HORÁRIO</th>
+                        <th className="border-0 small fw-bold">MÓDULO</th>
+                        <th className="border-0 small fw-bold">TURMA</th>
+                        <th className="border-0 small fw-bold text-end pe-3">SALA</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </Table>
+                    </thead>
+                    <tbody>
+                      {formadorStats.proximasAulas.map((aula, idx) => (
+                        <tr key={idx}>
+                          <td className="ps-3 fw-bold">{formatDate(aula.data)}</td>
+                          <td className="text-muted small">{aula.hora_inicio?.slice(0, 5)} - {aula.hora_fim?.slice(0, 5)}</td>
+                          <td><div className="fw-bold">{aula.modulo}</div></td>
+                          <td><Badge bg="info">{aula.turma}</Badge></td>
+                          <td className="text-end pe-3 text-muted">{aula.sala || '—'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
                 ) : (
                   <p className="text-muted text-center py-4">Sem aulas agendadas.</p>
                 )}

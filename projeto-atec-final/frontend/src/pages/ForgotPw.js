@@ -8,11 +8,13 @@ function ForgotPw() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // Manipula o envio do formulário de recuperação
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
+      // Envia pedido ao backend para gerar token de reset e enviar email
       const response = await fetch('http://localhost:5000/auth/esqueci-Pw', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

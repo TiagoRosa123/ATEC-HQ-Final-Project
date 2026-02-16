@@ -145,7 +145,7 @@ router.post("/generate", authorization, async (req, res) => {
         .json("Não existem salas registadas no sistema.");
     }
 
-    // 6. Gerar horários — Algoritmo Greedy
+    // 6. Gerar horários 
     const slots = SLOTS[regime];
     const dates = getDateRange(data_inicio, data_fim);
 
@@ -198,7 +198,7 @@ router.post("/generate", authorization, async (req, res) => {
 
         let formadorId = null;
         for (const fid of formadoresModulo) {
-          // Verificar se o formador está livre neste horário
+          // Verificar conflitos de horário para o formador
           const conflicto = await client.query(
             `SELECT id FROM horarios 
              WHERE formador_id = $1 AND data_aula = $2
@@ -208,7 +208,7 @@ router.post("/generate", authorization, async (req, res) => {
           );
           if (conflicto.rows.length === 0) {
             formadorId = fid;
-            break;
+            break; // Encontrou um livre
           }
         }
 
@@ -216,7 +216,7 @@ router.post("/generate", authorization, async (req, res) => {
           avisos.push(
             `${date} ${slot.inicio}: Sem formador disponível para ${modAtual.nome}`
           );
-          continue;
+          continue; // Tenta próximo slot
         }
 
         // Encontrar sala disponível
@@ -231,7 +231,7 @@ router.post("/generate", authorization, async (req, res) => {
           );
           if (conflicto.rows.length === 0) {
             salaId = sala.id;
-            break;
+            break; // Encontrou uma livre
           }
         }
 
@@ -252,12 +252,12 @@ router.post("/generate", authorization, async (req, res) => {
           criadas++;
           modAtual.horasRestantes -= duracaoReal;
 
-          // Avançar para próximo módulo se esgotou as horas
+          // Se modulo terminou as horas, avança para o próximo
           if (modAtual.horasRestantes <= 0) {
             moduloIdx++;
           }
         } catch (insertErr) {
-          // Conflito de constraint (23P01 = exclusion violation)
+          // Tratar conflito de constraint caso algo tenha falhado na verificação manual
           if (insertErr.code === "23P01") {
             avisos.push(
               `${date} ${slot.inicio}: Conflito de horário para ${modAtual.nome}`
@@ -269,7 +269,7 @@ router.post("/generate", authorization, async (req, res) => {
       }
     }
 
-    await client.query("COMMIT");
+    await client.query("COMMIT"); // Confirma todas as alterações
 
     // Resumo dos módulos não totalmente agendados
     const naoAgendados = modulos

@@ -83,11 +83,13 @@ function AdminCourses() {
 
         try {
             if (editId) {
+                // UPDATE
                 await api.put(`/courses/update/${editId}`, dataToSend, {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 });
                 toast.success('Curso atualizado!');
             } else {
+                // CREATE
                 await api.post('/courses/create', dataToSend, {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 });

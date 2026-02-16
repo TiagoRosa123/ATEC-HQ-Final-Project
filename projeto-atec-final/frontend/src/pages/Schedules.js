@@ -27,6 +27,7 @@ const Schedules = () => {
     const { user } = useAuth();
     const canManage = user && (user.is_admin || user.role === 'secretaria');
 
+    // Carregar Opções dos Dropdowns (Turmas, Formadores, Salas)
     useEffect(() => {
         const fetchOptions = async () => {
             try {
@@ -55,9 +56,6 @@ const Schedules = () => {
     }, []);
 
     // Quando troca de tab ou id, recarregar. 
-    // Se ID vazio, talvez não buscar nada ou buscar tudo? 
-    // Requirement implies "Consulta de X", então se não escolheu X, mostra vazio ou tudo?
-    // Vamos mostrar tudo se vazio, ou filtrar se tem ID.
     useEffect(() => {
         setFilterId(''); // Reset selection on tab change
     }, [activeTab]);
@@ -66,6 +64,7 @@ const Schedules = () => {
         fetchSchedules();
     }, [activeTab, filterId]);
 
+    // Fetch de Horários
     const fetchSchedules = async () => {
         try {
             const token = localStorage.getItem('token');
@@ -73,12 +72,13 @@ const Schedules = () => {
                 headers: { token: token },
                 params: {
                     type: activeTab, // backend aceita 'turma', 'formador', 'sala'
-                    id: filterId
+                    id: filterId     // id da entidade selecionada
                 }
             };
 
             const res = await axios.get('http://localhost:5000/schedules', config);
 
+            // Converter strings de data para Objetos Date (necessário para o calendário)
             const formattedEvents = res.data.map(event => ({
                 ...event,
                 start: new Date(event.start),
@@ -89,7 +89,6 @@ const Schedules = () => {
 
         } catch (error) {
             console.error(error);
-            // toast.error("Erro ao carregar horários"); // Avoid spam on initial load
         }
     };
 
@@ -137,19 +136,19 @@ const Schedules = () => {
                     <h2 className="mb-0">Consultas de Horários</h2>
                     <div className="d-flex gap-2">
                         {canManage && (
-                        <button className="btn btn-primary-custom" onClick={() => setShowAutoModal(true)}>
-                            Horário Automático
-                        </button>
+                            <button className="btn btn-primary-custom" onClick={() => setShowAutoModal(true)}>
+                                Horário Automático
+                            </button>
                         )}
                         {canManage && (
-                    <button className="btn btn-success" onClick={() => {
-                        setSelectedSlot(null);
-                        setEditEvent(null);
-                        setShowModal(true);
-                    }}>
-                        + Nova Aula
-                    </button>
-                    )}
+                            <button className="btn btn-success" onClick={() => {
+                                setSelectedSlot(null);
+                                setEditEvent(null);
+                                setShowModal(true);
+                            }}>
+                                + Nova Aula
+                            </button>
+                        )}
                     </div>
                 </div>
 

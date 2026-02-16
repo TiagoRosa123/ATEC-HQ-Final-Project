@@ -1,17 +1,18 @@
 const express = require('express');
-const cors = require('cors'); // Permite que o frontend comunique com o backend de domínios diferentes
+const cors = require('cors'); // Middleware p/ permitir pedidos de origens diferentes
 const pool = require('./db');
 require('dotenv').config();
 
 const app = express();
 
+// Configuração de Middleware
 app.use(cors({
-  exposedHeaders: ['Content-Disposition']
+  exposedHeaders: ['Content-Disposition'] //Permite acesso ao header para downloads de ficheiros
 }));
-app.use(express.json());
-app.use('/uploads', express.static('uploads')); // Serve uploaded files
+app.use(express.json()); //permite ler JSON no req.body
+app.use('/uploads', express.static('uploads')); 
 
-// Rotas de autenticação
+//Rotas de autenticação
 app.use('/auth', require('./routes/auth'));
 app.use('/2fa', require('./routes/2fa'));
 app.use('/admin', require('./routes/admin'));
@@ -26,7 +27,6 @@ app.use('/schedules', require('./routes/schedules'));
 app.use('/dashboard', require('./routes/dashboard'));
 app.use('/api/contact', require('./routes/contact')); // Rota de Contacto/Candidatura
 app.use('/api/public', require('./routes/public')); // Rotas Públicas
-
 
 
 // ROTA TESTE: Ver se a BD responde

@@ -4,7 +4,7 @@ import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css'; // Estilos do D&D
-import 'moment/locale/pt'; 
+import 'moment/locale/pt';
 import Container from 'react-bootstrap/Container';
 
 moment.locale('pt');
@@ -29,7 +29,7 @@ const ScheduleCalendar = ({ events, defaultView = 'week', onSelectSlot, onSelect
   };
 
   const eventStyleGetter = (event) => {
-      // ... (mantém igual)
+    // ... (mantém igual)
     const backgroundColor = event.color || '#3174ad';
     return {
       style: {

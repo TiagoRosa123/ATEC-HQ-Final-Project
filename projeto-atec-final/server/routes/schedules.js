@@ -8,7 +8,6 @@ const autoScheduleRouter = require("./autoSchedule");
 router.use("/", autoScheduleRouter);
 
 // GET /api/schedules
-// Query Params: start (date), end (date), type (turma/formador/sala), id (optional entity id)
 router.get("/", authorization, async (req, res) => {
   try {
     const { start, end, type, id } = req.query;
@@ -40,7 +39,7 @@ router.get("/", authorization, async (req, res) => {
     const values = [];
     let paramCounter = 1;
 
-    // Filtro por Data (Obrigatório para performance, mas opcional na lógica)
+    // Filtro por Intervalo de Datas (performance)
     if (start && end) {
       query += ` AND h.data_aula BETWEEN $${paramCounter} AND $${paramCounter + 1}`;
       values.push(start, end);
@@ -54,7 +53,7 @@ router.get("/", authorization, async (req, res) => {
         values.push(id);
         paramCounter++;
       } else if (type === "formador") {
-        // Recebemos o ID de utilizador do frontend (pois a lista vem de /admin/users)
+        // Recebemos o ID de utilizador do frontend
         // Então filtramos pela relação formadores -> utilizadores
         query += ` AND f.utilizador_id = $${paramCounter}`;
         values.push(id);
@@ -88,7 +87,7 @@ router.get("/", authorization, async (req, res) => {
           turma: row.turma_codigo,
         },
         color: row.color || "#3174ad",
-        // Campos extra para D&D e Updates
+        // Campos extra para Drag & Drop e Updates
         turma_id: row.turma_id,
         formador_id: row.formador_id,
         sala_id: row.sala_id,
@@ -114,14 +113,13 @@ router.post("/", authorization, verifyScheduleManager, async (req, res) => {
     }
 
     //Não excede horas do modulo
-    // 1. Buscar limite do módulo
+    //busca limite do módulo
     const modInfo = await pool.query("SELECT horas_totais FROM modulos WHERE id = $1", [modulo_id]);
     if (modInfo.rows.length === 0) return res.status(400).json("Módulo não encontrado.");
 
     const horasLimite = modInfo.rows[0].horas_totais;
 
-    // 2. Calcular horas já agendadas
-    // Nota: Postgres faz a subtração de TIME devolvendo INTERVAL, EXTRACT epoch dá segundos.
+    // Calcular horas já agendadas
     const usoAtual = await pool.query(`
             SELECT SUM(EXTRACT(EPOCH FROM (hora_fim - hora_inicio))/3600) as total_horas
             FROM horarios 
@@ -130,9 +128,7 @@ router.post("/", authorization, verifyScheduleManager, async (req, res) => {
 
     const horasAgendadas = parseFloat(usoAtual.rows[0].total_horas) || 0;
 
-    // 3. Calcular duração da nova aula
-    // Precisamos converter strings HH:MM para horas decimais, 
-    // mas para validar ANTES de inserir, calculamos aqui.
+    // Calcular duração da nova aula
     const [hI, mI] = hora_inicio.split(':').map(Number);
     const [hF, mF] = hora_fim.split(':').map(Number);
     const duracaoNova = (hF + mF / 60) - (hI + mI / 60);
@@ -143,7 +139,6 @@ router.post("/", authorization, verifyScheduleManager, async (req, res) => {
     if (horasAgendadas + duracaoNova > horasLimite) {
       return res.status(400).json(`Limite de horas ultrapassado! (Máx: ${horasLimite}h, Agendado: ${horasAgendadas.toFixed(1)}h, Tentativa: +${duracaoNova.toFixed(1)}h)`);
     }
-    // -------------------------------------
 
     const query = `
             INSERT INTO horarios (turma_id, modulo_id, formador_id, sala_id, data_aula, hora_inicio, hora_fim)
@@ -184,7 +179,7 @@ router.put("/:id", authorization, verifyScheduleManager, async (req, res) => {
 
     const horasLimite = modInfo.rows[0].horas_totais;
 
-    // Soma TUDO MENOS a aula atual (porque a estamos a editar)
+    // Soma TUDO MENOS a aula atual
     const usoAtual = await pool.query(`
         SELECT SUM(EXTRACT(EPOCH FROM (hora_fim - hora_inicio))/3600) as total_horas
         FROM horarios 

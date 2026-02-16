@@ -64,14 +64,13 @@ function AdminUsers() {
     };
 
     //POST - Criar/Editar Utilizador
-    //POST - Criar/Editar Utilizador
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
             let targetId = editandoId;
 
             if (editandoId) {
-                // EDITAR
+                // EDITAR: Atualiza dados existentes
                 await api.put(`/admin/editar/${editandoId}`, {
                     nome: formData.nome,
                     email: formData.email,
@@ -80,12 +79,12 @@ function AdminUsers() {
                     foto: formData.foto
                 });
             } else {
-                // CRIAR
+                // CRIAR: Novo utilizador
                 const res = await api.post('/admin/criar', formData);
                 targetId = res.data.id;
             }
 
-            // SE HOUVER FICHEIRO SELECIONADO, FAZ UPLOAD
+            // SE HOUVER FICHEIRO SELECIONADO (FOTO), FAZ UPLOAD
             if (avatarFile && targetId) {
                 const uploadData = new FormData();
                 uploadData.append('file', avatarFile);
@@ -94,11 +93,11 @@ function AdminUsers() {
 
             toast.success(editandoId ? 'Utilizador atualizado!' : 'Utilizador criado!');
 
-            // Limpar form e recarregar
+            // Limpar form e recarregar lista
             setFormData({ nome: '', email: '', password: '', role: 'user', is_admin: false, foto: '' });
             setAvatarFile(null);
             setEditandoId(null);
-            if (document.getElementById('avatarInput')) document.getElementById('avatarInput').value = ""; // Limpa visualmente o input
+            if (document.getElementById('avatarInput')) document.getElementById('avatarInput').value = "";
             loadUsers();
 
         } catch (error) {
@@ -160,22 +159,21 @@ function AdminUsers() {
             return toast.error("Escolhe um ficheiro!");
 
         const formData = new FormData();
-
         formData.append('file', fileInput.files[0]);
         formData.append('tipo_ficheiro', fileType);
 
         try {
             const response = await api.post(`/files/admin/upload/${filesModalUser.id}`, formData);
             toast.success("Ficheiro enviado com sucesso!");
-            handleOpenFiles(filesModalUser); //update Lista
-            fileInput.value = null; //limpa input
+            handleOpenFiles(filesModalUser); // Atualiza lista
+            fileInput.value = null; // Limpa input
 
         } catch (error) {
             toast.error("Erro ao enviar ficheiro.");
         }
     };
 
-    //Fazer download
+    // Download de ficheiro
     const handlleDownload = async (filename) => {
         try {
             const response = await api.get(`/files/download/${filename}`, {
@@ -264,7 +262,7 @@ function AdminUsers() {
                                 )}
 
                                 <Form.Group className="mb-3">
-                                    <Form.Label className="small text-secondary fw-bold">Foto de Perfil ({editandoId ? 'Alterar' : 'Opcional'})</Form.Label>
+                                    <Form.Label className="small text-secondary fw-bold">Foto de Perfil</Form.Label>
                                     <div className="d-flex gap-2 align-items-center">
                                         {/* Preview se existir URL */}
                                         {formData.foto && !avatarFile && (
@@ -348,7 +346,7 @@ function AdminUsers() {
                                                         user.role === 'formando' ? <Badge bg="success" className="px-3 py-2 fw-normal">FORMANDO</Badge> :
                                                             user.role === 'formador' ? <Badge bg="warning" text="dark" className="px-3 py-2 fw-normal">FORMADOR</Badge> :
                                                                 user.role === 'secretaria' ? <Badge bg="info" className="px-3 py-2 fw-normal">SECRETÁRIA</Badge> :
-                                                                <Badge bg="light" text="dark" className="px-3 py-2 fw-normal border">USER</Badge>
+                                                                    <Badge bg="light" text="dark" className="px-3 py-2 fw-normal border">USER</Badge>
                                                     )}
                                                 </td>
                                                 <td className="text-end pe-4">

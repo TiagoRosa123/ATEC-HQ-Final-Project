@@ -22,6 +22,7 @@ const PublicNavbar = () => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
+    // Envio do Formulário de Contacto/Candidatura
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);

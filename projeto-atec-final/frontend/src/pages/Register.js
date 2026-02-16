@@ -24,6 +24,7 @@ function Register() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  //Registo via Formulário (Email/Pass)
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -34,14 +35,13 @@ function Register() {
 
       toast.success("Registo efetuado! Verifique o seu email para ativar a conta.");
 
-      // Pequeno delay para o utilizador ler a mensagem antes de mudar de página
+      // Delay para leitura da mensagem
       setTimeout(() => {
         navigate('/login');
       }, 2000);
 
     } catch (err) {
       console.error(err);
-      // O Axios guarda a mensagem de erro do backend em err.response.data
       const errorMsg = err.response?.data || 'Erro ao registar';
       toast.error(typeof errorMsg === 'string' ? errorMsg : errorMsg.msg || 'Erro ao registar');
     } finally {
@@ -49,11 +49,12 @@ function Register() {
     }
   };
 
+  // Registo via Google
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
       const decoded = jwtDecode(credentialResponse.credential);
 
-      // Substituído fetch por api.post
+      // Envia dados Google para o backend
       const response = await api.post('/auth/google', {
         email: decoded.email,
         nome: decoded.name,
@@ -62,6 +63,7 @@ function Register() {
 
       const data = response.data;
 
+      // Autentica o utilizador e redireciona
       login(data.token, data.user);
       toast.success('Registo com Google efetuado!');
       navigate('/dashboard');

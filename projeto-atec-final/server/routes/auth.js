@@ -22,7 +22,7 @@ router.post("/register", async (req, res) => {
     const salt = await bcrypt.genSalt(saltRound);
     const bcryptPassword = await bcrypt.hash(password, salt);
 
-    // Criar utilizador
+    //Insere na BD
     const newUser = await pool.query(
       "INSERT INTO utilizadores (nome, email, password_hash, ativado) VALUES ($1, $2, $3, $4) RETURNING *",
       [nome, cleanEmail, bcryptPassword, false]
@@ -35,11 +35,9 @@ router.post("/register", async (req, res) => {
       { expiresIn: "1d" }
     );
 
-    // Envia Email
-    // Como estamos em Docker, o frontend está na porta 80 (localhost), não 3000
+    // Envia Email de Ativação
     const url = `http://localhost/activate/${activationToken}`;
 
-    // Envia Email (com fallback para consola se falhar)
     try {
       await sendEmail({
         email: cleanEmail,
@@ -54,11 +52,11 @@ router.post("/register", async (req, res) => {
       console.log("Email enviado para: " + cleanEmail);
     } catch (emailError) {
       console.error("ERRO AO ENVIAR EMAIL:", emailError.message);
+      // Fallback para ambiente de desenvolvimento (mostrar link na consola)
       console.log("**************************************************");
       console.log("ATIVAR CONTA MANUALMENTE (LINK):");
       console.log(url);
       console.log("**************************************************");
-      // Não fazemos return erro, deixamos o registo concluir com sucesso
     }
 
     res.json({ message: "Registo efetuado! Verifica o email." });
@@ -100,13 +98,11 @@ router.post("/login", async (req, res) => {
 
     // Verifica se conta está ativa
     if (user.rows[0].ativado === false) {
-      console.log("Account not activated");
-      return res.status(401).json({ message: "Tens de ativar a conta no teu email primeiro!" });
     }
 
+    // Verifica password
     const validPassword = await bcrypt.compare(password, user.rows[0].password_hash);
     if (!validPassword) {
-      console.log("Invalid password");
       return res.status(401).json({ message: "Dados incorretos" });
     }
 
@@ -121,6 +117,7 @@ router.post("/login", async (req, res) => {
       if (!verified) return res.status(401).json({ message: "Código 2FA incorreto" });
     }
 
+    // Gerar Token JWT de Sessão
     const token = jwt.sign({ user: { id: user.rows[0].id } }, process.env.JWT_SECRET, { expiresIn: "1h" });
 
     // Remover dados sensíveis antes de enviar para o frontend

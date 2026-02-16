@@ -38,9 +38,11 @@ function AdminAreas() {
         e.preventDefault();
         try {
             if (editId) {
+                // Update
                 await api.put(`/areas/update/${editId}`, formData);
                 toast.success('Area atualizada!');
             } else {
+                // Create
                 await api.post('/areas/create', formData);
                 toast.success('Area criada!');
             }
@@ -70,26 +72,26 @@ function AdminAreas() {
 
             {/* FORMULÁRIO */}
             {canEdit && (
-            <Card className="mb-4 border-0 shadow-sm">
-                <Card.Body>
-                    <Form onSubmit={handleSubmit} className="d-flex gap-2">
-                        <Form.Control
-                            placeholder="Nome da Area"
-                            value={formData.nome}
-                            onChange={e => setFormData({ ...formData, nome: e.target.value })}
-                            required
-                        />
-                        <Form.Control
-                            placeholder="Descrição"
-                            value={formData.descricao}
-                            onChange={e => setFormData({ ...formData, descricao: e.target.value })}
-                        />
-                        <Button type="submit" className="btn-primary-custom px-4">
-                            {editId ? <FaSave /> : <FaPlus />}
-                        </Button>
-                    </Form>
-                </Card.Body>
-            </Card>
+                <Card className="mb-4 border-0 shadow-sm">
+                    <Card.Body>
+                        <Form onSubmit={handleSubmit} className="d-flex gap-2">
+                            <Form.Control
+                                placeholder="Nome da Area"
+                                value={formData.nome}
+                                onChange={e => setFormData({ ...formData, nome: e.target.value })}
+                                required
+                            />
+                            <Form.Control
+                                placeholder="Descrição"
+                                value={formData.descricao}
+                                onChange={e => setFormData({ ...formData, descricao: e.target.value })}
+                            />
+                            <Button type="submit" className="btn-primary-custom px-4">
+                                {editId ? <FaSave /> : <FaPlus />}
+                            </Button>
+                        </Form>
+                    </Card.Body>
+                </Card>
             )}
 
             {/* TABELA */}
@@ -106,38 +108,38 @@ function AdminAreas() {
                         const filtered = areas.filter(a => a.nome.toLowerCase().includes(searchTerm.toLowerCase()));
                         const { paginatedItems, totalPages } = paginate(filtered, currentPage);
                         return (<>
-                    <Table hover>
-                        <thead>
-                            <tr>
-                                <th>Área</th>
-                                <th>Descrição</th>
-                                {canEdit && <th>Ações</th>}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {paginatedItems.map(area => (
-                                <tr key={area.id}>
-                                    <td>{area.nome}</td>
-                                    <td>{area.descricao}</td>
-                                    {canEdit && (
-                                    <td>
-                                        <Button variant="link" onClick={() => {
-                                            setEditId(area.id);
-                                            setFormData({ nome: area.nome, descricao: area.descricao });
-                                        }}>
-                                            <FaEdit />
-                                        </Button>
-                                        <Button variant="link" className="text-danger" onClick={() => handleDelete(area.id)}>
-                                            <FaTrash />
-                                        </Button>
-                                    </td>
-                                    )}
-                                </tr>
-                            ))}
-                        </tbody>
-                    </Table>
-                    <TablePagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
-                    </>);
+                            <Table hover>
+                                <thead>
+                                    <tr>
+                                        <th>Área</th>
+                                        <th>Descrição</th>
+                                        {canEdit && <th>Ações</th>}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {paginatedItems.map(area => (
+                                        <tr key={area.id}>
+                                            <td>{area.nome}</td>
+                                            <td>{area.descricao}</td>
+                                            {canEdit && (
+                                                <td>
+                                                    <Button variant="link" onClick={() => {
+                                                        setEditId(area.id);
+                                                        setFormData({ nome: area.nome, descricao: area.descricao });
+                                                    }}>
+                                                        <FaEdit />
+                                                    </Button>
+                                                    <Button variant="link" className="text-danger" onClick={() => handleDelete(area.id)}>
+                                                        <FaTrash />
+                                                    </Button>
+                                                </td>
+                                            )}
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </Table>
+                            <TablePagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+                        </>);
                     })()}
                 </Card.Body>
             </Card>

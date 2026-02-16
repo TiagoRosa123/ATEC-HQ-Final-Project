@@ -480,7 +480,37 @@ SELECT pg_catalog.setval (
 -- Name: utilizadores_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval ( 'public.utilizadores_id_seq', 6, true );
+SELECT pg_catalog.setval ( 'public.utilizadores_id_seq', 14, true );
+
+--
+-- NOVOS DADOS ADICIONADOS (DEMO)
+--
+
+-- 1. Novos Utilizadores (Formandos)
+INSERT INTO public.utilizadores (id, nome, email, password_hash, role, ativado, is_admin) VALUES
+(10, 'Maria Silva', 'maria.silva@atec.pt', '$2b$10$OJolQIHcL9Hv4W8m9oiycu/MlTmP4wFZnuj1TT0TZjnl.GQiUP6SK', 'formando', true, false),
+(11, 'Jose Santos', 'jose.santos@atec.pt', '$2b$10$OJolQIHcL9Hv4W8m9oiycu/MlTmP4wFZnuj1TT0TZjnl.GQiUP6SK', 'formando', true, false),
+(12, 'Ana Pereira', 'ana.pereira@atec.pt', '$2b$10$OJolQIHcL9Hv4W8m9oiycu/MlTmP4wFZnuj1TT0TZjnl.GQiUP6SK', 'formando', true, false),
+(13, 'Pedro Costa', 'pedro.costa@atec.pt', '$2b$10$OJolQIHcL9Hv4W8m9oiycu/MlTmP4wFZnuj1TT0TZjnl.GQiUP6SK', 'formando', true, false);
+
+-- 2. Tabela Formandos
+INSERT INTO public.formandos (id, utilizador_id, nome) VALUES
+(10, 10, 'Maria Silva'),
+(11, 11, 'Jose Santos'),
+(12, 12, 'Ana Pereira'),
+(13, 13, 'Pedro Costa');
+
+-- 3. Inscrever na Turma 1 (0525) - Ativa
+INSERT INTO public.inscricoes (turma_id, formando_id, estado) VALUES
+(1, 10, 'ativa'),
+(1, 11, 'ativa'),
+(1, 12, 'ativa'),
+(1, 13, 'ativa');
+
+-- Atualizar sequências para garantir que novos inserts não falhem
+SELECT pg_catalog.setval('public.utilizadores_id_seq', (SELECT MAX(id) FROM public.utilizadores), true);
+SELECT pg_catalog.setval('public.formandos_id_seq', (SELECT MAX(id) FROM public.formandos), true);
+SELECT pg_catalog.setval('public.inscricoes_id_seq', (SELECT MAX(id) FROM public.inscricoes), true);
 
 --
 -- PostgreSQL database dump complete

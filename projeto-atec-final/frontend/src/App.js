@@ -4,7 +4,6 @@ import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext'; // Importar ThemeProvider
 import PrivateRoute from './components/PrivateRoute';
-
 import Register from './pages/Register';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
@@ -26,11 +25,13 @@ import TawkChat from './components/TawkChat';
 
 function App() {
   return (
+    //gere o darkmode da aplicação
     <ThemeProvider>
+      {/*gere autenticação e estado do utilizador (login/logout)*/}
       <AuthProvider>
         <Router>
           <div className="App">
-            {/*notificações pop-up no canto direito */}
+            {/*Notificações*/}
             <Toaster position="top-right" />
 
             <Routes>
@@ -54,6 +55,8 @@ function App() {
               <Route path="/admin/rooms" element={<PrivateRoute><AdminRooms /></PrivateRoute>} />
               <Route path="/schedules" element={<PrivateRoute><Schedules /></PrivateRoute>} />
             </Routes>
+
+            {/*TawkTo disponível globalmente */}
             <TawkChat />
           </div>
         </Router>

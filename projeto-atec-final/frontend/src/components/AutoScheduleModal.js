@@ -22,12 +22,14 @@ const AutoScheduleModal = ({ show, handleClose, onSuccess }) => {
         }
     }, [show]);
 
+    // Fetch de Turmas
     const fetchTurmas = async () => {
         try {
             const token = localStorage.getItem('token');
             const res = await axios.get('http://localhost:5000/classes', {
                 headers: { token }
             });
+            // Filtra apenas turmas ativas
             setTurmas(res.data.filter(t => t.estado === 'ativa'));
         } catch (err) {
             console.error(err);
@@ -38,6 +40,7 @@ const AutoScheduleModal = ({ show, handleClose, onSuccess }) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
+    // Acioanar Geração Automática (Chama API)
     const handleGenerate = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -50,9 +53,10 @@ const AutoScheduleModal = ({ show, handleClose, onSuccess }) => {
                 formData,
                 { headers: { token } }
             );
+            // Sucesso: Guarda o resultado para mostrar o relatório
             setResult(res.data);
             toast.success(res.data.mensagem);
-            if (onSuccess) onSuccess();
+            if (onSuccess) onSuccess(); // Callback para atualizar o calendário pai
         } catch (err) {
             const msg = err.response?.data || err.message;
             toast.error("Erro: " + msg);

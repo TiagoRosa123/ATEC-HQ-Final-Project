@@ -35,6 +35,7 @@ function Navbar({ children }) {
                             {/* Menu Administrativo */}
                             {user && (user.is_admin || user.role === 'secretaria') && (
                                 <NavDropdown title={<span><FaTools className="me-1" /> Administração</span>} id="admin-nav-dropdown">
+                                    {/* Apenas Admin vê Gestão de Utilizadores */}
                                     {user.is_admin && (
                                         <NavDropdown.Item as={Link} to="/admin" className={location.pathname === '/admin' ? 'active' : ''}>
                                             <FaUsers className="me-2" /> Utilizadores
@@ -78,6 +79,7 @@ function Navbar({ children }) {
                                 <ThemeToggle />
                             </div>
 
+                            {/* Dropdown de Perfil do Utilizador */}
                             <NavDropdown
                                 title={
                                     <div className="d-inline-flex align-items-center">

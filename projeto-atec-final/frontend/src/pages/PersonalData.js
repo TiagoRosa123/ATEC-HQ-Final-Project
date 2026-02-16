@@ -26,6 +26,7 @@ function PersonalData() {
         } catch (e) { console.error("Erro files"); }
     }
 
+    //Download ficheiros
     const handleDownload = async (filename, originalName) => {
         try {
             const response = await api.get(`/files/download/${filename}`, { responseType: 'blob' });
@@ -42,13 +43,13 @@ function PersonalData() {
 
     };
 
+    //Exportar ficha de avaliação
     const handleExportPDF = async () => {
         try {
             // responseType: 'blob' - Importante para ficheiros binários!
             const response = await api.get('/files/export-pdf', { responseType: 'blob' });
 
-            // Truque do Blob para forçar o download no browser
-            // Tentar extrair o nome do ficheiro do Header
+            // Extrair nome do ficheiro do Header Content-Disposition
             let filename = "Ficha_ATEC.pdf";
             const disposition = response.headers['content-disposition'];
             if (disposition && disposition.indexOf('attachment') !== -1) {
@@ -59,6 +60,7 @@ function PersonalData() {
                 }
             }
 
+            // Criar URL temporário para download
             const url = window.URL.createObjectURL(new Blob([response.data]));
             const link = document.createElement('a');
             link.href = url;

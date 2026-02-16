@@ -24,7 +24,7 @@ const CreateLessonModal = ({ show, handleClose, selectedSlot, editEvent, onSucce
     useEffect(() => {
         if (show) {
             fetchAuxData();
-            
+
             if (editEvent) {
                 // Modo Edição: Preencher com dados existentes
                 setFormData({
@@ -93,6 +93,7 @@ const CreateLessonModal = ({ show, handleClose, selectedSlot, editEvent, onSucce
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
+    // CRUD AULAS
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -102,14 +103,16 @@ const CreateLessonModal = ({ show, handleClose, selectedSlot, editEvent, onSucce
             const config = { headers: { token: token } };
 
             if (editEvent) {
+                // UPDATE
                 await axios.put(`http://localhost:5000/schedules/${editEvent.id}`, formData, config);
                 toast.success("Aula atualizada com sucesso!");
             } else {
+                // CREATE
                 await axios.post('http://localhost:5000/schedules', formData, config);
                 toast.success("Aula agendada com sucesso!");
             }
-            
-            onSuccess();
+
+            onSuccess(); // Recarrega calendário pai
             handleClose();
 
         } catch (error) {
@@ -123,12 +126,13 @@ const CreateLessonModal = ({ show, handleClose, selectedSlot, editEvent, onSucce
 
     const handleDelete = async () => {
         if (!window.confirm("Tem a certeza que deseja eliminar esta aula?")) return;
-        
+
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
             const config = { headers: { token: token } };
 
+            // DELETE
             await axios.delete(`http://localhost:5000/schedules/${editEvent.id}`, config);
             toast.success("Aula eliminada.");
             onSuccess();
@@ -168,7 +172,7 @@ const CreateLessonModal = ({ show, handleClose, selectedSlot, editEvent, onSucce
                             </Form.Group>
                         </Col>
                     </Row>
-                    
+
                     <Row className="mb-3">
                         <Col md={6}>
                             <Form.Group>
