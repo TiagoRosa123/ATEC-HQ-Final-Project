@@ -1,0 +1,147 @@
+const router = require('express').Router();
+const pool = require('../db');
+const authorization = require('../middleware/authorization');
+const verifyAdmin = require('../middleware/verifyAdmin');
+const bcrypt = require("bcrypt");
+
+//lista todos users - Read
+router.get('/todos', authorization, verifyAdmin, async (req, res) => {
+  try {
+    const users = await pool.query("SELECT id, nome, email, ativado, is_admin, role, foto FROM utilizadores");
+    res.json(users.rows);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Erro no servidor");
+  }
+});
+
+//Del. user 
+router.delete('/apagar/:id', authorization, verifyAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    //Impede que o admin se apague a si próprio (segurança básica)
+    if (id == req.user.id) {
+      return res.status(400).json("Não podes apagar a tua própria conta aqui.");
+    }
+
+    // Primeiro remover das tabelas dependentes
+    await pool.query("DELETE FROM formandos WHERE utilizador_id = $1", [id]);
+    await pool.query("DELETE FROM formadores WHERE utilizador_id = $1", [id]);
+    await pool.query("DELETE FROM funcionarios WHERE utilizador_id = $1", [id]);
+
+    // Finalmente remover o utilizador
+    await pool.query("DELETE FROM utilizadores WHERE id = $1", [id]);
+
+    res.json("Utilizador eliminado com sucesso!");
+  } catch (err) {
+    console.error(err.message);
+    // Se o erro for de foreign key, avisa o user
+    if (err.code === '23503') {
+      return res.status(400).json("Não é possível apagar: Este utilizador tem dados associados (turmas, aulas, etc).");
+    }
+    res.status(500).send("Erro no servidor");
+  }
+});
+
+//Promove admin - Update
+router.put('/promover/:id', authorization, verifyAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    await pool.query("UPDATE utilizadores SET is_admin = true WHERE id = $1", [id]);
+    res.json("Utilizador promovido a Administrador!");
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Erro no servidor");
+  }
+});
+
+//Editar dados - Update
+router.put('/editar/:id', authorization, verifyAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { nome, email, is_admin, role } = req.body;
+    const cleanEmail = email.trim().toLowerCase();
+
+    // Atualizar Utilizador Geral
+    await pool.query(
+      "UPDATE utilizadores SET nome = $1, email = $2, role = $3, is_admin = $4, foto = $5 WHERE id = $6",
+      [nome, cleanEmail, role, is_admin, req.body.foto, id]
+    );
+
+    // Verificar e criar registo na tabela específica, se não existir
+    if (role === 'formando') {
+      // Tenta inserir. Se já existir, não faz nada
+      // Em vez disso, verificamos antes:
+      const check = await pool.query("SELECT id FROM formandos WHERE utilizador_id = $1", [id]);
+      if (check.rows.length === 0) {
+        await pool.query("INSERT INTO formandos (utilizador_id, nome) VALUES ($1, $2)", [id, nome]);
+      }
+    }
+    else if (role === 'formador') {
+      const check = await pool.query("SELECT id FROM formadores WHERE utilizador_id = $1", [id]);
+      if (check.rows.length === 0) {
+        await pool.query("INSERT INTO formadores (utilizador_id, nome) VALUES ($1, $2)", [id, nome]);
+      }
+    }
+    else if (role === 'secretaria') {
+      const check = await pool.query("SELECT id FROM funcionarios WHERE utilizador_id = $1", [id]);
+      if (check.rows.length === 0) {
+        await pool.query("INSERT INTO funcionarios (utilizador_id, nome, departamento, cargo) VALUES ($1, $2, 'Secretaria', 'Assistente')", [id, nome]);
+      }
+    }
+
+    res.json("Utilizador atualizado e perfil sincronizado!");
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Erro ao atualizar utilizador");
+  }
+});
+
+// ROTA 4: Cria user - Create
+router.post('/criar', authorization, verifyAdmin, async (req, res) => {
+  try {
+    const { nome, email, password, role } = req.body; //role vem do frontend
+    const cleanEmail = email.trim().toLowerCase();
+
+    // Verifica se user existe
+    const userExist = await pool.query("SELECT * FROM utilizadores WHERE email = $1", [cleanEmail]);
+    if (userExist.rows.length > 0) {
+      return res.status(401).json("Utilizador já existe!");
+    }
+
+    // Encripta a password
+    const salt = await bcrypt.genSalt(10);
+    const bcryptPassword = await bcrypt.hash(password, salt);
+
+    // Se for 'admin', então is_admin= true
+    const is_admin = (role === 'admin');
+
+    // Insere na BD
+    const newUser = await pool.query(
+      "INSERT INTO utilizadores (nome, email, password_hash, role, is_admin, ativado, foto) VALUES ($1, $2, $3, $4, $5, true, $6) RETURNING *",
+      [nome, cleanEmail, bcryptPassword, role, is_admin, req.body.foto]
+    );
+
+    const newUserId = newUser.rows[0].id;
+
+    // Sincroniza com tabelas específicas
+    if (role === 'formando') {
+      await pool.query("INSERT INTO formandos (utilizador_id, nome) VALUES ($1, $2)", [newUserId, nome]);
+    }
+    else if (role === 'formador') {
+      await pool.query("INSERT INTO formadores (utilizador_id, nome) VALUES ($1, $2)", [newUserId, nome]);
+    }
+    else if (role === 'secretaria') {
+      await pool.query("INSERT INTO funcionarios (utilizador_id, nome, departamento, cargo) VALUES ($1, $2, 'Secretaria', 'Assistente')", [newUserId, nome]);
+    }
+
+    res.json(newUser.rows[0]);
+
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Erro ao criar utilizador");
+  }
+});
+
+module.exports = router;

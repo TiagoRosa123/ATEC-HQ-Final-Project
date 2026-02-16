@@ -1,0 +1,254 @@
+:root {
+  --primary-dark: #004275;
+  /* ATEC Darker Blue */
+  --primary-blue: #0069B4;
+  /* ATEC Main Blue */
+  --primary-active: #005a9e;
+
+  --accent-orange: #F58025;
+  /* ATEC Orange */
+  --accent-orange-hover: #d96d1e;
+
+  --bg-page: #f8f9fa;
+  --bg-card: #ffffff;
+
+  --text-main: #212529;
+  --text-menu: #6c757d;
+  --text-menu-active: #0069B4;
+
+  /* Shadows */
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Bootstrap Overrides for Branding */
+.text-primary {
+  color: var(--primary-blue) !important;
+}
+
+.bg-primary {
+  background-color: var(--primary-blue) !important;
+}
+
+.btn-primary {
+  background-color: #6c757d;
+  /* Gray Override */
+  border-color: #6c757d;
+}
+
+.btn-primary:hover {
+  background-color: #5c636a;
+  border-color: #565e64;
+}
+
+.text-accent {
+  color: var(--accent-orange) !important;
+}
+
+[data-bs-theme="dark"] {
+  --primary-dark: #cbd5e1;
+  /* Text color in dark mode sidebar */
+  --bg-page: #111827;
+  /* Dark background */
+  --bg-card: #1f2937;
+  /* Dark card background */
+  --text-main: #f9fafb;
+  /* Light text */
+  --text-menu: #9ca3af;
+  --text-menu-active: #ffffff;
+
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.5);
+}
+
+body {
+  margin: 0;
+  font-family:
+    "Inter",
+    system-ui,
+    -apple-system,
+    sans-serif;
+  background-color: var(--bg-page);
+  color: var(--text-main);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, monospace;
+}
+
+/* Layout Containers - Adjusted for Top Navbar */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex: 1;
+  background-color: var(--bg-page);
+  /* padding removed, managed by container */
+}
+
+/* Navigation Links */
+.nav-link-custom {
+  display: flex;
+  align-items: center;
+  padding: 0.85rem 1.5rem;
+  color: var(--text-menu) !important;
+  text-decoration: none;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  transition: all 0.2s ease-in-out;
+  border-left: 3px solid transparent;
+}
+
+.nav-link-custom:hover {
+  color: var(--text-menu-active) !important;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.nav-link-custom.active {
+  color: var(--accent-orange) !important;
+  background-color: rgba(249, 115, 22, 0.1);
+  border-left: 3px solid var(--accent-orange);
+}
+
+/* Cards */
+.card-modern {
+  background-color: var(--bg-card);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.2s;
+}
+
+.card-modern:hover {
+  box-shadow: var(--shadow-md);
+}
+
+/* Buttons */
+.btn-primary-custom {
+  background-color: #0069B4 !important;
+  border-color: #0069B4 !important;
+  color: white !important;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: 600;
+  box-shadow: none !important;
+  background-image: none !important;
+}
+
+.btn-primary-custom:hover {
+  background-color: var(--primary-active);
+}
+
+.btn-accent {
+  background-color: var(--accent-orange);
+  border: none;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.btn-accent:hover {
+  background-color: var(--accent-orange-hover);
+  color: white;
+}
+
+.text-accent {
+  color: var(--accent-orange) !important;
+}
+
+.text-dark-blue {
+  color: var(--primary-dark) !important;
+}
+
+/* React Big Calendar Dark Mode Overrides */
+[data-bs-theme="dark"] .rbc-calendar {
+  color: var(--text-main);
+}
+
+[data-bs-theme="dark"] .rbc-off-range-bg {
+  background-color: var(--bg-page);
+}
+
+[data-bs-theme="dark"] .rbc-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-bs-theme="dark"] .rbc-day-bg+.rbc-day-bg,
+[data-bs-theme="dark"] .rbc-month-row+.rbc-month-row,
+[data-bs-theme="dark"] .rbc-header+.rbc-header,
+[data-bs-theme="dark"] .rbc-month-view,
+[data-bs-theme="dark"] .rbc-day-bg,
+[data-bs-theme="dark"] .rbc-time-view,
+[data-bs-theme="dark"] .rbc-time-header-content,
+[data-bs-theme="dark"] .rbc-time-content,
+[data-bs-theme="dark"] .rbc-timeslot-group,
+[data-bs-theme="dark"] .rbc-time-content>*+*>* {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-bs-theme="dark"] .rbc-today {
+  background-color: rgba(249, 115, 22, 0.1);
+}
+
+[data-bs-theme="dark"] .rbc-toolbar button {
+  color: var(--text-main);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+[data-bs-theme="dark"] .rbc-toolbar button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-bs-theme="dark"] .rbc-toolbar button.rbc-active {
+  background-color: var(--primary-blue);
+  color: white;
+  border-color: var(--primary-blue);
+}
+
+/* Nav Pills Override for Brand Blue */
+.nav-pills .nav-link.active,
+.nav-pills .show>.nav-link {
+  background-color: #0069B4 !important;
+  color: white !important;
+}
+
+/* Dark Mode Text Overrides requested by User */
+[data-bs-theme="dark"] .brand-atec {
+  color: #ffffff !important;
+}
+
+.dashboard-welcome-text {
+  color: var(--primary-blue);
+}
+
+[data-bs-theme="dark"] .dashboard-welcome-text {
+  color: #ffffff !important;
+}
+
+[data-bs-theme="dark"] .upcoming-label {
+  color: #ffffff !important;
+}
+
+.course-title {
+  color: #0069B4 !important;
+}
+
+/* User Request: White border for specific navbar buttons in dark mode */
+[data-bs-theme="dark"] .navbar .btn-outline-secondary,
+[data-bs-theme="dark"] .navbar .btn-primary {
+  border-color: #ffffff !important;
+  color: #ffffff !important;
+}
+
+[data-bs-theme="dark"] .navbar .btn-outline-secondary:hover,
+[data-bs-theme="dark"] .navbar .btn-primary:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  border-color: #ffffff !important;
+}
