@@ -22,7 +22,7 @@ A aplicação permite aos utilizadores (Formadores):
 ## Como Executar
 
 ### Pré-requisitos
-- **Android Studio** (Recomendado: Koala ou Ladybug)
+- **Android Studio**  Koala ou Ladybug
 - **JDK 17** ou superior
 
 ### Passos
@@ -39,7 +39,19 @@ A aplicação permite aos utilizadores (Formadores):
    - Certifique-se que o Backend está a correr.
    - **Nota Importante:** Se estiver a testar num Emulador Android, o endereço `localhost` do computador é acessível via `http://10.0.2.2:5000`. Verifique as configurações do Retrofit no código (normalmente em `network/ExemploApi.kt` ou similar) se precisar de ajustar o IP para um dispositivo físico.
 
-4. **Executar**
+4. **Configurar Variáveis de Ambiente**
+   - Verifique o ficheiro `.env` na raiz ou `docker-compose.yml` para confirmar as credenciais da base de dados.
+
+5. **Arrancar a Aplicação**
+   ```bash
+   docker-compose up --build
+   ```
+
+6. **Aceder à Aplicação**
+   - Frontend: [http://localhost](http://localhost) (Porta 80)
+   - Backend API: [http://localhost:5000](http://localhost:5000) 
+
+7. **Executar**
    - Selecione um emulador ou conecte um dispositivo físico via USB.
    - Clique no botão "Run".
 
