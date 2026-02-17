@@ -1,4 +1,4 @@
-# ATEC HQ - Plataforma de Gestão de Formação
+# ATEC HeadQuarter - Plataforma de Gestão de Formação
 
 Este projeto é uma Aplicação Web para gestão de uma academia de formação, permitindo a gestão de turmas, horários, avaliações e recursos.
 
@@ -31,7 +31,7 @@ O projeto está configurado para ligar a uma base de dados PostgreSQL.
 - Os scripts de criação das tabelas encontram-se em: `server/database.sql`
 - Dados de teste (Seeds) encontram-se em: `server/seed_data.sql`
 
-> **Nota:** Se o `docker-compose.yml` não incluir um serviço `db`, certifique-se que tem um Postgres a correr localmente e que as credenciais no `server/.env` ou `docker-compose.yml` apontam para ele (`host.docker.internal` para Windows/Mac).
+**Nota:** Se o `docker-compose.yml` não incluir um serviço `db`, certifique-se que tem um Postgres a correr localmente e que as credenciais no `server/.env` ou `docker-compose.yml` apontam para ele (`host.docker.internal` para Windows/Mac).
 
 ## Tecnologias Utilizadas
 
@@ -42,7 +42,7 @@ O projeto está configurado para ligar a uma base de dados PostgreSQL.
 
 ## Credenciais de Teste (Exemplo)
 
-- **Admin:** `admin@atec.pt` / `123456` (Se carregados os seeds)
+- **Admin:** `admin@atec.pt` / `123456`
 - **Formador:** `formador@atec.pt` / `123456`
 - **Formando:** `aluno@atec.pt` / `123456`
 
