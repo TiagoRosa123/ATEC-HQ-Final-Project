@@ -158,7 +158,7 @@ router.delete('/delete/:id', authorization, verifyAdmin, async (req, res) => {
 router.get('/:id/modules', authorization, async (req, res) => {
     try {
         const { id } = req.params;
-        const modules = await pool.query("SELECT * FROM modulos JOIN curso_modulos ON modulos.id = curso_modulos.modulo_id WHERE curso_modulos.curso_id = $1", [id]);
+        const modules = await pool.query("SELECT modulos.* FROM modulos JOIN curso_modulos ON modulos.id = curso_modulos.modulo_id WHERE curso_modulos.curso_id = $1", [id]);
         res.json(modules.rows);
     }
     catch (err) {

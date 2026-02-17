@@ -28,7 +28,7 @@ router.post('/create', authorization, verifyAdmin, async (req, res) => {
     try {
         const { codigo, curso_id, data_inicio, data_fim, estado, coordenador_id } = req.body;
 
-        // Validation: Coordinator max 3 active classes
+        //Coordenador max 3 active classes
         if (coordenador_id && estado === 'ativa') {
             const activeClasses = await pool.query(
                 "SELECT COUNT(*) FROM turmas WHERE coordenador_id = $1 AND estado = 'ativa'",

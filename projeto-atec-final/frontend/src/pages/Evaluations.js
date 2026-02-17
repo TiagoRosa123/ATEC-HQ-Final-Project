@@ -94,10 +94,11 @@ function Evaluations() {
             toast.error("Erro ao carregar histórico de notas.");
         }
     };
-    
+
     //Submeter Notas
     const handleSubmit = async () => {
         if (!selectedModuleId || !selectedClassId) return toast.error("Escolhe Turma e Módulo!");
+        if (!formData.tipo_avaliacao) return toast.error("Escolhe o Tipo de Avaliação!");
         try {
             // Enviar uma nota por cada aluno que tenha nota preenchida
             const promises = Object.keys(grades).map(async (studentId) => {
@@ -153,6 +154,7 @@ function Evaluations() {
                 {canEdit && (
                     <div className="d-flex gap-3 mt-3">
                         <Form.Select value={formData.tipo_avaliacao} onChange={e => setFormData({ ...formData, tipo_avaliacao: e.target.value })}>
+                            <option value="" disabled>Selecione o Tipo de Avaliação</option>
                             <option value="Teste">Teste</option>
                             <option value="Projeto Final">Projeto Final</option>
                             <option value="Apresentação Oral">Apresentação Oral</option>

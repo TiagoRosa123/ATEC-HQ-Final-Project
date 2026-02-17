@@ -9,7 +9,7 @@ router.get('/courses', async (req, res) => {
                 c.id, 
                 c.nome, 
                 c.descricao, 
-                a.nome as area, 
+                a.nome as area_nome, 
                 c.imagem, 
                 c.duracao_horas,
                 (

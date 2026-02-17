@@ -56,10 +56,10 @@ function AdminAreas() {
 
     //DELETE - Apagar Area
     const handleDelete = async (id) => {
-        if (!window.confirm("Apagar esta area?")) return;
+        if (!window.confirm("Apagar esta área?")) return;
         try {
             await api.delete(`/areas/delete/${id}`);
-            toast.success('Area apagada.');
+            toast.success('Área apagada.');
             loadAreas();
         } catch (error) {
             toast.error(error.response?.data || 'Erro ao apagar.');
@@ -68,7 +68,7 @@ function AdminAreas() {
 
     return (
         <Navbar>
-            <h2 className="mb-4">Gestão de Areas</h2>
+            <h2 className="mb-4">Gestão de Áreas</h2>
 
             {/* FORMULÁRIO */}
             {canEdit && (
@@ -76,7 +76,7 @@ function AdminAreas() {
                     <Card.Body>
                         <Form onSubmit={handleSubmit} className="d-flex gap-2">
                             <Form.Control
-                                placeholder="Nome da Area"
+                                placeholder="Nome da área"
                                 value={formData.nome}
                                 onChange={e => setFormData({ ...formData, nome: e.target.value })}
                                 required
