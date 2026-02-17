@@ -9,7 +9,7 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import ForgotPw from './pages/ForgotPw';
 import ResetPw from './pages/ResetPw';
-import ActivatePw from './pages/Activate'
+import ActivatePw from './pages/Activate';
 import LandingPage from './pages/LandingPage'; // Importar Landing Page
 import AdminUsers from './pages/AdminUsers';
 import Settings from './pages/Settings';
