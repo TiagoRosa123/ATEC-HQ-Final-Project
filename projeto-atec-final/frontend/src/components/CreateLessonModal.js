@@ -102,6 +102,15 @@ const CreateLessonModal = ({ show, handleClose, selectedSlot, editEvent, onSucce
             const token = localStorage.getItem('token');
             const config = { headers: { token: token } };
 
+            // Validação de Fim de Semana (Frontend)
+            const dateObj = new Date(formData.data_aula);
+            const dayOfWeek = dateObj.getDay(); // 0 = Domingo, 6 = Sábado
+            if (dayOfWeek === 0 || dayOfWeek === 6) {
+                toast.error("Não é permitido agendar aulas ao fim de semana.");
+                setLoading(false);
+                return;
+            }
+
             if (editEvent) {
                 // UPDATE
                 await axios.put(`http://localhost:5000/schedules/${editEvent.id}`, formData, config);

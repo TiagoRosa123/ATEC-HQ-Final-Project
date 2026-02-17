@@ -72,14 +72,14 @@ router.get('/stats/formador', authorization, async (req, res) => {
 
         // Próximas 5 aulas agendadas
         const proximasAulas = await pool.query(`
-            SELECT h.data, h.hora_inicio, h.hora_fim, 
+            SELECT h.data_aula as data, h.hora_inicio, h.hora_fim, 
                    m.nome as modulo, t.codigo as turma, s.nome as sala
             FROM horarios h
             JOIN modulos m ON h.modulo_id = m.id
             JOIN turmas t ON h.turma_id = t.id
             LEFT JOIN salas s ON h.sala_id = s.id
-            WHERE h.formador_id = $1 AND h.data >= CURRENT_DATE
-            ORDER BY h.data, h.hora_inicio
+            WHERE h.formador_id = $1 AND h.data_aula >= CURRENT_DATE
+            ORDER BY h.data_aula, h.hora_inicio
             LIMIT 5
         `, [formadorId]);
 
@@ -96,8 +96,8 @@ router.get('/stats/formador', authorization, async (req, res) => {
             SELECT COUNT(*)
             FROM horarios h
             WHERE h.formador_id = $1 
-              AND h.data >= date_trunc('week', CURRENT_DATE)
-              AND h.data < date_trunc('week', CURRENT_DATE) + interval '7 days'
+              AND h.data_aula >= date_trunc('week', CURRENT_DATE)
+              AND h.data_aula < date_trunc('week', CURRENT_DATE) + interval '7 days'
         `, [formadorId]);
 
         // Total de alunos únicos nas turmas do formador

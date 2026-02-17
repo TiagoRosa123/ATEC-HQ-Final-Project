@@ -136,6 +136,76 @@ function Evaluations() {
             toast.error("Erro ao lançar notas.");
         }
     };
+    // State para Alunos (Formandos)
+    const [studentGrades, setStudentGrades] = useState([]);
+    const [loadingGrades, setLoadingGrades] = useState(false);
+
+    const isStudent = user && user.role === 'formando';
+
+    // Se for Formando, carregar as suas notas
+    useEffect(() => {
+        if (isStudent) {
+            setLoadingGrades(true);
+            api.get('/evaluations/my-grades')
+                .then(res => setStudentGrades(res.data))
+                .catch(err => {
+                    console.error(err);
+                    toast.error("Erro ao carregar as tuas notas.");
+                })
+                .finally(() => setLoadingGrades(false));
+        }
+    }, [isStudent]);
+
+    // VIEW DE FORMANDO
+    if (isStudent) {
+        return (
+            <Navbar>
+                <h2 className="mb-4">Minhas Avaliações</h2>
+                <Card className="border-0 shadow-sm">
+                    <Card.Body>
+                        {loadingGrades ? (
+                            <p className="text-muted">A carregar...</p>
+                        ) : studentGrades.length === 0 ? (
+                            <Alert variant="info">Ainda não tens avaliações registadas.</Alert>
+                        ) : (
+                            <Table hover responsive>
+                                <thead>
+                                    <tr>
+                                        <th>Módulo</th>
+                                        <th>Avaliação</th>
+                                        <th>Nota</th>
+                                        <th>Data</th>
+                                        <th>Observações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {studentGrades.map((grade) => (
+                                        <tr key={grade.id}>
+                                            <td>
+                                                <strong>{grade.modulo_nome}</strong>
+                                                <br />
+                                                <small className="text-muted">{grade.modulo_codigo}</small>
+                                            </td>
+                                            <td>{grade.tipo_avaliacao}</td>
+                                            <td>
+                                                <span className={`badge ${grade.nota >= 10 ? 'bg-success' : 'bg-danger'} fs-6`}>
+                                                    {grade.nota}
+                                                </span>
+                                            </td>
+                                            <td>{grade.data_avaliacao ? new Date(grade.data_avaliacao).toLocaleDateString() : '-'}</td>
+                                            <td className="text-muted small">{grade.observacoes || '-'}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </Table>
+                        )}
+                    </Card.Body>
+                </Card>
+            </Navbar>
+        );
+    }
+
+    // VIEW DE FORMADOR / ADMIN (Mantém o código original abaixo)
     return (
         <Navbar>
             <h2 className="mb-4">Lançamento de Notas</h2>

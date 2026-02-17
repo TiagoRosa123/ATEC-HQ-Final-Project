@@ -142,6 +142,27 @@ router.post('/avatar/:userId', authorization, upload.single('file'), async (req,
     }
 });
 
+// DELETE AVATAR
+router.delete('/avatar/:userId', authorization, async (req, res) => {
+    try {
+        const { userId } = req.params;
+
+        // Permitir que o Admin ou o próprio user apague
+        const adminCheck = await pool.query("SELECT is_admin FROM utilizadores WHERE id = $1", [req.user.id]);
+        if (req.user.id !== userId && !adminCheck.rows[0].is_admin) {
+            return res.status(403).json("Acesso negado.");
+        }
+
+        // Atualizar user na BD (foto = null)
+        await pool.query("UPDATE utilizadores SET foto = NULL WHERE id = $1", [userId]);
+
+        res.json({ message: "Foto removida com sucesso!" });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send("Erro ao remover avatar");
+    }
+});
+
 // LISTAR os meus ficheiros
 router.get('/my-files', authorization, async (req, res) => {
     try {
@@ -202,12 +223,13 @@ const exportPdfHandler = async (req, res) => {
         console.log("Target ID:", targetId);
 
         const dadosRole = await pool.query(`SELECT role FROM utilizadores WHERE id = $1`, [targetId]);
-        const userName = await pool.query(`SELECT nome FROM utilizadores WHERE id = $1`, [targetId]);
+        const userData = await pool.query(`SELECT nome, foto FROM utilizadores WHERE id = $1`, [targetId]);
 
-        console.log("User encontrado:", userName.rows.length > 0 ? userName.rows[0].nome : "NÃO");
+        console.log("User encontrado:", userData.rows.length > 0 ? userData.rows[0].nome : "NÃO");
 
         if (dadosRole.rows.length === 0) return res.status(404).json("Utilizador não encontrado");
 
+        const userPhoto = userData.rows[0].foto;
         const role = dadosRole.rows[0].role;
         console.log("Role:", role);
         let dados = null;
@@ -218,9 +240,6 @@ const exportPdfHandler = async (req, res) => {
 
             dados = await pool.query(
                 `SELECT 
-                    u.nome as nome, 
-                    u.foto_perfil as foto,
-                    u.email as email, 
                     c.nome as curso, 
                     m.nome as modulo, 
                     a.nota, 
@@ -264,8 +283,6 @@ const exportPdfHandler = async (req, res) => {
 
             dados = await pool.query(
                 `SELECT DISTINCT
-                    u.nome as nome, 
-                    u.foto_perfil as foto,
                     c.nome as curso, 
                     t.codigo as turma,
                     m.nome as modulo
@@ -304,17 +321,32 @@ const exportPdfHandler = async (req, res) => {
         const placeholderBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==";
         let imagemPerfil = placeholderBase64;
 
-        // Se houver foto e o ficheiro existir, usamos a foto do utilizador
-        if (dados.rows[0].foto && fs.existsSync(dados.rows[0].foto)) {
-            imagemPerfil = dados.rows[0].foto;
-        } else if (dados.rows[0].foto && dados.rows[0].foto.startsWith('data:image')) {
-            // Caso a foto já venha em base64 (pouco provável no teu setup atual, mas fica a salvaguarda)
-            imagemPerfil = dados.rows[0].foto;
+        // Se houver foto, tentamos converter URL em caminho local
+        if (userPhoto && userPhoto.startsWith('data:image')) {
+            imagemPerfil = userPhoto;
+        } else if (userPhoto) {
+            try {
+                // Tenta extrair o nome do ficheiro do URL (ex: http://.../uploads/xyz.jpg)
+                let filename = userPhoto;
+                if (userPhoto.includes('/uploads/')) {
+                    filename = userPhoto.split('/uploads/').pop();
+                }
+
+                const localPath = path.join(__dirname, '../uploads', filename);
+
+                if (fs.existsSync(localPath)) {
+                    imagemPerfil = localPath;
+                } else {
+                    console.log("PDF Export: Foto não encontrada no disco:", localPath);
+                }
+            } catch (e) {
+                console.error("Erro ao processar caminho da imagem:", e);
+            }
         }
 
         const docDefinition = {
             content: [
-                { text: `Ficha de ${userName.rows[0].nome}`, style: 'header' },
+                { text: `Ficha de ${userData.rows[0].nome}`, style: 'header' },
                 { image: imagemPerfil, width: 100, height: 100 },
                 { text: '\n' }, // Espaço
                 {
@@ -338,7 +370,7 @@ const exportPdfHandler = async (req, res) => {
         res.setHeader('Content-Type', 'application/pdf');
 
         // Para não haver risco de cortar o nome em alguns browsers
-        const safeName = userName.rows[0].nome.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        const safeName = userData.rows[0].nome.replace(/[^a-z0-9]/gi, '_').toLowerCase();
         res.setHeader('Content-Disposition', `attachment; filename="Ficha_${safeName}.pdf"`);
 
         pdfDoc.pipe(res);

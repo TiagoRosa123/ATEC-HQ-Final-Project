@@ -26,6 +26,7 @@ const Schedules = () => {
 
     const { user } = useAuth();
     const canManage = user && (user.is_admin || user.role === 'secretaria');
+    const isTrainer = user && user.role === 'formador';
 
     // Carregar Opções dos Dropdowns (Turmas, Formadores, Salas)
     useEffect(() => {
@@ -38,10 +39,12 @@ const Schedules = () => {
                 const resTurmas = await axios.get('http://localhost:5000/classes', config);
                 setTurmas(resTurmas.data);
 
-                // Buscar formadores (rota admin)
-                const resUsers = await axios.get('http://localhost:5000/admin/todos', config);
-                const listFormadores = resUsers.data.filter(u => u.role === 'formador');
-                setFormadores(listFormadores);
+                // Buscar formadores (apenas se tiver permissão de admin/secretaria)
+                if (canManage) {
+                    const resUsers = await axios.get('http://localhost:5000/admin/todos', config);
+                    const listFormadores = resUsers.data.filter(u => u.role === 'formador');
+                    setFormadores(listFormadores);
+                }
 
                 // Buscar salas
                 const resSalas = await axios.get('http://localhost:5000/rooms', config);
@@ -103,6 +106,13 @@ const Schedules = () => {
             const token = localStorage.getItem('token');
             const config = { headers: { token: token } };
 
+            // Validação de Fim de Semana (Drag & Drop)
+            const dayOfWeek = start.getDay();
+            if (dayOfWeek === 0 || dayOfWeek === 6) {
+                toast.error("Não é permitido agendar aulas ao fim de semana.");
+                return;
+            }
+
             const payload = {
                 turma_id: event.turma_id,
                 modulo_id: event.modulo_id,
@@ -153,67 +163,74 @@ const Schedules = () => {
                 </div>
 
                 <Card className="card-modern mb-4 p-3 border-0">
-                    {/* Tabs Navigation */}
-                    <ul className="nav nav-pills mb-3">
-                        <li className="nav-item">
-                            <button
-                                className={`nav-link ${activeTab === 'turma' ? 'active' : ''}`}
-                                onClick={() => setActiveTab('turma')}
-                            >
-                                Por Turma
-                            </button>
-                        </li>
-                        <li className="nav-item">
-                            <button
-                                className={`nav-link ${activeTab === 'formador' ? 'active' : ''}`}
-                                onClick={() => setActiveTab('formador')}
-                            >
-                                Por Formador
-                            </button>
-                        </li>
-                        <li className="nav-item">
-                            <button
-                                className={`nav-link ${activeTab === 'sala' ? 'active' : ''}`}
-                                onClick={() => setActiveTab('sala')}
-                            >
-                                Alocação de Sala
-                            </button>
-                        </li>
-                    </ul>
+                    {/* Tabs Navigation - Ocultar para formandos */}
+                    {user && user.role !== 'formando' && (
+                        <ul className="nav nav-pills mb-3">
+                            <li className="nav-item">
+                                <button
+                                    className={`nav-link ${activeTab === 'turma' ? 'active' : ''}`}
+                                    onClick={() => setActiveTab('turma')}
+                                >
+                                    Por Turma
+                                </button>
+                            </li>
+                            <li className="nav-item">
+                                {!isTrainer && (
+                                    <button
+                                        className={`nav-link ${activeTab === 'formador' ? 'active' : ''}`}
+                                        onClick={() => setActiveTab('formador')}
+                                    >
+                                        Por Formador
+                                    </button>
+                                )}
+                            </li>
+                            <li className="nav-item">
+                                <button
+                                    className={`nav-link ${activeTab === 'sala' ? 'active' : ''}`}
+                                    onClick={() => setActiveTab('sala')}
+                                >
+                                    Alocação de Sala
+                                </button>
+                            </li>
+                        </ul>
+                    )}
 
-                    <Row className="g-3 align-items-end">
-                        <Col md={12}>
-                            {activeTab === 'turma' && (
-                                <>
-                                    <Form.Label>Selecione a Turma para Consulta Rápida</Form.Label>
-                                    <Form.Select value={filterId} onChange={e => setFilterId(e.target.value)}>
-                                        <option value="">Selecione uma turma...</option>
-                                        {turmas.map(t => <option key={t.id} value={t.id}>{t.codigo}</option>)}
-                                    </Form.Select>
-                                </>
-                            )}
+                    {/* Filtros - Ocultar para formandos */}
+                    {user && user.role !== 'formando' && (
+                        <Row className="g-3 align-items-end">
+                            <Col md={12}>
+                                {activeTab === 'turma' && (
+                                    <>
+                                        <Form.Label>Selecione a Turma para Consulta Rápida</Form.Label>
+                                        <Form.Select value={filterId} onChange={e => setFilterId(e.target.value)}>
+                                            <option value="">Selecione uma turma...</option>
+                                            {turmas.map(t => <option key={t.id} value={t.id}>{t.codigo}</option>)}
+                                        </Form.Select>
+                                    </>
+                                )}
 
-                            {activeTab === 'formador' && (
-                                <>
-                                    <Form.Label>Selecione o Formador</Form.Label>
-                                    <Form.Select value={filterId} onChange={e => setFilterId(e.target.value)}>
-                                        <option value="">Selecione um formador...</option>
-                                        {formadores.map(f => <option key={f.id} value={f.id}>{f.nome}</option>)}
-                                    </Form.Select>
-                                </>
-                            )}
+                                {activeTab === 'formador' && (
+                                    <>
+                                        <Form.Label>Selecione o Formador</Form.Label>
+                                        <Form.Select value={filterId} onChange={e => setFilterId(e.target.value)}>
+                                            <option value="">Selecione um formador...</option>
+                                            {formadores.map(f => <option key={f.id} value={f.id}>{f.nome}</option>)}
+                                        </Form.Select>
+                                    </>
+                                )}
 
-                            {activeTab === 'sala' && (
-                                <>
-                                    <Form.Label>Selecione a Sala</Form.Label>
-                                    <Form.Select value={filterId} onChange={e => setFilterId(e.target.value)}>
-                                        <option value="">Selecione uma sala...</option>
-                                        {salas.map(s => <option key={s.id} value={s.id}>{s.nome} ({s.capacidade} lug.)</option>)}
-                                    </Form.Select>
-                                </>
-                            )}
-                        </Col>
-                    </Row>
+                                {activeTab === 'sala' && (
+                                    <>
+                                        <Form.Label>Selecione a Sala</Form.Label>
+                                        <Form.Select value={filterId} onChange={e => setFilterId(e.target.value)}>
+                                            <option value="">Selecione uma sala...</option>
+                                            {salas.map(s => <option key={s.id} value={s.id}>{s.nome} ({s.capacidade} lug.)</option>)}
+                                        </Form.Select>
+                                    </>
+                                )}
+                            </Col>
+                        </Row>
+                    )}
                 </Card>
 
                 <ScheduleCalendar

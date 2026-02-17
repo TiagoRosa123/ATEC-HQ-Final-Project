@@ -60,7 +60,7 @@ function Navbar({ children }) {
                             )}
 
                             {/* Links Comuns */}
-                            {user && (user.is_admin || user.role === 'formador' || user.role === 'secretaria') && (
+                            {user && (user.is_admin || user.role === 'formador' || user.role === 'secretaria' || user.role === 'formando') && (
                                 <Nav.Link as={Link} to="/evaluations" className={isActive('/evaluations')}>
                                     <FaClipboardList className="me-1" /> Avaliações
                                 </Nav.Link>

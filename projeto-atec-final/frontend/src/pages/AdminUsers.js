@@ -266,7 +266,28 @@ function AdminUsers() {
                                     <div className="d-flex gap-2 align-items-center">
                                         {/* Preview se existir URL */}
                                         {formData.foto && !avatarFile && (
-                                            <img src={formData.foto} alt="Preview" className="rounded-circle border" style={{ width: '40px', height: '40px', objectFit: 'cover' }} />
+                                            <div className="position-relative">
+                                                <img src={formData.foto} alt="Preview" className="rounded-circle border" style={{ width: '40px', height: '40px', objectFit: 'cover' }} />
+                                                <Button
+                                                    variant="danger"
+                                                    size="sm"
+                                                    className="position-absolute top-0 start-100 translate-middle badge rounded-pill"
+                                                    style={{ fontSize: '0.6rem', padding: '0.2rem 0.4rem' }}
+                                                    onClick={async () => {
+                                                        if (!window.confirm("Remover foto de perfil?")) return;
+                                                        try {
+                                                            await api.delete(`/files/avatar/${editandoId}`);
+                                                            toast.success("Foto removida!");
+                                                            setFormData({ ...formData, foto: '' });
+                                                            loadUsers();
+                                                        } catch (e) {
+                                                            toast.error("Erro ao remover foto");
+                                                        }
+                                                    }}
+                                                >
+                                                    X
+                                                </Button>
+                                            </div>
                                         )}
                                         <Form.Control
                                             type="file"
@@ -423,13 +444,12 @@ function AdminUsers() {
                         <h6>Adicionar Novo Documento:</h6>
                         <div className="d-flex gap-2">
                             <Form.Select id="adminFileType">
-                                <option>Curriculum Vitae</option>
-                                <option>Registo Criminal</option>
-                                <option>Bolsa de Estudo</option>
-                                <option>Certificado de Habilitações</option>
-                                <option>Avaliação</option>
-                                <option>Comprovativo IBAN</option>
-                                <option>Outro</option>
+                                <option value="Curriculum Vitae">Curriculum Vitae</option>
+                                <option value="Registo Criminal">Registo Criminal</option>
+                                <option value="Bolsa de Formação">Bolsa de Formação</option>
+                                <option value="Certificado de Habilitações">Certificado de Habilitações</option>
+                                <option value="Comprovativo de IBAN">Comprovativo de IBAN</option>
+                                <option value="Outros">Outros</option>
                             </Form.Select>
                             <Form.Control type="file" id="adminFileInput" />
                             <Button onClick={() => handleAdminUpload()}>Anexar Documento</Button>
@@ -438,7 +458,7 @@ function AdminUsers() {
                 </Modal>
 
             </Row>
-        </Navbar>
+        </Navbar >
     );
 }
 

@@ -57,4 +57,39 @@ router.put('/update/:id', authorization, verifyFormador, async (req, res) => {
     }
 });
 
+// GET /my-grades (Para o aluno ver as suas notas)
+router.get('/my-grades', authorization, async (req, res) => {
+    try {
+        // 1. Descobrir ID de formando
+        const formando = await pool.query("SELECT id FROM formandos WHERE utilizador_id = $1", [req.user.id]);
+
+        if (formando.rows.length === 0) {
+            return res.status(404).json("Perfil de formando não encontrado.");
+        }
+        const formandoId = formando.rows[0].id;
+
+        // 2. Buscar avaliações
+        const query = `
+            SELECT 
+                a.id, 
+                a.nota, 
+                a.data_avaliacao, 
+                a.tipo_avaliacao, 
+                a.observacoes,
+                m.nome as modulo_nome,
+                m.codigo as modulo_codigo
+            FROM avaliacoes a
+            JOIN modulos m ON a.modulo_id = m.id
+            WHERE a.formando_id = $1
+            ORDER BY a.data_avaliacao DESC
+        `;
+        const grades = await pool.query(query, [formandoId]);
+        res.json(grades.rows);
+
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send("Erro ao buscar notas.");
+    }
+});
+
 module.exports = router;

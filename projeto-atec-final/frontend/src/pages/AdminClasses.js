@@ -205,7 +205,7 @@ function AdminClasses() {
                 <Card.Body>
                     <div className="mb-3">
                         <Form.Control
-                            placeholder="🔍 Pesquisar turmas..."
+                            placeholder="Pesquisar turmas..."
                             value={searchTerm}
                             onChange={e => { setSearchTerm(e.target.value); setCurrentPage(1); }}
                         />

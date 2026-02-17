@@ -46,26 +46,59 @@ router.get("/", authorization, async (req, res) => {
       paramCounter += 2;
     }
 
-    // Filtro Específico
-    if (type && id) {
-      if (type === "curso") {
-        query += ` AND t.curso_id = $${paramCounter}`;
-        values.push(id);
+    // ---------------------------------------------------------
+    // FILTRAGEM AUTOMÁTICA POR ROLE (Formador vê apenas o seu)
+    // ---------------------------------------------------------
+    const userRoleQuery = await pool.query("SELECT role FROM utilizadores WHERE id = $1", [req.user.id]);
+    const userRole = userRoleQuery.rows[0]?.role;
+
+    if (userRole === 'formador') {
+      const formador = await pool.query("SELECT id FROM formadores WHERE utilizador_id = $1", [req.user.id]);
+      if (formador.rows.length > 0) {
+        const formadorId = formador.rows[0].id;
+        // Força o filtro pelo ID do formador logado
+        query += ` AND h.formador_id = $${paramCounter}`;
+        values.push(formadorId);
         paramCounter++;
-      } else if (type === "formador") {
-        // Recebemos o ID de utilizador do frontend
-        // Então filtramos pela relação formadores -> utilizadores
-        query += ` AND f.utilizador_id = $${paramCounter}`;
-        values.push(id);
-        paramCounter++;
-      } else if (type === "sala") {
-        query += ` AND h.sala_id = $${paramCounter}`;
-        values.push(id);
-        paramCounter++;
-      } else if (type === "turma") {
-        query += ` AND h.turma_id = $${paramCounter}`;
-        values.push(id);
-        paramCounter++;
+      }
+    } else if (userRole === 'formando') {
+      // Lógica para Formando: busca a turma em que está inscrito
+      const formando = await pool.query("SELECT id FROM formandos WHERE utilizador_id = $1", [req.user.id]);
+      if (formando.rows.length > 0) {
+        const formandoId = formando.rows[0].id;
+        // Busca a inscrição mais recente (ou ativa)
+        const inscricao = await pool.query("SELECT turma_id FROM inscricoes WHERE formando_id = $1 ORDER BY data_inscricao DESC LIMIT 1", [formandoId]);
+
+        if (inscricao.rows.length > 0) {
+          const turmaId = inscricao.rows[0].turma_id;
+          query += ` AND h.turma_id = $${paramCounter}`;
+          values.push(turmaId);
+          paramCounter++;
+        } else {
+          // Se não tem turma, não vê nada (hack: filtro impossível)
+          query += ` AND 1=0`;
+        }
+      }
+    } else {
+      // Se NÃO for formador (ex: Admin, Secretária), permite filtros manuais da query string
+      if (type && id) {
+        if (type === "curso") {
+          query += ` AND t.curso_id = $${paramCounter}`;
+          values.push(id);
+          paramCounter++;
+        } else if (type === "formador") {
+          query += ` AND f.utilizador_id = $${paramCounter}`;
+          values.push(id);
+          paramCounter++;
+        } else if (type === "sala") {
+          query += ` AND h.sala_id = $${paramCounter}`;
+          values.push(id);
+          paramCounter++;
+        } else if (type === "turma") {
+          query += ` AND h.turma_id = $${paramCounter}`;
+          values.push(id);
+          paramCounter++;
+        }
       }
     }
 
@@ -110,6 +143,13 @@ router.post("/", authorization, verifyScheduleManager, async (req, res) => {
     // Validar campos obrigatórios
     if (!turma_id || !modulo_id || !formador_id || !sala_id || !data_aula || !hora_inicio || !hora_fim) {
       return res.status(400).json("Todos os campos são obrigatórios.");
+    }
+
+    // Validação de Fim de Semana (Backend)
+    const dateObj = new Date(data_aula);
+    const dayOfWeek = dateObj.getDay();
+    if (dayOfWeek === 0 || dayOfWeek === 6) {
+      return res.status(400).json("Não é permitido agendar aulas ao fim de semana.");
     }
 
     //Não excede horas do modulo
@@ -171,6 +211,13 @@ router.put("/:id", authorization, verifyScheduleManager, async (req, res) => {
     // Validar campos obrigatórios (EVITAR QUE VIREM NULL)
     if (!turma_id || !modulo_id || !formador_id || !sala_id || !data_aula || !hora_inicio || !hora_fim) {
       return res.status(400).json("Dados incompletos. Todos os campos são obrigatórios.");
+    }
+
+    // Validação de Fim de Semana (Backend)
+    const dateObjPut = new Date(data_aula);
+    const dayOfWeekPut = dateObjPut.getDay();
+    if (dayOfWeekPut === 0 || dayOfWeekPut === 6) {
+      return res.status(400).json("Não é permitido agendar aulas ao fim de semana.");
     }
 
     // VALIDAÇÃO DE HORAS (Igual ao POST, mas excluindo o próprio ID da soma)

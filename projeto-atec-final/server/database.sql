@@ -73,6 +73,7 @@ CREATE TABLE utilizadores (
     reset_password_expires TIMESTAMP,
     two_fa_secret TEXT,
     two_fa_ativado BOOLEAN DEFAULT FALSE,
+    foto TEXT,
     criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

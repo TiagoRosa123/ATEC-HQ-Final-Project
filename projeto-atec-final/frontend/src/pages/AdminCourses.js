@@ -229,7 +229,7 @@ function AdminCourses() {
                 <Card.Body>
                     <div className="mb-3">
                         <Form.Control
-                            placeholder="🔍 Pesquisar cursos..."
+                            placeholder="Pesquisar cursos..."
                             value={searchTerm}
                             onChange={e => { setSearchTerm(e.target.value); setCurrentPage(1); }}
                         />

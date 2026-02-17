@@ -53,7 +53,7 @@ async function init() {
 
     try {
         await runSqlFile('database.sql', pool);
-        await runSqlFile('seed_schedules.sql', pool);
+        await runSqlFile('seed_data.sql', pool);
         console.log("Initialization complete!");
     } catch (err) {
         console.error("Error during initialization:", err);
