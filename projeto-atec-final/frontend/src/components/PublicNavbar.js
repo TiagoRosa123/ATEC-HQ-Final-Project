@@ -140,7 +140,7 @@ const PublicNavbar = () => {
                             />
                         </Form.Group>
                         <div className="d-grid">
-                            <Button type="submit" variant="primary" disabled={loading}>
+                            <Button type="submit" className="btn-primary-custom" disabled={loading}>
                                 {loading ? 'A enviar...' : 'Enviar Candidatura'}
                             </Button>
                         </div>
